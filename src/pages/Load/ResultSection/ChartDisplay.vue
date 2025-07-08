@@ -1,0 +1,132 @@
+<template>
+    <div class="chart-display">
+        <div ref="chartEl" class="chart-container" style="height: 400px"></div>
+    </div>
+</template>
+
+<script setup>
+import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import * as echarts from "echarts";
+
+const props = defineProps({
+    uploadData: Array,
+    predictionData: Array,
+    date: String,
+    record: Object
+});
+onMounted(() => {
+    console.log("ChartDisplay mounted with date:", props);
+});
+const chartEl = ref(null);
+let chartInstance = null;
+
+const initChart = () => {
+    if (!chartEl.value) return;
+
+    chartInstance = echarts.init(chartEl.value);
+
+    const option = {
+        tooltip: {
+            trigger: "axis",
+            formatter: "{b}: {c} kW",
+        },
+        legend: {
+            // data: ["实际负荷", "预测负荷"],
+            data: ["预测负荷"],
+            bottom: 10,
+        },
+        grid: {
+            left: "3%",
+            right: "4%",
+            bottom: "15%",
+            top: "10%",
+            containLabel: true,
+        },
+        xAxis: {
+            type: "category",
+            boundaryGap: false,
+            data: props.uploadData.map((item) => item.time),
+            axisLabel: {
+                interval: 0,
+            },
+        },
+        yAxis: {
+            type: "value",
+            name: "负荷值 (kW)",
+            nameLocation: "middle",
+            nameGap: 40,
+            axisLine: {
+                show: true,
+            },
+        },
+        series: [
+            // {
+            //     name: "实际负荷",
+            //     type: "line",
+            //     data: props.uploadData.map((item) => item.value),
+            //     smooth: true,
+            //     lineStyle: {
+            //         width: 3,
+            //         color: "#5470c6",
+            //     },
+            //     symbol: "circle",
+            //     symbolSize: 8,
+            // },
+            {
+                name: "预测负荷",
+                type: "line",
+                data: props.predictionData.map((item) => item.value),
+                smooth: true,
+                lineStyle: {
+                    width: 3,
+                    // type: "dashed",
+                    color: "#91cc75",
+                },
+                // symbol: "emptyCircle",
+                symbol: "circle",
+                symbolSize: 8,
+            },
+        ],
+    };
+
+    chartInstance.setOption(option);
+};
+
+watch(
+    () => props.date,
+    () => {
+        if (chartInstance) {
+            chartInstance.dispose();
+            initChart();
+        }
+    }
+);
+
+onMounted(() => {
+    initChart();
+    window.addEventListener("resize", handleResize);
+});
+
+onBeforeUnmount(() => {
+    if (chartInstance) {
+        chartInstance.dispose();
+    }
+    window.removeEventListener("resize", handleResize);
+});
+
+const handleResize = () => {
+    if (chartInstance) {
+        chartInstance.resize();
+    }
+};
+</script>
+
+<style lang="scss" scoped>
+.chart-container {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid #eee;
+}
+</style>

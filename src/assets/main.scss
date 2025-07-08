@@ -1,0 +1,51 @@
+@use 'sass:color';
+$primary-color: #2c6fbb;
+$secondary-color: #34a4dc;
+$accent-color: #4caf50;
+$light-bg: #f8f9fa;
+$dark-text: #343a40;
+
+:root {
+  --primary-color: #{$primary-color};
+  --secondary-color: #{$secondary-color};
+  --accent-color: #{$accent-color};
+  --light-bg: #{$light-bg};
+  --dark-text: #{$dark-text};
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  color: var(--dark-text);
+}
+
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border: none;
+  transition: transform 0.3s ease;
+  margin-bottom: 1.5rem;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+}
+
+.card-header {
+  background-color: white;
+  border-bottom: 2px solid #eaeaea;
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border: none;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  
+  &:hover {
+    background: linear-gradient(135deg,  color.scale($primary-color, $lightness: -10%), color.scale($secondary-color, $lightness: -10%));
+  }
+}
