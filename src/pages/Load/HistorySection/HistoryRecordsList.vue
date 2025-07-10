@@ -16,6 +16,59 @@
         </div>
 
         <div class="record-list">
+            <!-- 处理中任务 -->
+            <div
+                v-if="props.processingTasks && props.processingTasks.length > 0"
+                class="mb-4"
+            >
+                <h5 class="mb-3">处理中任务</h5>
+                <div class="processing-tasks">
+                    <div
+                        v-for="(task, idx) in props.processingTasks"
+                        :key="idx"
+                        class="processing-task card mb-3"
+                    >
+                        <div class="card-body">
+                            <div
+                                class="d-flex justify-content-between align-items-center"
+                            >
+                                <div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div
+                                            class="spinner-border spinner-border-sm text-primary me-2"
+                                            role="status"
+                                        ></div>
+                                        <strong class="text-primary">{{
+                                            dsds
+                                        }}</strong>
+                                    </div>
+                                    <div class="text-muted small">
+                                        开始时间:
+                                        {{ task }}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div
+                                        class="progress"
+                                        style="width: 150px; height: 10px"
+                                    >
+                                        <div
+                                            class="progress-bar progress-bar-striped progress-bar-animated"
+                                            role="progressbar"
+                                            :style="{
+                                                width: '50%',
+                                            }"
+                                        ></div>
+                                    </div>
+                                    <div class="small text-muted mt-1">
+                                        {{ 50 }}% 完成
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <el-table :data="filteredRecords" stripe style="width: 100%">
                 <el-table-column prop="date" label="ID" width="180">
                     <template #default="{ row }">
@@ -92,6 +145,23 @@ import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
 import { Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
+
+/* --------------------------- 正在执行的任务 -------------------------- */
+// 新增处理中任务列表
+const props = defineProps({
+    processingTasks: Array,
+});
+
+// 格式化日期时间
+const formatDateTime = (date) => {
+    return date.toLocaleString("zh-CN", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
+
 // 模拟历史记录数据
 const records = ref([]);
 
@@ -179,5 +249,10 @@ async function deleteRecord(record) {
     border-radius: 8px;
     padding: 15px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.processing-tasks {
+    .processing-task {
+        border-left: 4px solid #0d6efd;
+    }
 }
 </style>

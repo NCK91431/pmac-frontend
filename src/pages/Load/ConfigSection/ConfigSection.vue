@@ -5,25 +5,41 @@
         </h2>
 
         <div class="row" v-if="!endding_flag">
-            <div class="col-md-6">
-                <!-- 配置表单 -->
-                <ConfigForm ref="configForm" />
-            </div>
-            <div class="col-md-6">
-                <!-- 上传文件 -->
-                <FileUpload @file-uploaded="handleFileUploaded" />
-            </div>
+            <!-- 1：预测进行中 -->
+            <template v-if="props.isProcessing">
+                <LoadingOverlay />
+            </template>
+            <!-- 0：填写配置表单 -->
+            <template v-else>
+                <div class="col-md-6">
+                    <!-- 配置表单 -->
+                    <ConfigForm ref="configForm" />
+                </div>
+                <div class="col-md-6">
+                    <!-- 上传文件 -->
+                    <FileUpload @file-uploaded="handleFileUploaded" />
+                </div>
+            </template>
         </div>
+        <!-- 2：显示预测结果 -->
         <div class="row" v-if="endding_flag">
             <FinishView :record="record" />
         </div>
 
         <div class="d-flex justify-content-end mt-4">
-            <button v-if="!endding_flag" class="btn-submit btn btn-primary px-4 py-2" :disabled="!isFormValid"
-                @click="submitForm">
+            <button
+                v-if="!endding_flag"
+                class="btn-submit btn btn-primary px-4 py-2"
+                :disabled="!isFormValid"
+                @click="submitForm"
+            >
                 <i class="bi bi-calculator me-2"></i>开始预测
             </button>
-            <button v-if="endding_flag" class="btn-continue btn btn-primary px-4 py-2" @click="clickContinueBtn">
+            <button
+                v-if="endding_flag"
+                class="btn-continue btn btn-primary px-4 py-2"
+                @click="clickContinueBtn"
+            >
                 继续预测<i class="bi bi-arrow-down-circle me-2"></i>
             </button>
         </div>
@@ -35,15 +51,21 @@ import { ref, computed } from "vue";
 import ConfigForm from "./ConfigForm.vue";
 import FileUpload from "./FileUpload.vue";
 import FinishView from "./FinishView.vue";
+import LoadingOverlay from "./LoadingOverlay.vue";
+
 const props = defineProps({
     endding_flag: {
         type: Boolean,
-        required: true
+        required: true,
     },
     record: {
         type: Object,
-        required: true //用户提交成功后从后端返回的完整数据
-    }
+        required: true, //用户提交成功后从后端返回的完整数据
+    },
+    isProcessing: {
+        type: Boolean,
+        required: true,
+    },
 });
 
 const configForm = ref(null);
@@ -64,10 +86,9 @@ const submitForm = () => {
 
 const emit = defineEmits(["submit", "continue-predict"]);
 function clickContinueBtn() {
-    isFormValid.value = true
-    emit('continue-predict')
+    isFormValid.value = true;
+    emit("continue-predict");
 }
-
 </script>
 
 <style lang="scss" scoped>

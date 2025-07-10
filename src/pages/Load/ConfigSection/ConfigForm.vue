@@ -84,7 +84,7 @@ import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
 // 配置级联选择器属性
 const cascaderProps = {
-    value: "value",
+    value: "label",
     label: "label",
     children: "children",
     expandTrigger: "hover",
@@ -120,22 +120,8 @@ onMounted(async () => {
 });
 
 const getFormData = () => {
-    const list = locationOptions.value;
     return {
         ...form.value,
-        locationText:
-            list.find((prov) => prov.value === form.value.location[0])?.label +
-            " - " +
-            list
-                .find((prov) => prov.value === form.value.location[0])
-                ?.children.find((city) => city.value === form.value.location[1])
-                ?.label +
-            " - " +
-            list
-                .find((prov) => prov.value === form.value.location[0])
-                ?.children.find((city) => city.value === form.value.location[1])
-                ?.children.find((area) => area.value === form.value.location[2])
-                ?.label,
     };
 };
 

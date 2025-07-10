@@ -72,7 +72,9 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">时间粒度</span>
-                        <span class="stat-value">{{ excel_timeGranularity }}</span>
+                        <span class="stat-value">{{
+                            excel_timeGranularity
+                        }}</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">数据点数</span>
@@ -95,34 +97,37 @@
                         </div>
                         <div class="file-meta">
                             <div class="file-name">{{ excel_fileName }}</div>
-                            <div class="file-size">文件大小: {{ excel_size }}</div>
-                            <div class="upload-time">上传时间: {{ excel_uploadTime }}</div>
+                            <div class="file-size">
+                                文件大小: {{ excel_size }}
+                            </div>
+                            <div class="upload-time">
+                                上传时间: {{ excel_uploadTime }}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { ElMessage } from 'element-plus';
-import request from '@/utils/request';
-import { saveAs } from 'file-saver';
+import { computed } from "vue";
+import { ElMessage } from "element-plus";
+import request from "@/utils/request";
+import { saveAs } from "file-saver";
 const props = defineProps({
-    record: { // 用户提交成功后从后端返回的完整数据
+    record: {
+        // 用户提交成功后从后端返回的完整数据
         type: Object,
-        required: true
+        required: true,
     },
-
 });
 
 // 计算属性
 const customer_type = computed(() => {
     if (!props.record.formInfo || !props.record.formInfo.customer_type) {
-        return '未知类型';
+        return "未知类型";
     }
     const types = {
         hospital: "医院",
@@ -130,59 +135,74 @@ const customer_type = computed(() => {
         discrete: "离散工业",
         continuous: "连续工业",
     };
-    return types[props.record.formInfo.customer_type] || '未知类型';
+    return types[props.record.formInfo.customer_type] || "未知类型";
 });
 const pv_config = computed(() => {
     if (!props.record.formInfo || !props.record.formInfo.pv_config) {
-        return '未知配置';
+        return "未知配置";
     }
-    return props.record.formInfo.pv_config == 'yes' ? '已配置' : '未配置';
+    return props.record.formInfo.pv_config == "yes" ? "已配置" : "未配置";
 });
 const location_string = computed(() => {
-    if (!props.record.formInfo || !props.record.formInfo.area) {
-        return '未选择';
+    if (!props.record.formInfo || !props.record.formInfo.location) {
+        return "未选择";
     }
-    const { province, city, district } = props.record.formInfo.area
-    return `${province}-${city}-${district}`;
+    return props.record.formInfo.location.join("-");
 });
 const forecast_range = computed(() => {
     if (!props.record.formInfo || !props.record.formInfo.forecast_range) {
-        return '未知范围';
+        return "未知范围";
     }
-    return props.record.formInfo.forecast_range == "4days" ? "D-4 → D+1" : 'D-1 → D+1';
+    return props.record.formInfo.forecast_range == "4days"
+        ? "D-4 → D+1"
+        : "D-1 → D+1";
 });
 
 const excel_days = computed(() => {
-    if (!props.record.excelInfo || !props.record.excelInfo.stats || !props.record.excelInfo.stats.days) {
+    if (
+        !props.record.excelInfo ||
+        !props.record.excelInfo.stats ||
+        !props.record.excelInfo.stats.days
+    ) {
         return 0;
     }
     return props.record.excelInfo.stats.days;
 });
 const excel_timeGranularity = computed(() => {
-    if (!props.record.excelInfo || !props.record.excelInfo.stats || !props.record.excelInfo.stats.timeGranularity) {
-        return '未知';
+    if (
+        !props.record.excelInfo ||
+        !props.record.excelInfo.stats ||
+        !props.record.excelInfo.stats.timeGranularity
+    ) {
+        return "未知";
     }
     return props.record.excelInfo.stats.timeGranularity;
 });
 const excel_dataPoints = computed(() => {
-    if (!props.record.excelInfo || !props.record.excelInfo.stats || !props.record.excelInfo.stats.dataPoints) {
+    if (
+        !props.record.excelInfo ||
+        !props.record.excelInfo.stats ||
+        !props.record.excelInfo.stats.dataPoints
+    ) {
         return 0;
     }
     return props.record.excelInfo.stats.dataPoints;
 });
 const excel_status = computed(() => {
-    if (!props.record.excelInfo || !props.record.excelInfo.stats || !props.record.excelInfo.stats.status) {
-        return '未知状态';
+    if (
+        !props.record.excelInfo ||
+        !props.record.excelInfo.stats ||
+        !props.record.excelInfo.stats.status
+    ) {
+        return "未知状态";
     }
     return props.record.excelInfo.stats.status;
 });
 const excel_fileName = computed(() => {
-    if (!props.record.excelInfo || !props.record.excelInfo.name
-    ) {
-        return '未命名文件';
+    if (!props.record.excelInfo || !props.record.excelInfo.name) {
+        return "未命名文件";
     }
-    return props.record.excelInfo.name
-        ;
+    return props.record.excelInfo.name;
 });
 const excel_size = computed(() => {
     if (!props.record.excelInfo || !props.record.excelInfo.size) {
@@ -197,9 +217,6 @@ const excel_uploadTime = computed(() => {
     return props.record.excelInfo.uploadTime;
 });
 
-
-
-
 /*------------下载用户上传的excel文件------------*/
 async function downloadUploadExcel() {
     const recordId = props.record.recordId;
@@ -207,7 +224,8 @@ async function downloadUploadExcel() {
         ElMessage.error("记录ID不存在，无法下载文件");
         return;
     }
-    const fileName = excel_fileName.value || (props.record.recordId + "_upload.xlsx");
+    const fileName =
+        excel_fileName.value || props.record.recordId + "_upload.xlsx";
 
     try {
         ElMessage.success(`正在下载您上传的文件${fileName}`);
@@ -238,8 +256,6 @@ async function downloadUploadExcel() {
         }
     }
 }
-
-
 </script>
 
 <style lang="scss" scoped>
@@ -262,8 +278,6 @@ async function downloadUploadExcel() {
     padding: 18px;
     flex: 1;
     min-width: 280px;
-
-
 
     .preview-list {
         display: flex;
@@ -366,8 +380,6 @@ async function downloadUploadExcel() {
     padding: 20px;
     flex: 1;
     min-width: 280px;
-
-
 
     .stats-title {
         font-weight: 600;
