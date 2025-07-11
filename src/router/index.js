@@ -4,7 +4,7 @@ const router = createRouter({
     routes: [
         {
             path: "/",
-            redirect: "home"
+            redirect: "home",
         },
         {
             path: "/home",
@@ -15,6 +15,16 @@ const router = createRouter({
             path: "/loadpre",
             name: "loadpre",
             component: () => import("../pages/Load/LoadPre.vue"),
+        },
+        {
+            path: "/login",
+            name: "Login",
+            component: () => import("@/pages/Home/LoginRegister.vue"),
+        },
+        {
+            path: "/modifyuser",
+            name: "ModifyUser",
+            component: () => import("@/pages/Home/ModifyUserInfo.vue"),
         },
     ],
 });

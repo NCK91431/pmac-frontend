@@ -11,6 +11,11 @@ const service = axios.create({
 service.interceptors.request.use(
     (config) => {
         // 可在此处添加token等全局参数
+        const token = localStorage.getItem("authToken");
+        console.log(token);
+        if (token) {
+            config.headers["authorization"] = token; // 将令牌添加到 Authorization 头
+        }
         return config;
     },
     (error) => {
