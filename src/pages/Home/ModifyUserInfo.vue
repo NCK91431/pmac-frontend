@@ -2,28 +2,18 @@
     <div class="login-container">
         <div class="login-box">
             <div class="login-header">
-                <i class="el-icon-user-solid"></i>
                 <h2>修改用户信息</h2>
                 <p>更新您的个人信息</p>
             </div>
 
             <el-form
+                :rules="formRules"
                 :model="userForm"
-                ref="userFormRef"
+                ref="formRef"
                 label-position="top"
                 class="login-form"
             >
-                <el-form-item
-                    label="姓名"
-                    prop="name"
-                    :rules="[
-                        {
-                            required: true,
-                            message: '请输入姓名',
-                            trigger: 'blur',
-                        },
-                    ]"
-                >
+                <el-form-item label="姓名" prop="name">
                     <el-input
                         v-model="userForm.name"
                         placeholder="请输入您的姓名"
@@ -37,7 +27,7 @@
 
                 <el-form-item label="手机号" prop="phone">
                     <el-input
-                        v-model="userForm.phone"
+                        v-model="user.phone"
                         placeholder="请输入您的手机号"
                         size="large"
                         disabled
@@ -72,6 +62,7 @@
 
                 <el-form-item>
                     <el-button
+                        :loading="submitLoading"
                         type="primary"
                         class="submit-btn"
                         size="large"
@@ -92,49 +83,81 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, inject, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 
 const router = useRouter();
-const userFormRef = ref(null);
+const user = inject("user");
+const updateUser = inject("updateUser"); //注入全局方法
+import request from "@/utils/request";
 
 // 用户表单数据
 const userForm = ref({
     name: "",
-    phone: "",
     company: "",
 });
+onMounted(() => {
+    userForm.value.name = user.value.name;
+    userForm.value.company = user.value.company;
+});
 
-// 提交表单
-const submitForm = () => {
-    userFormRef.value.validate((valid) => {
-        if (valid) {
-            // 模拟保存修改
-            ElMessage.success("用户信息更新成功");
-
-            // 实际项目中这里会调用API更新用户信息
-            setTimeout(() => {
-                router.push("/");
-            }, 1500);
-        }
-    });
+const formRef = ref(null);
+const submitLoading = ref(false); // 新增加载状态
+// 修复后的表单规则（移除计算属性）
+const formRules = {
+    name: [
+        { required: true, message: "请输入姓名", trigger: "blur" },
+        { min: 2, max: 20, message: "姓名长度应在2-20个字符", trigger: "blur" },
+    ],
+    company: [
+        { required: true, message: "请输入公司名称", trigger: "blur" },
+        {
+            min: 2,
+            max: 40,
+            message: "公司名称长度应在2-40个字符",
+            trigger: "blur",
+        },
+    ],
 };
+// 提交表单
+async function submitForm() {
+    if (
+        userForm.value.name == user.value.name &&
+        userForm.value.company == user.value.company
+    ) {
+        ElMessage.error("您未做任何修改");
+        return;
+    }
+    try {
+        // 关键修复：执行表单验证
+        const valid = await formRef.value.validate();
+        if (!valid) return;
+        submitLoading.value = true;
+        // 发送请求
+        const res = await request.post("/api/auth/update", userForm.value, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        if (res.data.success) {
+            const userInfo = res.data.user,
+                authToken = res.data.token;
+            updateUser(userInfo, authToken);
+            ElMessage.success("用户信息更新成功");
+            router.back();
+        }
+    } catch (error) {
+        ElMessage.error(error.response?.data?.message || "更新失败");
+    } finally {
+        submitLoading.value = false;
+    }
+}
 
 // 返回
 const goBack = () => {
     router.go(-1);
 };
-
-// 初始化用户数据
-onMounted(() => {
-    // 模拟从状态管理或API获取用户信息
-    userForm.value = {
-        name: "张三",
-        phone: "13800138000",
-        company: "智慧能源科技有限公司",
-    };
-});
 </script>
 
 <style lang="scss" scoped>
