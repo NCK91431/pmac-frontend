@@ -31,9 +31,9 @@ onMounted(() => {
 function updateUser(userInfo, authToken) {
     localStorage.removeItem("userInfo");
     localStorage.removeItem("authToken");
-    user.value = userInfo;
     localStorage.setItem("authToken", authToken);
-    localStorage.setItem("userInfo", userInfo);
+    localStorage.setItem("userInfo", JSON.stringify(userInfo)); // 将对象转换为 JSON 字符串存储
+    user.value = userInfo; // 更新响应式状态
 }
 
 // 清除用户状态（登出）
