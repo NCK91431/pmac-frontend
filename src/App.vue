@@ -29,7 +29,6 @@ onMounted(() => {
 
 // 更新用户状态的方法
 function updateUser(userInfo, authToken) {
-    console.log("authToken->", authToken);
     localStorage.removeItem("userInfo");
     localStorage.removeItem("authToken");
     user.value = userInfo;
