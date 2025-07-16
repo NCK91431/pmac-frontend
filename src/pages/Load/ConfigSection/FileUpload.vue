@@ -2,30 +2,52 @@
     <div
         class="file-upload card border-0 shadow-sm p-3 h-100 d-flex flex-column align-items-center justify-content-center"
     >
-        <div v-if="!file" class="text-center">
-            <div class="upload-icon mb-3">
-                <i class="bi bi-file-earmark-excel text-success fs-1"></i>
-            </div>
-            <h5 class="mb-3">上传负荷数据</h5>
-            <p class="text-muted small mb-4">
-                请上传90天的24小时负荷数据Excel文件<br />
-                (格式要求: 列名为0:00-23:00, 行为YYYY-MM-DD格式的日期)
-            </p>
+        <template v-if="!file">
             <el-upload
-                action="#"
+                class="upload-area"
+                drag
+                action=""
                 :auto-upload="false"
-                :show-file-list="false"
                 :on-change="handleFileChange"
-                accept=".xlsx, .xls"
             >
-                <button class="btn btn-outline-primary px-4">
-                    <i class="bi bi-upload me-2"></i>选择文件
-                </button>
+                <div class="upload-content">
+                    <h4>拖放Excel文件到此处</h4>
+                    <p class="text-muted">
+                        请上传90天的24小时负荷数据Excel文件<br />
+                    </p>
+                    <p class="text-muted">或</p>
+                    <el-button type="primary" size="medium">
+                        <i class="fas fa-file-upload"></i> 选择文件
+                    </el-button>
+                </div>
             </el-upload>
-        </div>
+            <div class="file-tip">
+                <div class="file-details">
+                    <div class="line">
+                        <h6>格式要求</h6>
+                        <el-link
+                            type="primary"
+                            href="https://pmac.leyi.host/downloads/loadforecasr_template.xlsx"
+                            download
+                        >
+                            <el-icon class="el-icon--right">
+                                <Download />
+                            </el-icon>
+                            下载模版
+                        </el-link>
+                    </div>
+                    <small class="text-muted"
+                        >列名为0:00-23:00, 行为YYYY-MM-DD格式的日期</small
+                    >
+                </div>
+            </div>
+        </template>
+        <!-- </div> -->
 
-        <div v-else class="w-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        <template v-else>
+            <div
+                class="w-100 d-flex justify-content-between align-items-center mb-3"
+            >
                 <h5 class="mb-0">已上传文件</h5>
                 <button
                     class="btn btn-sm btn-outline-danger"
@@ -48,13 +70,13 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </template>
     </div>
 </template>
 
 <script setup>
+import { Download } from "@element-plus/icons-vue";
 import { ref } from "vue";
-
 const file = ref(null);
 const emit = defineEmits(["file-uploaded"]);
 
@@ -103,5 +125,83 @@ function formatFileSize(bytes) {
     background-color: #f8f9fa;
     border: 1px dashed #dee2e6;
     border-radius: 6px;
+}
+
+.upload-area {
+    width: 100%;
+
+    :deep(.el-upload) {
+        width: 100%;
+    }
+
+    :deep(.el-upload-dragger) {
+        width: 100%;
+        height: auto;
+        padding: 40px 20px;
+        border: 2px dashed #dcdfe6;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+
+        &:hover {
+            border-color: #2c6fbb;
+            background-color: rgba(44, 111, 187, 0.05);
+        }
+    }
+
+    .upload-content {
+        text-align: center;
+        .upload-icon {
+            font-size: 3.5rem;
+            color: #c0c4cc;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            margin: 10px 0;
+            font-weight: 600;
+        }
+
+        .text-muted {
+            color: #909399;
+            margin: 5px 0;
+        }
+    }
+}
+
+.file-tip {
+    margin-top: 25px;
+    background-color: #f0f7ff;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid #2c6fbb;
+    width: 100%;
+    .file-details {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        .line {
+            display: flex;
+            justify-content: space-between;
+        }
+        .file-icon {
+            font-size: 2.2rem;
+            color: #1d6f42;
+            margin-right: 15px;
+        }
+
+        h6 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        small {
+            font-size: 0.85rem;
+        }
+
+        .el-button {
+            margin-left: auto;
+        }
+    }
 }
 </style>
