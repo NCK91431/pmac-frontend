@@ -77,20 +77,20 @@
 <script setup>
 import { Download } from "@element-plus/icons-vue";
 import { ref } from "vue";
+import { useLoadPreFormStore } from "@/store/loadpreformStore";
+const formStore = useLoadPreFormStore();
 const file = ref(null);
-const emit = defineEmits(["file-uploaded"]);
 
 // 监听文件上传变化：当文件上传时，更新file变量并触发事件
 function handleFileChange(uploadFile) {
     if (uploadFile) {
-        file.value = uploadFile.raw;
-        emit("file-uploaded", file.value);
+        formStore.setFile(uploadFile.raw);
     }
 }
 
 // 当文件被删除时，清空file变量
 function removeFile() {
-    file.value = null;
+    formStore.removeFile();
 }
 
 // 格式化文件大小为可读格式

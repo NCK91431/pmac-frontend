@@ -65,6 +65,9 @@ import RecordDetail from "./HistorySection/RecordDetail.vue";
 import moment from "moment";
 import { ElMessage, ElNotification, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
+import { useLoadPreFormStore } from "@/store/loadpreformStore";
+
+const formStore = useLoadPreFormStore();
 
 const activeTab = ref("upload");
 const active_record_id = ref(null); // 用户在历史记录列表里选中的记录的id
@@ -81,10 +84,10 @@ const processingTasks = ref([]); //任务队列
 
 async function handleSubmit(formData, fileData) {
     const post_data = new FormData();
-    post_data.append("customerType", formData.customerType);
-    post_data.append("pvConfig", formData.pvConfig);
+    post_data.append("customer_type", formData.customer_type);
+    post_data.append("pv_config", formData.pv_config);
     post_data.append("location", JSON.stringify(formData.location));
-    post_data.append("forecastRange", formData.forecastRange);
+    post_data.append("forecast_range", formData.forecast_range);
     post_data.append("file", fileData);
     if (user.value) {
         post_data.append("user_id", user.value.id);
@@ -100,19 +103,33 @@ async function handleSubmit(formData, fileData) {
                 "Content-Type": "multipart/form-data",
             },
         });
+        if (res.data.success) {
+            const response_data = res.data;
+            record.value = response_data; // 保存完整的响应数据
+            uploadData.value = fileData;
+            predictionData.value = response_data.predictionData;
+            //显示预测结果板块
+            endding_flag.value = true;
+            // 显示完成通知
+            ElNotification({
+                type: "success",
+                title: "预测完成",
+                message: "预测任务已完成，您可以查看结果",
+            });
+        }
         // 处理响应
-        const response_data = res.data;
-        record.value = response_data; // 保存完整的响应数据
-        uploadData.value = fileData;
-        predictionData.value = response_data.predictionData;
-        //显示预测结果板块
-        endding_flag.value = true;
-        // 显示完成通知
-        ElNotification({
-            type: "success",
-            title: "预测完成",
-            message: "预测任务已完成，您可以查看结果",
-        });
+    } catch (error) {
+        if (error.response?.status === 400 || error.response?.status === 500) {
+            console.log(error.response);
+            ElMessageBox.alert(
+                error.response.data.details,
+                error.response.data.error,
+                {
+                    confirmButtonText: "知道了",
+                    type: "warning",
+                }
+            );
+        }
     } finally {
         // 隐藏加载状态
         isProcessing.value = false;
@@ -124,6 +141,7 @@ const viewDetail = (record) => {
     active_record_id.value = record.id;
 };
 function onClickContinueBtn() {
+    formStore.resetFileOnly(); // 只删除文件，保留表单配置
     endding_flag.value = false;
 }
 

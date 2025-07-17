@@ -70,7 +70,7 @@
                 </div>
             </div>
             <el-table :data="filteredRecords" stripe style="width: 100%">
-                <el-table-column prop="date" label="ID" width="180">
+                <el-table-column prop="date" label="ID" width="50">
                     <template #default="{ row }">
                         {{ row.id }}
                     </template>
@@ -80,8 +80,13 @@
                         {{ new Date(row.created_at).toLocaleString() }}
                     </template>
                 </el-table-column>
+                <el-table-column prop="location" label="地点" width="180">
+                    <template #default="{ row }">
+                        {{ `${row.province}-${row.city}-${row.district}` }}
+                    </template>
+                </el-table-column>
                 <el-table-column
-                    prop="customerType"
+                    prop="customer_type"
                     label="客户类型"
                     width="120"
                 >
@@ -94,24 +99,40 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="location" label="地点" />
-                <el-table-column prop="pvConfig" label="光伏" width="100">
-                    <template #default="{ row }">
-                        <span v-if="row.pv_config === 'yes'">有</span>
-                        <span v-else-if="row.pv_config === 'no'">无</span>
-                        <span v-else>不确定</span>
-                    </template>
-                </el-table-column>
                 <el-table-column
-                    prop="forecastRange"
+                    prop="forecast_range"
                     label="预测类型"
                     width="100"
                 >
                     <template #default="{ row }">
                         {{
-                            row.forecastRange === "4days"
+                            row.forecast_range === "4days"
                                 ? "D-4 -> D+1"
                                 : "D-1 -> D+1"
+                        }}
+                    </template>
+                </el-table-column>
+                <el-table-column
+                    prop="dataRange"
+                    label="历史数据范围"
+                    width="220"
+                >
+                    <template #default="{ row }">
+                        {{
+                            row.upload_date_range &&
+                            row.upload_date_range.length
+                                ? row.upload_date_range.join(" 至 ")
+                                : "未知"
+                        }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="predictionDate" label="预测日期">
+                    <template #default="{ row }">
+                        {{
+                            row.prediction_data.dates &&
+                            row.prediction_data.dates.length > 0
+                                ? row.prediction_data.dates[0]
+                                : "未知"
                         }}
                     </template>
                 </el-table-column>

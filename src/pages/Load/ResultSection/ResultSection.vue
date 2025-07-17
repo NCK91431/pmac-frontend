@@ -1,6 +1,8 @@
 <template>
     <div class="result-section card border-0 shadow-sm mt-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div
+            class="card-header bg-white d-flex justify-content-between align-items-center"
+        >
             <h3 class="h5 mb-0 text-success">
                 <i class="bi bi-graph-up-arrow me-2"></i>预测结果
             </h3>
@@ -11,19 +13,30 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="date-selector mb-4 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">选择日期: {{ selectedDate }}</h5>
+            <div
+                class="date-selector mb-4 d-flex justify-content-between align-items-center"
+            >
+                <h5 class="mb-0">预测日期: {{ selectedDate }}</h5>
                 <div class="d-flex gap-2">
-                    <button v-for="date in date_btns" :key="date" class="btn btn-sm" :class="{
-                        'btn-primary': selectedDate === date,
-                        'btn-outline-primary': selectedDate !== date,
-                    }" @click="selectDate(date)">
+                    <button
+                        v-for="date in date_btns"
+                        :key="date"
+                        class="btn btn-sm"
+                        :class="{
+                            'btn-primary': selectedDate === date,
+                            'btn-outline-primary': selectedDate !== date,
+                        }"
+                        @click="selectDate(date)"
+                    >
                         {{ formatDate(date) }}
                     </button>
                 </div>
             </div>
-            <ChartDisplay :uploadData="getUploadDataForDate(selectedDate)"
-                :predictionData="getPredictionDataForDate(selectedDate)" :date="selectedDate" />
+            <ChartDisplay
+                :uploadData="getUploadDataForDate(selectedDate)"
+                :predictionData="getPredictionDataForDate(selectedDate)"
+                :date="selectedDate"
+            />
         </div>
     </div>
 </template>

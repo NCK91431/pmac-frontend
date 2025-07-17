@@ -8,36 +8,100 @@
                     </div>
                     <div class="card-body">
                         <div class="info-item">
-                            <div class="label"><i class="bi bi-key"></i> ID:</div>
+                            <div class="label">
+                                <i class="bi bi-key"></i> ID:
+                            </div>
                             <div class="value">{{ record.id }}</div>
                         </div>
                         <div class="info-item">
-                            <div class="label"><i class="bi bi-clock"></i> 请求时间:</div>
-                            <div class="value">{{ new Date(record.created_at).toLocaleString() }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="label"><i class="bi bi-person"></i> 客户类型:</div>
+                            <div class="label">
+                                <i class="bi bi-clock"></i> 请求时间:
+                            </div>
                             <div class="value">
-                                <span class="badge-custom">{{ formatCustomerType(record.customer_type) }}</span>
+                                {{
+                                    new Date(record.created_at).toLocaleString()
+                                }}
                             </div>
                         </div>
                         <div class="info-item">
-                            <div class="label"><i class="bi bi-sun"></i> 光伏配置:</div>
+                            <div class="label">
+                                <i class="bi bi-calendar4-week"></i> 历史数据:
+                            </div>
                             <div class="value">
-                                <span v-if="record.pv_config === 'yes'" class="badge-custom badge-pv-yes">有</span>
-                                <span v-else-if="record.pv_config === 'no'" class="badge-custom badge-pv-no">无</span>
-                                <span v-else class="badge-custom badge-pv-unknown">不确定</span>
+                                {{
+                                    record.upload_date_range &&
+                                    record.upload_date_range.length
+                                        ? record.upload_date_range.join(" 至 ")
+                                        : "未知"
+                                }}
                             </div>
                         </div>
                         <div class="info-item">
-                            <div class="label"><i class="bi bi-geo-alt"></i> 地点:</div>
-                            <div class="value">{{ record.province }}</div>
+                            <div class="label">
+                                <i class="bi bi-clipboard-pulse"></i> 预测日期:
+                            </div>
+                            <div class="value">
+                                {{
+                                    record.prediction_data.dates &&
+                                    record.prediction_data.dates.length > 0
+                                        ? record.prediction_data.dates[0]
+                                        : "未知"
+                                }}
+                            </div>
                         </div>
                         <div class="info-item">
-                            <div class="label"><i class="bi bi-graph-up"></i> 预测类型:</div>
+                            <div class="label">
+                                <i class="bi bi-person"></i> 客户类型:
+                            </div>
+                            <div class="value">
+                                <span class="badge-custom">{{
+                                    formatCustomerType(record.customer_type)
+                                }}</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">
+                                <i class="bi bi-sun"></i> 光伏配置:
+                            </div>
+                            <div class="value">
+                                <span
+                                    v-if="record.pv_config === 'yes'"
+                                    class="badge-custom badge-pv-yes"
+                                    >有</span
+                                >
+                                <span
+                                    v-else-if="record.pv_config === 'no'"
+                                    class="badge-custom badge-pv-no"
+                                    >无</span
+                                >
+                                <span
+                                    v-else
+                                    class="badge-custom badge-pv-unknown"
+                                    >不确定</span
+                                >
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">
+                                <i class="bi bi-geo-alt"></i> 地点:
+                            </div>
+                            <div class="value">
+                                {{
+                                    `${record.province}-${record.city}-${record.district}`
+                                }}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="label">
+                                <i class="bi bi-graph-up"></i> 预测类型:
+                            </div>
                             <div class="value">
                                 <span class="badge-custom forecast-badge">
-                                    {{ record.forecastRange === "4days" ? "D-4→D+1" : "D-1→D+1" }}
+                                    {{
+                                        record.forecast_range == "4days"
+                                            ? "D-4→D+1"
+                                            : "D-1→D+1"
+                                    }}
                                 </span>
                             </div>
                         </div>
@@ -55,8 +119,11 @@
             <div class="col-md-8">
                 <div class="chart-card card shadow-sm p-3 h-100">
                     <h5 class="mb-3">负荷预测结果</h5>
-                    <ChartDisplay :uploadData="getUploadData(record)" :predictionData="getPredictionDataForDate()"
-                        :date="getSampleDate(record)" />
+                    <ChartDisplay
+                        :uploadData="getUploadData(record)"
+                        :predictionData="getPredictionDataForDate()"
+                        :date="getSampleDate(record)"
+                    />
                 </div>
             </div>
         </div>
@@ -104,9 +171,6 @@ watch(
         }
     }
 );
-
-
-
 
 const formatCustomerType = (type) => {
     const types = {

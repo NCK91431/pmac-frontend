@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-md-6">
                     <!-- 上传文件 -->
-                    <FileUpload @file-uploaded="handleFileUploaded" />
+                    <FileUpload />
                 </div>
             </template>
         </div>
@@ -52,6 +52,10 @@ import ConfigForm from "./ConfigForm.vue";
 import FileUpload from "./FileUpload.vue";
 import FinishView from "./FinishView.vue";
 import LoadingOverlay from "./LoadingOverlay.vue";
+import { useLoadPreFormStore } from "@/store/loadpreformStore";
+const formStore = useLoadPreFormStore();
+
+const emit = defineEmits(["submit", "continue-predict"]);
 
 const props = defineProps({
     endding_flag: {
@@ -68,25 +72,13 @@ const props = defineProps({
     },
 });
 
-const configForm = ref(null);
-const uploadedFile = ref(null);
-
-const isFormValid = computed(
-    () => configForm.value?.isValid && uploadedFile.value
-);
-
-function handleFileUploaded(file) {
-    uploadedFile.value = file;
-}
+const isFormValid = computed(() => formStore.isValid && formStore.hasFile);
 
 const submitForm = () => {
-    const formData = configForm.value.getFormData();
-    emit("submit", formData, uploadedFile.value);
+    emit("submit", formStore.formData, formStore.uploadedFile);
 };
 
-const emit = defineEmits(["submit", "continue-predict"]);
 function clickContinueBtn() {
-    isFormValid.value = true;
     emit("continue-predict");
 }
 </script>

@@ -3,7 +3,7 @@
         <div class="mb-3">
             <label class="form-label fw-bold">客户类型</label>
             <el-select
-                v-model="form.customerType"
+                v-model="form.customer_type"
                 placeholder="请选择客户类型"
                 class="w-100"
             >
@@ -19,7 +19,7 @@
             <div class="d-flex gap-3">
                 <div class="form-check">
                     <input
-                        v-model="form.pvConfig"
+                        v-model="form.pv_config"
                         class="form-check-input"
                         type="radio"
                         value="yes"
@@ -29,7 +29,7 @@
                 </div>
                 <div class="form-check">
                     <input
-                        v-model="form.pvConfig"
+                        v-model="form.pv_config"
                         class="form-check-input"
                         type="radio"
                         value="no"
@@ -39,7 +39,7 @@
                 </div>
                 <div class="form-check">
                     <input
-                        v-model="form.pvConfig"
+                        v-model="form.pv_config"
                         class="form-check-input"
                         type="radio"
                         value="unknown"
@@ -68,12 +68,18 @@
         <div class="mb-3">
             <label class="form-label fw-bold">预测类型</label>
             <el-select
-                v-model="form.forecastRange"
+                v-model="form.forecast_range"
                 placeholder="请选择预测类型"
                 class="w-100"
             >
-                <el-option label="D-4 -> D+1" value="4days" />
-                <el-option label="D-1 -> D+1" value="1day" />
+                <el-option
+                    label="D-4 -> D+1 【注：4天前用电量 → 预测未来一天分时负荷】"
+                    value="4days"
+                />
+                <el-option
+                    label="D-1 -> D+1 【注：1天前用电量 → 预测未来一天分时负荷】"
+                    value="1day"
+                />
             </el-select>
         </div>
     </div>
@@ -82,6 +88,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
+import { useLoadPreFormStore } from "@/store/loadpreformStore";
+const formStore = useLoadPreFormStore();
+
 // 配置级联选择器属性
 const cascaderProps = {
     value: "label",
@@ -90,23 +99,14 @@ const cascaderProps = {
     expandTrigger: "hover",
 };
 
-const form = ref({
-    customerType: "",
-    pvConfig: "",
-    location: [],
-    forecastRange: "",
-});
-
-const isValid = computed(() => {
-    return (
-        form.value.customerType &&
-        form.value.pvConfig &&
-        form.value.location.length === 3 &&
-        form.value.forecastRange
-    );
+// 表单数据双向绑定
+const form = computed({
+    get: () => formStore.formData,
+    set: (value) => formStore.updateFormData(value),
 });
 
 const locationOptions = ref([]);
+
 // 获取省市区数据
 onMounted(async () => {
     try {
@@ -119,13 +119,9 @@ onMounted(async () => {
     }
 });
 
-const getFormData = () => {
-    return {
-        ...form.value,
-    };
-};
-
-defineExpose({ isValid, getFormData });
+defineExpose({
+    isValid: computed(() => formStore.isValid),
+});
 </script>
 
 <style lang="scss" scoped>
