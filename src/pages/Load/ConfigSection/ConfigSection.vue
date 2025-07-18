@@ -4,13 +4,9 @@
             <i class="bi bi-graph-up me-2"></i>负荷预测配置
         </h2>
 
-        <div class="row" v-if="!endding_flag">
-            <!-- 1：预测进行中 -->
-            <template v-if="props.isProcessing">
-                <LoadingOverlay />
-            </template>
-            <!-- 0：填写配置表单 -->
-            <template v-else>
+        <div class="row">
+            <!-- stage == 0: 初始状态：显示配置表单 -->
+            <template v-if="stage == 0">
                 <div class="col-md-6">
                     <!-- 配置表单 -->
                     <ConfigForm ref="configForm" />
@@ -20,15 +16,20 @@
                     <FileUpload />
                 </div>
             </template>
-        </div>
-        <!-- 2：显示预测结果 -->
-        <div class="row" v-if="endding_flag">
-            <FinishView :record="record" />
+            <!-- stage == 1: 处理中状态：显示加载动画 -->
+            <template v-else-if="stage == 1">
+                <LoadingOverlay />
+            </template>
+            <!-- stage === 2：完成状态：显示结果预览 -->
+            <template v-else-if="stage === 2">
+                <FinishView :record="record" />
+            </template>
         </div>
 
+        <!-- 按钮区域 -->
         <div class="d-flex justify-content-end mt-4">
             <button
-                v-if="!endding_flag"
+                v-if="stage == 0"
                 class="btn-submit btn btn-primary px-4 py-2"
                 :disabled="!isFormValid"
                 @click="submitForm"
@@ -36,7 +37,7 @@
                 <i class="bi bi-calculator me-2"></i>开始预测
             </button>
             <button
-                v-if="endding_flag"
+                v-if="stage == 2"
                 class="btn-continue btn btn-primary px-4 py-2"
                 @click="clickContinueBtn"
             >
@@ -58,17 +59,14 @@ const formStore = useLoadPreFormStore();
 const emit = defineEmits(["submit", "continue-predict"]);
 
 const props = defineProps({
-    endding_flag: {
-        type: Boolean,
-        required: true,
-    },
     record: {
         type: Object,
         required: true, //用户提交成功后从后端返回的完整数据
     },
-    isProcessing: {
-        type: Boolean,
+    stage: {
+        type: Number,
         required: true,
+        validator: (value) => [0, 1, 2].includes(value),
     },
 });
 
