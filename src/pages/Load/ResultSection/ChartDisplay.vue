@@ -9,17 +9,18 @@ import { ref, onMounted, watch, onBeforeUnmount } from "vue";
 import * as echarts from "echarts";
 
 const props = defineProps({
-    uploadData: Array,
     predictionData: Array,
     date: String,
-    record: Object
+    record: Object,
 });
 onMounted(() => {
     console.log("ChartDisplay mounted with date:", props);
 });
 const chartEl = ref(null);
 let chartInstance = null;
-
+const x_data = Array(24)
+    .fill()
+    .map((_, i) => `${i}:00`);
 const initChart = () => {
     if (!chartEl.value) return;
 
@@ -45,7 +46,7 @@ const initChart = () => {
         xAxis: {
             type: "category",
             boundaryGap: false,
-            data: props.uploadData.map((item) => item.time),
+            data: x_data,
             axisLabel: {
                 interval: 0,
             },
@@ -60,18 +61,6 @@ const initChart = () => {
             },
         },
         series: [
-            // {
-            //     name: "实际负荷",
-            //     type: "line",
-            //     data: props.uploadData.map((item) => item.value),
-            //     smooth: true,
-            //     lineStyle: {
-            //         width: 3,
-            //         color: "#5470c6",
-            //     },
-            //     symbol: "circle",
-            //     symbolSize: 8,
-            // },
             {
                 name: "预测负荷",
                 type: "line",

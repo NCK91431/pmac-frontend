@@ -33,7 +33,6 @@
                 </div>
             </div>
             <ChartDisplay
-                :uploadData="getUploadDataForDate(selectedDate)"
                 :predictionData="getPredictionDataForDate(selectedDate)"
                 :date="selectedDate"
             />
@@ -48,8 +47,6 @@ import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
 const props = defineProps({
-    uploadData: Object,
-    predictionData: Object,
     record: Object, //请求后台返回的数据
 });
 
@@ -94,13 +91,13 @@ async function downloadPredictionExcel() {
 /*------------选择预测结果是哪一天------------*/
 // 选择日期的按钮组
 const date_btns = computed(() => {
-    const dates = props.predictionData.dates;
+    const dates = props.record.predictionData.dates;
     //目前只取第一个日期
     const temporary_dates = dates.slice(0, 1);
     return temporary_dates;
 });
 //默认选择第一个日期
-const selectedDate = ref(props.predictionData.dates[0]);
+const selectedDate = ref(props.record.predictionData.dates[0]);
 
 function selectDate(date) {
     selectedDate.value = date;
@@ -111,23 +108,15 @@ const formatDate = (dateString) => {
 };
 
 /*-----------图表组件-------------*/
-const getUploadDataForDate = (date) => {
-    // 实际项目中从上传数据中获取对应日期的数据
-    return Array(24)
-        .fill()
-        .map((_, i) => ({
-            time: `${i}:00`,
-            value: Math.random() * 800 + 300,
-        }));
-};
-
 const getPredictionDataForDate = (date) => {
-    console.log("获取预测数据", props.predictionData);
-    const dateIndex = props.predictionData.dates.indexOf(date);
-    const dates = props.predictionData.values[dateIndex].map((value, i) => ({
-        time: `${i}:00`,
-        value: value,
-    }));
+    console.log("获取预测数据", props.record.predictionData);
+    const dateIndex = props.record.predictionData.dates.indexOf(date);
+    const dates = props.record.predictionData.values[dateIndex].map(
+        (value, i) => ({
+            time: `${i}:00`,
+            value: value,
+        })
+    );
     console.log("日期对应的预测数据", dates);
     return dates;
 };

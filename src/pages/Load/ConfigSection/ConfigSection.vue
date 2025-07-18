@@ -54,21 +54,14 @@ import FileUpload from "./FileUpload.vue";
 import FinishView from "./FinishView.vue";
 import LoadingOverlay from "./LoadingOverlay.vue";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
+import { useLoadPreStageStore } from "@/store/loadpreStageStore";
 const formStore = useLoadPreFormStore();
+const stageStore = useLoadPreStageStore();
 
 const emit = defineEmits(["submit", "continue-predict"]);
 
-const props = defineProps({
-    record: {
-        type: Object,
-        required: true, //用户提交成功后从后端返回的完整数据
-    },
-    stage: {
-        type: Number,
-        required: true,
-        validator: (value) => [0, 1, 2].includes(value),
-    },
-});
+const record = computed(() => stageStore.responseData);
+const stage = computed(() => stageStore.stage);
 
 const isFormValid = computed(() => formStore.isValid && formStore.hasFile);
 

@@ -42,8 +42,6 @@
 
         <ResultSection
             v-if="activeTab == 'upload' && stage == 2"
-            :uploadData="uploadData"
-            :predictionData="predictionData"
             :record="record"
         />
 
@@ -55,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, inject } from "vue";
+import { ref, inject, computed } from "vue";
 import request from "@/utils/request";
 import ConfigSection from "./ConfigSection/ConfigSection.vue";
 import HistoryRecordsList from "./HistorySection/HistoryRecordsList.vue";
@@ -65,15 +63,15 @@ import moment from "moment";
 import { ElMessage, ElNotification, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
+import { useLoadPreStageStore } from "@/store/loadpreStageStore";
 
 const formStore = useLoadPreFormStore();
+const stageStore = useLoadPreStageStore();
 
 const activeTab = ref("upload");
 const active_record_id = ref(null); // 用户在历史记录列表里选中的记录的id
-const uploadData = ref({}); //下载用户上传的数据要用到
-const predictionData = ref({}); //从后端获取的预测结果
-const record = ref({}); //后端返回的完整数据；
-const stage = ref(0); // 0:初始状态 1:处理中 2:处理完成
+const record = computed(() => stageStore.responseData); //后端返回的完整数据；
+const stage = computed(() => stageStore.stage); // 0:初始状态 1:处理中 2:处理完成
 
 const user = inject("user"); //注入全局用户状态
 const router = useRouter();
@@ -81,7 +79,7 @@ const router = useRouter();
 const processingTasks = ref([]); //任务队列
 
 async function handleSubmit(formData, fileData) {
-    stage.value = 1; // 设置为处理中状态
+    stageStore.setStageOne(); // 设置为处理中状态 stage = 1
     const post_data = new FormData();
     post_data.append("customer_type", formData.customer_type);
     post_data.append("pv_config", formData.pv_config);
@@ -101,22 +99,16 @@ async function handleSubmit(formData, fileData) {
             },
         });
         if (res.data.success) {
-            const response_data = res.data;
-            record.value = response_data; // 保存完整的响应数据
-            uploadData.value = fileData;
-            predictionData.value = response_data.predictionData;
-            //显示预测结果板块
-            // 显示完成通知
             ElNotification({
                 type: "success",
                 title: "预测完成",
                 message: "预测任务已完成，您可以查看结果",
             });
-            stage.value = 2; // 设置为完成状态
+            stageStore.setCompleted(res.data); // 设置为完成状态 stage = 1
         }
         // 处理响应
     } catch (error) {
-        stage.value = 0; // 出错时重置状态
+        stageStore.setStageZero(); // 出错时重置状态 stage = 0
         if (error.response?.status === 400 || error.response?.status === 500) {
             console.log(error.response);
             ElMessageBox.alert(
@@ -139,7 +131,7 @@ const viewDetail = (record) => {
 };
 function onClickContinueBtn() {
     formStore.resetFileOnly(); // 只删除文件，保留表单配置
-    stage.value = 0; // 重置为初始状态
+    stageStore.setStageZero(); // 重置为初始状态
 }
 
 function onClickHistoryTab() {
