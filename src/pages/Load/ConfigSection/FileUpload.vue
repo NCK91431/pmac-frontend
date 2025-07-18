@@ -42,8 +42,6 @@
                 </div>
             </div>
         </template>
-        <!-- </div> -->
-
         <template v-else>
             <div
                 class="w-100 d-flex justify-content-between align-items-center mb-3"
@@ -76,10 +74,11 @@
 
 <script setup>
 import { Download } from "@element-plus/icons-vue";
-import { ref } from "vue";
+import { computed } from "vue";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
 const formStore = useLoadPreFormStore();
-const file = ref(null);
+
+const file = computed(() => formStore.uploadedFile); // 使用计算属性同步 Pinia 状态
 
 // 监听文件上传变化：当文件上传时，更新file变量并触发事件
 function handleFileChange(uploadFile) {

@@ -126,7 +126,7 @@ const props = defineProps({
 
 // 计算属性
 const customer_type = computed(() => {
-    if (!props.record.formInfo || !props.record.formInfo.customer_type) {
+    if (!props.record.formData || !props.record.formData.customer_type) {
         return "未知类型";
     }
     const types = {
@@ -135,25 +135,25 @@ const customer_type = computed(() => {
         discrete: "离散工业",
         continuous: "连续工业",
     };
-    return types[props.record.formInfo.customer_type] || "未知类型";
+    return types[props.record.formData.customer_type] || "未知类型";
 });
 const pv_config = computed(() => {
-    if (!props.record.formInfo || !props.record.formInfo.pv_config) {
+    if (!props.record.formData || !props.record.formData.pv_config) {
         return "未知配置";
     }
-    return props.record.formInfo.pv_config == "yes" ? "已配置" : "未配置";
+    return props.record.formData.pv_config == "yes" ? "已配置" : "未配置";
 });
 const location_string = computed(() => {
-    if (!props.record.formInfo || !props.record.formInfo.location) {
+    if (!props.record.formData || !props.record.formData.location) {
         return "未选择";
     }
-    return props.record.formInfo.location.join("-");
+    return props.record.formData.location.join("-");
 });
 const forecast_range = computed(() => {
-    if (!props.record.formInfo || !props.record.formInfo.forecast_range) {
+    if (!props.record.formData || !props.record.formData.forecast_range) {
         return "未知范围";
     }
-    return props.record.formInfo.forecast_range == "4days"
+    return props.record.formData.forecast_range == "4days"
         ? "D-4 → D+1"
         : "D-1 → D+1";
 });
