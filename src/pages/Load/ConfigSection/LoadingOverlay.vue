@@ -10,23 +10,48 @@
         <div class="mt-4">
             <h3 class="mb-3">模型训练中...</h3>
             <p class="text-muted">预测任务已提交，后台正在处理中</p>
+            <!-- 添加进度条 -->
+            <el-progress :percentage="progress" :stroke-width="15" striped />
             <p class="text-muted">
+                <i class="fas fa-info-circle me-2"></i>
                 这可能需要几分钟时间，您可以继续浏览其他页面
             </p>
-            <!-- <div class="progress mt-4" style="height: 10px">
-                <el-progress
-                    :percentage="loading ? undefined : 0"
-                    :color="loading ? undefined : '#e6e6e6'"
-                />
-            </div>
-            <p class="mt-2 small text-muted">
-                预估剩余时间: {{ estimatedTime }}
-            </p> -->
         </div>
     </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from "vue";
+
+const progress = ref(0);
+let intervalId = null;
+
+const startProgress = () => {
+    const duration = 60000; // 总时长60秒
+    const totalSteps = 99; // 总共99步（0%到99%）
+    const intervalTime = Math.round(duration / totalSteps); // 每步间隔时间
+
+    progress.value = 0; // 重置为0%
+    let step = 0;
+
+    intervalId = setInterval(() => {
+        step += 1;
+        progress.value = step; // 直接设置整数百分比
+
+        if (step >= totalSteps) {
+            clearInterval(intervalId);
+        }
+    }, intervalTime);
+};
+
+onMounted(() => {
+    startProgress();
+});
+
+onBeforeUnmount(() => {
+    if (intervalId) clearInterval(intervalId);
+});
+</script>
 
 <style lang="scss" scoped>
 .loading-content {

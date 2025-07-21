@@ -2,20 +2,19 @@
     <div class="chart-display">
         <div ref="chartEl" class="chart-container" style="height: 400px"></div>
     </div>
+    <LoadTable :predictionData="props.predictionData" />
 </template>
 
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from "vue";
 import * as echarts from "echarts";
+import LoadTable from "@/components/LoadTable.vue";
 
 const props = defineProps({
     predictionData: Array,
     date: String,
-    record: Object,
 });
-onMounted(() => {
-    console.log("ChartDisplay mounted with date:", props);
-});
+
 const chartEl = ref(null);
 let chartInstance = null;
 const x_data = Array(24)
@@ -116,6 +115,6 @@ const handleResize = () => {
     background-color: #fff;
     border-radius: 8px;
     padding: 15px;
-    border: 1px solid #eee;
+    // border: 1px solid #eee;
 }
 </style>
