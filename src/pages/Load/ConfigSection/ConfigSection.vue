@@ -1,5 +1,12 @@
 <template>
     <div class="upload-section">
+        <!-- 新增继续预测提示 -->
+        <div v-if="isContinuePredict" class="alert alert-info mb-4">
+            <i class="bi bi-info-circle me-2"></i>
+            您正在基于历史记录
+            <strong>{{ uploadDateRange }}</strong> 进行继续预测。 请上传包含
+            <strong>{{ requiredStartDate }}</strong> 之后的数据。
+        </div>
         <h2 class="h5 mb-4 text">
             <i class="bi bi-graph-up me-2"></i>负荷预测配置
         </h2>
@@ -9,7 +16,7 @@
             <template v-if="stage == 0">
                 <div class="col-md-6">
                     <!-- 配置表单 -->
-                    <ConfigForm ref="configForm" />
+                    <ConfigForm />
                 </div>
                 <div class="col-md-6">
                     <!-- 上传文件 -->
@@ -20,8 +27,8 @@
             <template v-else-if="stage == 1">
                 <LoadingOverlay />
             </template>
-            <!-- stage === 2：完成状态：显示结果预览 -->
-            <template v-else-if="stage === 2">
+            <!-- stage == 2：完成状态：显示结果预览 -->
+            <template v-else-if="stage == 2">
                 <FinishView :record="record" />
             </template>
         </div>
@@ -39,26 +46,29 @@
             <button
                 v-if="stage == 2"
                 class="btn-continue btn btn-primary px-4 py-2"
-                @click="clickContinueBtn"
+                @click="emitNewPrediction"
             >
-                继续预测<i class="bi bi-arrow-down-circle me-2"></i>
+                新建预测<i class="bi bi-arrow-down-circle me-2"></i>
             </button>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import ConfigForm from "./ConfigForm.vue";
 import FileUpload from "./FileUpload.vue";
 import FinishView from "./FinishView.vue";
 import LoadingOverlay from "./LoadingOverlay.vue";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
 import { useLoadPreStageStore } from "@/store/loadpreStageStore";
+import { useForecastStore } from "@/store/forecast";
+import { addDays, format } from "date-fns";
+
 const formStore = useLoadPreFormStore();
 const stageStore = useLoadPreStageStore();
 
-const emit = defineEmits(["submit", "continue-predict"]);
+const emit = defineEmits(["submit", "new-predictiton"]);
 
 const record = computed(() => stageStore.responseData);
 const stage = computed(() => stageStore.stage);
@@ -69,9 +79,23 @@ const submitForm = () => {
     emit("submit", formStore.formData, formStore.uploadedFile);
 };
 
-function clickContinueBtn() {
-    emit("continue-predict");
+function emitNewPrediction() {
+    emit("new-predictiton");
 }
+
+/* ----------------------------------- 继续预测 ------------------------------------------------- */
+const forecastStore = useForecastStore();
+const isContinuePredict = computed(() => forecastStore.isContinue);
+const uploadDateRange = computed(() => {
+    if (!forecastStore.continueData?.upload_date_range_format_text) return "";
+    return forecastStore.continueData.upload_date_range_format_text;
+});
+const requiredStartDate = computed(() => {
+    if (!forecastStore.continueData?.end_date) return "";
+    const endDate = new Date(forecastStore.continueData.end_date);
+    const nextDay = addDays(endDate, 1);
+    return format(nextDay, "yyyy-MM-dd");
+});
 </script>
 
 <style lang="scss" scoped>

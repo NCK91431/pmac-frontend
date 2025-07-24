@@ -7,6 +7,7 @@ export const useLoadPreFormStore = defineStore("loadPreForm", {
             pv_config: "",
             location: [],
             forecast_range: "",
+            previous_record_id: null, //如果为继续预测则有父链接
         },
         uploadedFile: null,
     }),
@@ -23,7 +24,7 @@ export const useLoadPreFormStore = defineStore("loadPreForm", {
     },
     actions: {
         updateFormData(newData) {
-            this.formData = { ...this.formData, ...newData };
+            Object.assign(this.formData, newData);
         },
         setFile(file) {
             this.uploadedFile = file;
@@ -34,6 +35,7 @@ export const useLoadPreFormStore = defineStore("loadPreForm", {
         // 只重置文件，保留表单配置
         resetFileOnly() {
             this.uploadedFile = null;
+            this.formData.previous_record_id = null;
         },
         // 完全重置表单
         resetForm() {

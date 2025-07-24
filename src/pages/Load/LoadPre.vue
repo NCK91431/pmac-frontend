@@ -8,7 +8,7 @@
                         <button
                             class="nav-link"
                             :class="{ active: activeTab === 'upload' }"
-                            @click="activeTab = 'upload'"
+                            @click="switchTab('upload')"
                         >
                             <i class="bi bi-cloud-arrow-up me-2"></i>负荷预测
                         </button>
@@ -28,7 +28,7 @@
                 <ConfigSection
                     v-if="activeTab === 'upload'"
                     @submit="handleSubmit"
-                    @continue-predict="onClickContinueBtn"
+                    @new-predictiton="onNewPrediction"
                     :record="record"
                     :stage="stage"
                 />
@@ -64,17 +64,26 @@ import { ElMessage, ElNotification, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
 import { useLoadPreStageStore } from "@/store/loadpreStageStore";
+import { useForecastStore } from "@/store/forecast";
 
 const formStore = useLoadPreFormStore();
 const stageStore = useLoadPreStageStore();
+const forecastStore = useForecastStore(); // 用于处理继续预测
 
-const activeTab = ref("upload");
+const activeTab = computed(() => forecastStore.activeTab); // 从 store 获取标签状态
+const isContinue = computed(() => forecastStore.isContinue);
+
 const active_record_id = ref(null); // 用户在历史记录列表里选中的记录的id
 const record = computed(() => stageStore.responseData); //后端返回的完整数据；
 const stage = computed(() => stageStore.stage); // 0:初始状态 1:处理中 2:处理完成
 
 const user = inject("user"); //注入全局用户状态
 const router = useRouter();
+
+/* ---------------- 切换Tab -----------------*/
+function switchTab(tabName) {
+    forecastStore.setActiveTab(tabName); // 更新 store 状态
+}
 /* ---------------- 执行模型预测过程中 -----------------*/
 const processingTasks = ref([]); //任务队列
 
@@ -86,8 +95,13 @@ async function handleSubmit(formData, fileData) {
     post_data.append("location", JSON.stringify(formData.location));
     post_data.append("forecast_range", formData.forecast_range);
     post_data.append("file", fileData);
+    // 如果有用户ID
     if (user.value) {
         post_data.append("user_id", user.value.id);
+    }
+    // 如果有继续预测的ID
+    if (formData.previous_record_id) {
+        post_data.append("previous_record_id", formData.previous_record_id);
     }
     const now_moment = moment(new Date()).format("YYYY-MM-DD HH:mm");
     processingTasks.value.push(now_moment);
@@ -104,7 +118,8 @@ async function handleSubmit(formData, fileData) {
                 title: "预测完成",
                 message: "预测任务已完成，您可以查看结果",
             });
-            stageStore.setCompleted(res.data); // 设置为完成状态 stage = 1
+            stageStore.setCompleted(res.data); // 设置为完成状态 stage = 2
+            forecastStore.clearContinueData(); // 确保清除状态、清除继续预测数据
         }
         // 处理响应
     } catch (error) {
@@ -129,7 +144,7 @@ async function handleSubmit(formData, fileData) {
 const viewDetail = (record) => {
     active_record_id.value = record.id;
 };
-function onClickContinueBtn() {
+function onNewPrediction() {
     formStore.resetFileOnly(); // 只删除文件，保留表单配置
     stageStore.setStageZero(); // 重置为初始状态
 }
@@ -158,11 +173,15 @@ function onClickHistoryTab() {
             .catch(() => {
                 // 用户取消，不执行任何操作
                 // 可以重置为上传标签
-                activeTab.value = "upload";
+                forecastStore.setActiveTab("upload");
             });
     } else {
+        if (activeTab.value == "upload" && isContinue.value) {
+            formStore.resetForm();
+            forecastStore.clearContinueData();
+        }
         // 用户已登录或切换到上传标签，直接切换
-        activeTab.value = "history";
+        forecastStore.setActiveTab("history");
     }
 }
 </script>

@@ -112,6 +112,23 @@
                             <button><i class="bi bi-pencil"></i> 编辑</button>
                             <button><i class="bi bi-printer"></i> 打印</button>
                         </div> -->
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button
+                                class="btn btn-secondary"
+                                @click="downloadUploadExcel"
+                            >
+                                <i class="bi bi-download me-2"></i>下载原始数据
+                            </button>
+
+                            <!-- 新增继续预测按钮 -->
+                            <button
+                                class="btn btn-primary"
+                                @click="continueForecast"
+                            >
+                                <i class="bi bi-lightning-charge me-2"></i
+                                >继续预测
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -129,9 +146,9 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2">
-            <el-button type="success" plain @click="downloadUploadExcel">
+            <!-- <el-button type="success" plain @click="downloadUploadExcel">
                 <i class="bi bi-download me-2"></i>下载上传数据
-            </el-button>
+            </el-button> -->
             <el-button type="primary" @click="downloadPredictionExcel">
                 <i class="bi bi-download me-2"></i>下载预测结果
             </el-button>
@@ -145,6 +162,10 @@ import ChartDisplay from "../ResultSection/ChartDisplay.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
+import { useForecastStore } from "@/store/forecast";
+import { useLoadPreStageStore } from "@/store/loadpreStageStore";
+import { useLoadPreFormStore } from "@/store/loadpreformStore";
+
 const props = defineProps({
     recordId: {
         required: true,
@@ -286,6 +307,43 @@ async function downloadPredictionExcel() {
         }
     }
 }
+/*------------ 继续预测 ------------*/
+const forecastStore = useForecastStore();
+const formStore = useLoadPreFormStore();
+const stageStore = useLoadPreStageStore();
+
+const continueForecast = () => {
+    // 如果用户正处在预测进行状态中不可使用
+    if (stageStore.stage == 1) {
+        ElMessage.error("您有预测正在进行中，请待预测完成后再使用此功能");
+        return;
+    }
+
+    // 便于计算一些属性
+    const [start, end] = record.value.upload_date_range;
+    forecastStore.setContinueData({
+        end_date: record.value.upload_date_range[1],
+        upload_date_range: record.value.upload_date_range,
+        upload_date_range_format_text: `${start} 至 ${end}`,
+    });
+
+    // 预填表单
+    formStore.updateFormData({
+        customer_type: record.value.customer_type,
+        pv_config: record.value.pv_config,
+        location: [
+            record.value.province,
+            record.value.city,
+            record.value.district,
+        ],
+        forecast_range: record.value.forecast_range,
+        previous_record_id: record.value.id,
+    });
+
+    formStore.removeFile(); //清空文件
+
+    stageStore.reset(); // 重置stage
+};
 </script>
 
 <style lang="scss" scoped>
