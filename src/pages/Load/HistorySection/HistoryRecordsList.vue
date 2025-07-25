@@ -69,95 +69,99 @@
                     </div>
                 </div>
             </div>
-            <el-table :data="filteredRecords" stripe style="width: 100%">
-                <el-table-column prop="date" label="ID" width="50">
-                    <template #default="{ row }">
-                        {{ row.id }}
-                    </template>
-                </el-table-column>
-                <el-table-column prop="date" label="请求时间" width="180">
-                    <template #default="{ row }">
-                        {{ new Date(row.created_at).toLocaleString() }}
-                    </template>
-                </el-table-column>
-                <el-table-column prop="location" label="地点" width="180">
-                    <template #default="{ row }">
-                        {{ `${row.province}-${row.city}-${row.district}` }}
-                    </template>
-                </el-table-column>
-                <el-table-column
-                    prop="customer_type"
-                    label="客户类型"
-                    width="120"
-                >
-                    <template #default="{ row }">
-                        <el-tag
+        </div>
+        <!-- 表头 -->
+        <div class="table-header">
+            <div class="col-id">ID</div>
+            <div class="col-date">创建时间</div>
+            <div class="col-location">位置</div>
+            <div class="col-type">客户类型</div>
+            <div class="col-range">预测范围</div>
+            <div class="col-upload">上传日期范围</div>
+            <div class="col-prediction">预测日期</div>
+            <div class="col-actions">操作</div>
+        </div>
+        <!-- 树状列表 -->
+        <el-tree
+            :data="filteredRecords"
+            node-key="id"
+            default-expand-all
+            :props="treeProps"
+            ref="treeRef"
+            :current-node-key="currentNodeId"
+            :highlight-current="false"
+            @node-click="handleNodeClick"
+            :expand-on-click-node="false"
+        >
+            <template #default="{ node, data }">
+                <div class="node-row">
+                    <div class="col-id">
+                        <span
+                            class="status-indicator"
+                            :class="
+                                data.previous_record_id
+                                    ? 'status-inactive'
+                                    : 'status-active'
+                            "
+                        ></span>
+                        {{ data.id }}
+                    </div>
+                    <div class="col-date">
+                        {{ new Date(data.created_at).toLocaleString() }}
+                    </div>
+                    <div class="col-location">
+                        {{ data.location.join("-") }}
+                    </div>
+                    <div class="col-type">
+                        <span
                             size="small"
-                            :type="getCustomerTagType(row.customer_type)"
+                            class="customer-badge"
+                            :class="'customer-' + data.customer_type"
                         >
-                            {{ formatCustomerType(row.customer_type) }}
+                            {{ formatCustomerType(data.customer_type) }}
+                        </span>
+                    </div>
+                    <div class="col-range">
+                        <span class="range-badge">
+                            {{
+                                data.forecast_range === "4days"
+                                    ? "D-4 → D+1"
+                                    : "D-1 → D+1"
+                            }}
+                        </span>
+                    </div>
+                    <div class="col-upload">
+                        {{
+                            data.upload_date_range &&
+                            data.upload_date_range.length
+                                ? data.upload_date_range.join(" 至 ")
+                                : "未知"
+                        }}
+                    </div>
+                    <div class="col-prediction">
+                        <el-tag type="success">
+                            {{ data.prediction_date }}
                         </el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column
-                    prop="forecast_range"
-                    label="预测类型"
-                    width="100"
-                >
-                    <template #default="{ row }">
-                        {{
-                            row.forecast_range === "4days"
-                                ? "D-4 -> D+1"
-                                : "D-1 -> D+1"
-                        }}
-                    </template>
-                </el-table-column>
-                <el-table-column
-                    prop="dataRange"
-                    label="历史数据范围"
-                    width="220"
-                >
-                    <template #default="{ row }">
-                        {{
-                            row.upload_date_range &&
-                            row.upload_date_range.length
-                                ? row.upload_date_range.join(" 至 ")
-                                : "未知"
-                        }}
-                    </template>
-                </el-table-column>
-                <el-table-column prop="predictionDate" label="预测日期">
-                    <template #default="{ row }">
-                        {{
-                            row.prediction_data.dates &&
-                            row.prediction_data.dates.length > 0
-                                ? row.prediction_data.dates[0]
-                                : "未知"
-                        }}
-                    </template>
-                </el-table-column>
-                <el-table-column label="操作" width="160">
-                    <template #default="{ row }">
-                        <el-button
-                            size="small"
-                            type="primary"
-                            plain
-                            @click="viewDetail(row)"
-                        >
-                            查看详情
-                        </el-button>
+                    </div>
+                    <div class="col-actions">
                         <el-button
                             size="small"
                             type="danger"
                             :icon="Delete"
                             circle
-                            @click="deleteRecord(row)"
-                        >
-                        </el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+                            @click="deleteRecord(data)"
+                        ></el-button>
+                    </div>
+                </div>
+            </template>
+        </el-tree>
+
+        <div v-if="filteredRecords.length === 0" class="empty-state">
+            <el-icon><FolderDelete /></el-icon>
+            <h3>暂无预测记录</h3>
+            <p>当前没有找到匹配的预测记录，请尝试调整筛选条件</p>
         </div>
+        <!--- END --->
     </div>
 </template>
 
@@ -173,17 +177,13 @@ const props = defineProps({
     processingTasks: Array,
 });
 
-// 格式化日期时间
-const formatDateTime = (date) => {
-    return date.toLocaleString("zh-CN", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+const treeProps = {
+    children: "children",
+    label: "label",
 };
+const treeRef = ref(null);
+const currentNodeId = ref(null); // 存储当前选中节点ID
 
-// 模拟历史记录数据
 const records = ref([]);
 
 function fetchRecords() {
@@ -228,9 +228,11 @@ const getCustomerTagType = (type) => {
 const searchQuery = ref("");
 
 const emit = defineEmits(["view-detail"]);
-const viewDetail = (record) => {
-    emit("view-detail", record);
-};
+
+function handleNodeClick(node) {
+    currentNodeId.value = node.id; // 设置当前选中节点
+    emit("view-detail", node);
+}
 
 // 删除历史记录
 async function deleteRecord(record) {
@@ -275,5 +277,196 @@ async function deleteRecord(record) {
     .processing-task {
         border-left: 4px solid #0d6efd;
     }
+}
+/* 树状列表样式 */
+.table-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #f5f7fa;
+    border: 1px solid #ebeef5;
+    border-radius: 4px 4px 0 0;
+    font-weight: bold;
+    color: #606266;
+
+    > div {
+        flex-shrink: 0;
+        padding: 0 8px;
+    }
+
+    .col-id {
+        flex: 0 0 120px;
+    }
+
+    .col-date {
+        flex: 0 0 160px;
+    }
+
+    .col-location {
+        flex: 0 0 180px;
+    }
+
+    .col-type {
+        flex: 0 0 100px;
+    }
+
+    .col-range {
+        flex: 0 0 120px;
+    }
+
+    .col-upload {
+        flex: 0 0 220px;
+    }
+
+    .col-prediction {
+        flex: 0 0 120px;
+    }
+
+    .col-actions {
+        flex: 0 0 150px;
+    }
+}
+.node-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+
+    > div {
+        flex-shrink: 0;
+        padding: 0 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .col-id {
+        flex: 0 0 100px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-active {
+            background-color: #52c41a; // 绿色表示活跃
+        }
+
+        .status-inactive {
+            background-color: #bfbfbf; // 灰色表示非活跃
+        }
+    }
+
+    .col-date {
+        flex: 0 0 160px;
+    }
+
+    .col-location {
+        flex: 0 0 180px;
+    }
+
+    .col-type {
+        flex: 0 0 100px;
+        .customer-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .customer-mall {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+
+        .customer-discrete {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .customer-continuous {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+    }
+
+    .col-range {
+        flex: 0 0 120px;
+
+        .range-badge {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    }
+
+    .col-upload {
+        flex: 0 0 220px;
+    }
+
+    .col-prediction {
+        flex: 0 0 120px;
+    }
+
+    .col-actions {
+        flex: 0 0 150px;
+        display: flex;
+        gap: 8px;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+
+    .el-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        color: #ccc;
+    }
+
+    h3 {
+        margin: 0 0 8px;
+        font-weight: normal;
+        color: #666;
+    }
+
+    p {
+        font-size: 14px;
+    }
+}
+
+// 隐藏默认树节点前的箭头（可选）
+:deep(.el-tree-node__expand-icon) {
+    color: #409eff;
+    font-weight: bold;
+    padding: 6px 0 !important;
+    margin-left: 8px !important;
+
+    &.expanded {
+        transform: rotate(90deg);
+    }
+}
+
+// 自定义树节点样式
+:deep(.el-tree-node__content) {
+    height: auto !important;
+    // padding: 0 !important;
+}
+/* 自定义高亮样式 */
+:deep(.el-tree .is-current > .el-tree-node__content) {
+    background-color: #f0f7ff;
+    font-weight: bold;
 }
 </style>

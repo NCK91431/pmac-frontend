@@ -41,12 +41,7 @@
                                 <i class="bi bi-clipboard-pulse"></i> 预测日期:
                             </div>
                             <div class="value">
-                                {{
-                                    record.prediction_data.dates &&
-                                    record.prediction_data.dates.length > 0
-                                        ? record.prediction_data.dates[0]
-                                        : "未知"
-                                }}
+                                {{ record.prediction_date }}
                             </div>
                         </div>
                         <div class="info-item">
@@ -86,9 +81,7 @@
                                 <i class="bi bi-geo-alt"></i> 地点:
                             </div>
                             <div class="value">
-                                {{
-                                    `${record.province}-${record.city}-${record.district}`
-                                }}
+                                {{ record.location.join("-") }}
                             </div>
                         </div>
                         <div class="info-item">
@@ -112,30 +105,35 @@
                             <button><i class="bi bi-pencil"></i> 编辑</button>
                             <button><i class="bi bi-printer"></i> 打印</button>
                         </div> -->
-                        <div class="mt-4 d-flex justify-content-end gap-2">
-                            <button
-                                class="btn btn-secondary"
-                                @click="downloadUploadExcel"
-                            >
-                                <i class="bi bi-download me-2"></i>下载原始数据
-                            </button>
-
-                            <!-- 新增继续预测按钮 -->
-                            <button
-                                class="btn btn-primary"
-                                @click="continueForecast"
-                            >
-                                <i class="bi bi-lightning-charge me-2"></i
-                                >继续预测
-                            </button>
-                        </div>
+                        <button
+                            class="continue-btn btn btn-primary"
+                            @click="continueForecast"
+                        >
+                            <i class="bi bi-lightning-charge me-2"></i>
+                            继续预测
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-8">
                 <div class="chart-card card shadow-sm p-3 h-100">
-                    <h5 class="mb-3">负荷预测结果</h5>
+                    <div class="header">
+                        <h5 class="mb-3">负荷预测结果</h5>
+                        <el-button
+                            type="success"
+                            plain
+                            @click="downloadUploadExcel"
+                        >
+                            <i class="bi bi-download me-2"></i>下载上传数据
+                        </el-button>
+                        <el-button
+                            type="primary"
+                            @click="downloadPredictionExcel"
+                        >
+                            <i class="bi bi-download me-2"></i>下载预测结果
+                        </el-button>
+                    </div>
                     <ChartDisplay
                         :uploadData="getUploadData(record)"
                         :predictionData="getPredictionDataForDate()"
@@ -143,15 +141,6 @@
                     />
                 </div>
             </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2">
-            <!-- <el-button type="success" plain @click="downloadUploadExcel">
-                <i class="bi bi-download me-2"></i>下载上传数据
-            </el-button> -->
-            <el-button type="primary" @click="downloadPredictionExcel">
-                <i class="bi bi-download me-2"></i>下载预测结果
-            </el-button>
         </div>
     </div>
 </template>
@@ -331,11 +320,7 @@ const continueForecast = () => {
     formStore.updateFormData({
         customer_type: record.value.customer_type,
         pv_config: record.value.pv_config,
-        location: [
-            record.value.province,
-            record.value.city,
-            record.value.district,
-        ],
+        location: record.value.location,
         forecast_range: record.value.forecast_range,
         previous_record_id: record.value.id,
     });
@@ -454,7 +439,10 @@ const continueForecast = () => {
             align-items: center;
             font-size: 0.9rem;
             color: #7f8c8d;
-
+            .continue-btn {
+                justify-content: flex-end;
+                margin-left: auto;
+            }
             .timestamp {
                 font-style: italic;
             }
@@ -479,6 +467,14 @@ const continueForecast = () => {
 
     .chart-card {
         background-color: #fff;
+        .header {
+            display: flex;
+            justify-content: flex-end;
+            h5 {
+                justify-self: flex-start;
+                margin-right: auto;
+            }
+        }
     }
 }
 </style>
