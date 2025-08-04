@@ -141,6 +141,7 @@ const products = reactive([
             { title: "多协议支持", content: "DL/T645、Modbus RTU、MQTT" },
         ],
         detailScenario: "住宅/商业楼宇电费改造、工业防爆场景仪表采集",
+        pathName: "Gateway",
     },
     {
         title: "工业边缘计算网关",
@@ -170,6 +171,7 @@ const products = reactive([
             { title: "远程维护", content: "支持SSH远程管理，Web配置界面" },
         ],
         detailScenario: "电力SCADA系统、油气管道监控、水处理自动化",
+        pathName: "EMC200",
     },
     {
         title: "智能预付费4G电表",
@@ -199,6 +201,7 @@ const products = reactive([
             { title: "远程升级", content: "支持OTA远程固件升级" },
         ],
         detailScenario: "商业综合体、工业园区、学校宿舍用电管理",
+        pathName: "Meter",
     },
 ]);
 </script>

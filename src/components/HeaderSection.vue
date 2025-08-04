@@ -23,11 +23,11 @@
                 <el-menu-item index="1" @click="gotoPage('home')"
                     >首页</el-menu-item
                 >
-                <el-menu-item index="2" @click="gotoPage('fuhe')"
-                    >示例数据</el-menu-item
+                <el-menu-item index="2" @click="gotoPage('describe')"
+                    >功能介绍</el-menu-item
                 >
-                <el-menu-item index="3" @click="gotoPage('guangfu')"
-                    >联系我们</el-menu-item
+                <el-menu-item index="3" @click="gotoPage('about_us')"
+                    >关于我们</el-menu-item
                 >
             </el-menu>
             <!-- 用户信息区域 -->
@@ -198,29 +198,7 @@ function onLogout() {
 }
 
 function gotoPage(page) {
-    switch (page) {
-        case "home":
-            router.push("/");
-            break;
-        case "fuhe":
-            router.push("/loadpre");
-            break;
-        case "guangfu":
-            router.push("/pvpre");
-            break;
-        case "chuneng":
-            router.push("/chunengpre");
-            break;
-        case "login":
-            router.push("/login");
-            break;
-        case "modifyuser":
-            router.push("/modifyuser");
-            break;
-        default:
-            router.push("/");
-            break;
-    }
+    router.push({ name: page });
 }
 </script>
 

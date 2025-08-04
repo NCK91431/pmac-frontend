@@ -1,5 +1,5 @@
 <template>
-    <div class="product-card">
+    <div class="product-card" @click="goToIntroPage">
         <div class="product-header">
             <h2>{{ product.title }}</h2>
             <!-- <h3>{{ product.subtitle }}</h3> -->
@@ -33,7 +33,16 @@
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
+const router = useRouter();
 const { product } = defineProps({ product: Object });
+function goToIntroPage() {
+    console.log(product);
+    router.push({
+        name: "product_intro",
+        query: { product_type: product.pathName },
+    });
+}
 </script>
 
 <style lang="scss" scoped>
