@@ -172,6 +172,13 @@ import { Edit, Notification, User } from "@element-plus/icons-vue";
 import { computed, inject, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useForecastStore } from "@/store/forecast";
+import { useLoadPreStageStore } from "@/store/loadpreStageStore";
+import { useLoadPreFormStore } from "@/store/loadpreformStore";
+
+const formStore = useLoadPreFormStore();
+const stageStore = useLoadPreStageStore();
+const forecastStore = useForecastStore(); // 用于处理继续预测
 
 // 注入全局用户状态和方法
 const user = inject("user");
@@ -192,6 +199,18 @@ function onLogout() {
         type: "warning",
     }).then(() => {
         clearUser();
+        // 重置所有状态：
+        stageStore.reset();
+        stageStore.set_activeHistoryRecordId(null);
+
+        formStore.resetForm();
+
+        forecastStore.clearContinueData();
+        forecastStore.setActiveTab("upload");
+
+        //返回首页：
+        router.push({ name: "home" });
+
         ElMessage({
             type: "success",
             message: "您的账号已登出",

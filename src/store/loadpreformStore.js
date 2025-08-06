@@ -5,10 +5,10 @@ export const useLoadPreFormStore = defineStore("loadPreForm", {
         formData: {
             customer_type: "",
             pv_config: "",
+            pv_capacity: 0,
             location: [],
             forecast_range: "",
             previous_record_id: null, //如果为继续预测则有父链接
-            pv_capacity: 0,
         },
         uploadedFile: null,
     }),
@@ -43,9 +43,10 @@ export const useLoadPreFormStore = defineStore("loadPreForm", {
             this.formData = {
                 customer_type: "",
                 pv_config: "",
+                pv_capacity: 0,
                 location: [],
                 forecast_range: "",
-                pv_capacity: 0,
+                previous_record_id: null,
             };
             this.uploadedFile = null;
         },
