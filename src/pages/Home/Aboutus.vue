@@ -31,33 +31,15 @@
             </p>
 
             <div class="campus-images">
-                <div class="image-container">
+                <div
+                    class="image-container"
+                    v-for="park in parks"
+                    :key="park.imgIndex"
+                >
                     <img
-                        src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                        alt="珠海总部园区"
+                        :src="`https://pmac.leyi.host/downloads/pilot_parks/${park.imgIndex}.jpg`"
                     />
-                    <div class="overlay">珠海总部园区</div>
-                </div>
-                <div class="image-container">
-                    <img
-                        src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                        alt="深圳研发中心"
-                    />
-                    <div class="overlay">深圳研发中心</div>
-                </div>
-                <div class="image-container">
-                    <img
-                        src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                        alt="武汉研发中心"
-                    />
-                    <div class="overlay">武汉研发中心</div>
-                </div>
-                <div class="image-container">
-                    <img
-                        src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
-                        alt="科技产业园"
-                    />
-                    <div class="overlay">科技产业园</div>
+                    <div class="overlay">{{ park.title }}</div>
                 </div>
             </div>
         </section>
@@ -119,7 +101,26 @@
     </div>
 </template>
 
-<script setup></script>
+<script setup>
+const parks = [
+    {
+        title: "派诺科技园",
+        imgIndex: "1",
+    },
+    {
+        title: "派诺产业园",
+        imgIndex: "2",
+    },
+    {
+        title: "武汉基地",
+        imgIndex: "3",
+    },
+    {
+        title: "深圳分公司",
+        imgIndex: "4",
+    },
+];
+</script>
 
 <style lang="scss" scoped>
 /* 页面标题样式 */
