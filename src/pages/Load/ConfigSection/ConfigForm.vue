@@ -52,6 +52,20 @@
             </div>
         </div>
 
+        <!-- 新增装机容量输入框，仅在选择"有"时显示 -->
+        <div class="mb-3" v-if="form.pv_config == 'yes'">
+            <label class="form-label fw-bold">装机容量 (kw)</label>
+            <input
+                type="number"
+                v-model.number="form.pv_capacity"
+                class="form-control"
+                placeholder="请输入装机容量"
+                required
+                min="0"
+                step="any"
+            />
+        </div>
+
         <div class="mb-3">
             <label class="form-label fw-bold">地点</label>
             <el-cascader
@@ -97,6 +111,7 @@ const cascaderProps = {
     label: "label",
     children: "children",
     expandTrigger: "hover",
+    pv_capacity: 0,
 };
 
 // 表单数据双向绑定

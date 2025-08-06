@@ -48,37 +48,45 @@
 <script setup>
 // 基本性能数据
 const performanceData = [
-    { name: "工作电源", value: "AC85-265V或DC80-300V" },
-    { name: "功耗", value: "<5W" },
-    { name: "环境温度", value: "工作温度-15℃~+55℃，存储温度-25℃~+70℃" },
-    { name: "相对湿度", value: "5-95%，无凝结" },
+    {
+        name: "工作电源",
+        value: "AC85 - 265V 或 DC90 - 300V（适配微网常见供电范围）",
+    },
+    { name: "功耗", value: "<5W（低功耗设计，降低微网内部能耗）" },
+    {
+        name: "环境温度",
+        value: "工作温度：-15℃~+55℃，存储温度：-25℃~+70℃（满足工商业、园区等环境需求 ）",
+    },
+    { name: "相对湿度", value: "5 - 95%，无凝露（适应不同地域气候环境 ）" },
 ];
 
 // 硬件接口
 const first_table = [
     {
         category: "",
-        interface: "4G通信接口",
-        description: "移动/电信/联通全网通，流量年限8-10年",
+        interface: "4G / 以太网接口",
+        description:
+            "支持移动 / 电信 / 联通全网通（或适配微网通信的工业以太网），通信模块年限 8 - 10 年",
         note: "无需布线，传输距离无限制，支持远程抄表及控制",
     },
     {
         category: "",
         interface: "RS485接口",
-        description: "1路，Modbus-RTU协议（根据系统架构补充）",
-        note: "用于本地数据采集或扩展通信",
+        description:
+            "多路（如 8 路 / 16 路 ），Modbus - RTU/TCP 协议（根据微网设备灵活适配）",
+        note: "用于本地数据采集（对接光伏、储能、负荷等设备）、扩展通信",
     },
     {
         category: "",
         interface: "安全认证模块",
-        description: "嵌入式ESAM加密芯片",
-        note: "支持SMI国密算法，实现数据加解密及身份认证",
+        description: "嵌入式加密芯片，支持国密算法",
+        note: "实现双向认证、线路加密及权限控制，保障微网控制指令安全",
     },
     {
         category: "",
         interface: "显示接口",
-        description: "LCD液晶屏",
-        note: "实时显示电量、余额、电压等参数",
+        description: "LCD/LED 液晶屏",
+        note: "实时显示微网功率、频率、储能状态等关键参数	",
     },
 ];
 // 参数性能
@@ -86,27 +94,27 @@ const second_table = [
     {
         category: "参数性能",
         description: "电流规格",
-        value: "0.05-0.25(6)A至0.8-2(100)A",
+        value: "适配微网场景，如 0 - 5A/0 - 50A 等多量程（根据微网功率灵活配置）",
     },
     {
         category: "",
         description: "电压规格",
-        value: "单相220V/三相380V/高压57.7V/100V",
+        value: "适配微网电压等级，如 220V/380V/750V 等（覆盖低压、中压微网场景 ）",
     },
     {
         category: "",
         description: "工作温度",
-        value: "-25℃~+60℃（极限-40℃~+70℃）",
+        value: "-25℃~+60℃（极限：-40℃~+70℃ ）",
     },
     {
         category: "",
-        description: "计量精度",
-        value: "B级/1级，误差±1%",
+        description: "控制精度",
+        value: "功率控制精度：≤1%；频率控制精度：≤0.05Hz（保障微网稳定运行关键指标 ）",
     },
     {
         category: "",
         description: "数据存储",
-        value: "＞20年，含12个月历史电量",
+        value: ">20 年，含 12 个月历史数据（至少存储微网关键运行参数、事件记录等 ）",
     },
 ];
 // 抗干扰性能
@@ -114,25 +122,25 @@ const third_table = [
     {
         category: "抗干扰性能",
         description: "静电放电抗扰度",
-        standard: "GB/T 17626.2-2006",
+        standard: "GB/T 17626.2 - 2006",
         level: "III",
     },
     {
         category: "",
         description: "浪涌抗扰度",
-        standard: "GB/T 17626.5-2008",
+        standard: "GB/T 17626.5 - 2008",
         level: "III",
     },
     {
         category: "",
         description: "快速瞬变脉冲群",
-        standard: "GB/T 17626.4-2008",
+        standard: "GB/T 17626.4 - 2008",
         level: "III",
     },
     {
         category: "",
         description: "射频辐射抗扰度",
-        standard: "GB/T 17626.3-2006",
+        standard: "GB/T 17626.3 - 2006",
         level: "IV",
     },
 ];

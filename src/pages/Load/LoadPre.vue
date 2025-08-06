@@ -92,6 +92,7 @@ async function handleSubmit(formData, fileData) {
     const post_data = new FormData();
     post_data.append("customer_type", formData.customer_type);
     post_data.append("pv_config", formData.pv_config);
+    post_data.append("pv_capacity", formData.pv_capacity);
     post_data.append("location", JSON.stringify(formData.location));
     post_data.append("forecast_range", formData.forecast_range);
     post_data.append("file", fileData);

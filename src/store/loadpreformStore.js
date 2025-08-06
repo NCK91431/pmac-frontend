@@ -8,6 +8,7 @@ export const useLoadPreFormStore = defineStore("loadPreForm", {
             location: [],
             forecast_range: "",
             previous_record_id: null, //如果为继续预测则有父链接
+            pv_capacity: 0,
         },
         uploadedFile: null,
     }),
@@ -44,6 +45,7 @@ export const useLoadPreFormStore = defineStore("loadPreForm", {
                 pv_config: "",
                 location: [],
                 forecast_range: "",
+                pv_capacity: 0,
             };
             this.uploadedFile = null;
         },

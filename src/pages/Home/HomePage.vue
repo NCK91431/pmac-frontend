@@ -19,7 +19,9 @@
                 </div>
                 <h3>光伏发电预测</h3>
                 <p>基于气象数据的太阳能发电量预测与分析</p>
-                <el-button type="success">进入页面</el-button>
+                <el-button type="success" @click="showComingSoon"
+                    >进入页面</el-button
+                >
             </div>
 
             <div class="nav-card">
@@ -28,15 +30,19 @@
                 </div>
                 <h3>光储定容</h3>
                 <p>光伏储能系统容量优化设计与经济性分析</p>
-                <el-button type="danger">进入页面</el-button>
+                <el-button type="danger" @click="showComingSoon"
+                    >进入页面</el-button
+                >
             </div>
             <div class="nav-card">
                 <div class="icon">
                     <i class="fas fa-battery-full"></i>
                 </div>
-                <h3>储能套利模拟</h3>
+                <h3>慧储&trade;套利模拟</h3>
                 <p>量化分析峰谷套利策略收益，助力储能投资回报最大化</p>
-                <el-button type="danger">进入页面</el-button>
+                <el-button type="danger" @click="showComingSoon"
+                    >进入页面</el-button
+                >
             </div>
             <div class="nav-card">
                 <div class="icon">
@@ -44,7 +50,9 @@
                 </div>
                 <h3>资产健康哨兵</h3>
                 <p>精准预警故障风险，延长设备生命周期</p>
-                <el-button type="danger">进入页面</el-button>
+                <el-button type="danger" @click="showComingSoon"
+                    >进入页面</el-button
+                >
             </div>
         </div>
     </section>
@@ -79,12 +87,39 @@
             />
         </div>
     </section>
+    <!-- 可爱的提示弹窗 -->
+    <el-dialog
+        v-model="comingSoonVisible"
+        title=""
+        width="380px"
+        custom-class="coming-soon-dialog"
+        :show-close="false"
+        style="border-radius: 12px"
+    >
+        <div class="dialog-content">
+            <div class="emoji">🚀</div>
+            <h3>正在快马加鞭开发中...</h3>
+            <p>我们的工程师正在全力打造这个功能！</p>
+            <p>功能即将上线，给您带来不便敬请谅解～</p>
+            <div class="animation-container">
+                <div class="loader">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+        <button @click="comingSoonVisible = false" class="confirm-btn">
+            好的，期待中！
+        </button>
+    </el-dialog>
 </template>
 
 <script setup>
 import { useRouter } from "vue-router";
 import ProductCard from "./ProductCard.vue";
 import { reactive, ref } from "vue";
+import { ElDialog } from "element-plus";
 const router = useRouter();
 const gotoPage = (page) => {
     switch (page) {
@@ -144,24 +179,30 @@ const products = reactive([
         pathName: "Gateway",
     },
     {
-        title: "工业边缘计算网关",
+        title: "PMAC124 4G红外抄表仪",
         subtitle: "EMC-200系列",
         imgURL: "https://pmac.leyi.host/downloads/product_03.png",
         description:
-            "高性能工业级边缘计算网关，支持多种工业协议解析与数据预处理，降低云端压力，实现本地智能化决策。",
+            "无需改造现有电表，3分钟完成安装，立即实现远程抄表与数据上传。",
         features: [
             {
-                title: "强大算力",
-                content: "四核ARM Cortex-A55处理器，主频1.8GHz",
+                title: "非接触抄表",
+                content: "红外通信 0-3 米，90° 角度，免接线",
             },
-            { title: "丰富接口", content: "4路千兆网口，8路RS485，2路CAN" },
-            { title: "双模通信", content: "支持5G/4G双模，有线光纤备份" },
             {
-                title: "边缘计算",
-                content: "内置Python运行环境，支持自定义算法",
+                title: "通信方式",
+                content: "4G（内置 8 年流量）",
+            },
+            {
+                title: "易安装",
+                content: "3M 胶贴装，9-12V DC 供电，即插即用",
+            },
+            {
+                title: "多协议支持",
+                content: "DL/T645、Modbus RTU、MQTT",
             },
         ],
-        scenario: "智能制造生产线监控、能源管理系统、智慧城市基础设施",
+        scenario: "工业现场仪表数据采集、住宅/商业楼宇电表改造",
         detailDescription:
             "提供可视化配置界面，无需编程即可实现设备接入、协议转换和数据转发，大幅缩短项目部署周期。",
         detailFeatures: [
@@ -174,24 +215,30 @@ const products = reactive([
         pathName: "EMC200",
     },
     {
-        title: "智能预付费4G电表",
+        title: "PMGC-2000微网控制器",
         subtitle: "图例",
         imgURL: "https://pmac.leyi.host/downloads/product_02.png",
         description:
-            "集计量、计费、通信于一体，支持预付费模式与负荷数据实时采集，直接为算法提供高精度用电数据，提升预测准确性。",
+            "集微网协调控制、数据采集与转发、策略管理于一体，维持微网功率与频率稳定，提升清洁能源利用效率。",
         features: [
             {
-                title: "精准计量",
-                content: "正/反向有功电能，分时计费（尖峰平谷）",
+                title: "协调控制",
+                content: "分布式智能调频调压，光储荷协调",
             },
             {
-                title: "预付费管理",
-                content: "余额不足跳闸，远程充值（微信/支付宝）",
+                title: "数据采集",
+                content: "16 路 RS485，并行采集提高效率",
             },
-            { title: "4G远程控制", content: "实时抄表、批量任务、超负荷断电" },
-            { title: "安全加密", content: "ESAM模块（SMI国密算法），防篡改" },
+            {
+                title: "数据转发与上传",
+                content: "云平台上传，支持多主机连接",
+            },
+            {
+                title: "策略管理",
+                content: "计划充放电、需求侧响应，虚拟电厂搭建等",
+            },
         ],
-        scenario: "住宅/园区预付费管理、工业负荷预测数据采集",
+        scenario: "工商业、企业园区微网管理，源网荷储一体化协调",
         detailDescription:
             "支持多种计费模式，实时监控用电情况，提供用电分析报表，帮助用户优化用电策略，降低能源成本。",
         detailFeatures: [
@@ -204,6 +251,12 @@ const products = reactive([
         pathName: "Meter",
     },
 ]);
+
+const comingSoonVisible = ref(false); // 控制弹窗显示
+// 显示开发中提示
+const showComingSoon = () => {
+    comingSoonVisible.value = true;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -369,6 +422,130 @@ const products = reactive([
     .product-grid {
         grid-template-columns: 1fr !important;
         gap: 25px !important;
+    }
+}
+
+/* 期待弹窗 */
+:deep(.coming-soon-dialog) {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: none;
+
+    .el-dialog__header {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        margin: 0;
+        padding: 20px;
+
+        .el-dialog__title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.4rem;
+        }
+    }
+
+    .el-dialog__body {
+        padding: 25px 30px 15px;
+    }
+
+    .el-dialog__footer {
+        padding: 0 30px 25px;
+        text-align: center;
+    }
+}
+
+.dialog-content {
+    text-align: center;
+
+    .emoji {
+        font-size: 3.5rem;
+        margin-bottom: 15px;
+        animation: bounce 1.5s infinite;
+    }
+
+    h3 {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    p {
+        color: #5e6d82;
+        line-height: 1.7;
+        margin-bottom: 10px;
+        font-size: 1.05rem;
+    }
+
+    .animation-container {
+        margin: 25px 0 15px;
+        display: flex;
+        justify-content: center;
+    }
+}
+
+.confirm-btn {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #66b1ff 0%, #409eff 100%);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(64, 158, 255, 0.4);
+    }
+}
+
+/* 加载动画 */
+.loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #66b1ff 0%, #409eff 100%);
+        animation: pulse 1.2s infinite ease-in-out;
+
+        &:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        &:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+    }
+}
+
+/* 动画定义 */
+@keyframes bounce {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    60%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    30% {
+        transform: scale(1.3);
+        opacity: 0.8;
     }
 }
 </style>

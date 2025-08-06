@@ -46,12 +46,31 @@
 
                 <GatewayTable v-if="product_type == 'Gateway'" />
                 <EMCTable v-if="product_type == 'EMC200'" />
-                <EMCTable v-if="product_type == 'EMC200'" />
                 <MeterTable v-if="product_type == 'Meter'" />
             </div>
 
             <!-- 产品尺寸及安装示意图部分 -->
-            <div class="section">
+            <div class="section" v-if="product_type == 'Gateway'">
+                <h2>产品尺寸及安装示意图</h2>
+                <div class="images-container">
+                    <div class="unit-label">单位：mm</div>
+                    <div class="installation-images">
+                        <div
+                            class="image-card"
+                            v-for="(imgURL, i) in product.srcList"
+                            :key="i"
+                        >
+                            <el-image
+                                style="width: 150px; height: auto"
+                                :src="imgURL"
+                                :fit="fit"
+                            />
+                        </div>
+                    </div>
+                    <div class="install-note">安装方式：标准DN35导轨安装</div>
+                </div>
+            </div>
+            <div class="section" v-if="product_type == 'Meter'">
                 <h2>产品尺寸及安装示意图</h2>
                 <div class="images-container">
                     <div class="unit-label">单位：mm</div>
@@ -106,16 +125,15 @@ const gateway = {
     ],
 };
 const EMC200 = {
-    title: "TASO102红外抄表仪",
+    title: "PMAC124 4G红外抄表仪",
     imgURL: "https://pmac.leyi.host/downloads/product_03.png",
     description: [
-        "TASO102红外抄表仪采用高性能ARM CPU作为微处理器，配合内置红外发射LED和一体化红外接收器，可实现稳定可靠的非接触式数据传输，广泛应用于电表、水表、气表等支持红外传输功能的仪表读取场景。",
-        "设备支持4G通讯接口（直接上传平台，免数据采集网关）和RS485透传模式（支持DL/T645协议读取电表），工作电压9-12V DC，即插即用免接线风险，无需停电即可快速完成仪表接入，是能耗监控系统末端数据采集的理想终端。",
+        "PMAC124 4G红外抄表仪采用高性能ARM CPU作为微处理器，配合内置红外发射LED和一体化红外接收器，可实现稳定可靠的非接触式数据传输，广泛应用于电表、水表、气表等支持红外传输功能的仪表读取场景。",
+        "设备支持4G通讯接口（直接上传平台，免数据采集网关），工作电压9-12V DC，即插即用免接线风险，无需停电即可快速完成仪表接入，是能耗监控系统末端数据采集的理想终端。",
     ],
     features: [
         "非接触式红外读表，区别于传统RS485接线方式，降低现场实施成本与接线风险",
         "4G版本内置SIM卡（免插卡），包8年流量，数据直接上传平台，免去中间网关设备",
-        "RS485版本支持透传模式，兼容DL/T645-2007协议，可作为485接口与水电气仪表的转换桥梁",
         "红外通信距离0-3米（室内环境光），收发角度90度（左右上下各45°），保障稳定通讯",
         "支持ModbusRTU、MQTT等多种协议，适配各类物联系统与云平台，兼容性强",
         "9-12V DC直流供电，即插即用；多种安装方式（贴装电表红外窗口、电箱门、计量柜玻璃），适应不同场景",
@@ -127,25 +145,25 @@ const EMC200 = {
     ],
 };
 const meter = {
-    title: "4G智能预付费电表",
+    title: "PMGC-2000微网控制器",
     imgURL: "https://pmac.leyi.host/downloads/product_02.png",
     description: [
-        "本产品是上海人民企业集团仪表有限公司研发的新一代4G无线预付费电表，采用高精度计量芯片和工业级4G通信模块，支持远程充值、恶性负载识别及自动费控功能。",
-        "通过阿里云平台实现电能数据实时监测、远程拉合闸及多费率管理，满足智能电网用户预付费、能耗优化等需求，具备-40℃至+70℃宽温域工作能力。",
+        "PMGC-2000微网控制器是珠海派诺科技有限公司研发的新一代微网控制器，采用先进控制算法与工业级通信模块，集成微网协调控制、数据采集转发、策略管理等功能，适配多美型微网场景，支持多协议交互与云端协同，维持微网功率、频率稳走，提升清洁能源利用效率，具备宽温域稳定运行能力。",
+        "通过本地策略执行与云端平台联动，实现 微网源-网-荷-储 一体化协调，满足工商业、企业园区等微网管理中功率调控、能效优化、智能运维等需求。",
     ],
     features: [
-        "预付费费控：余额不足自动断电，支持CPU卡/远程充值，欠费短信预警",
-        "安全加密：ESAM模块采用国密算法，支持双向认证、线路加密及权限控制",
-        "多费率管理：支持2套费率时段表、4档费率（尖峰平谷）自动切换",
-        "全维度监测：实时计量电压/电流/功率因数，记录开盖、掉电等10类事件",
-        "恶性负载识别：校园专用版可识别违规电器并自动断电（选配）",
-        "工业级防护：-40℃~+70℃宽温域工作，IP54防护等级（根据行业标准补充）",
-        "云端管理：对接阿里云平台，支持微信/支付宝充值、能耗分析报表导出",
+        "支持并离网智能切换，动态调控有功/无功功率，实现分布式电源智能调频调压，光储荷协同（含防逆流、削峰填谷等策眙）",
+        "配置 16 路 RS485接口，兼容 Modbus - RTU/TCP、DLT645 -2007 等协议，并行高效采集微网多设备数据",
+        "支持 ModbusTCP、IEC104 协议转发数据，对接 EMS3.0 等云平台上传信息，支持多主机同时连接",
+        "涵盖计划充放电、动态扩容、需求侧响应策路，可助力虚拟电厂搭建，适配不同微网运行场景",
+        "留存 12个月历史数据与事件记录，云端同步日志，便于微网运维、故障追溯及能效分析",
+        "适配多类微网设备通信协议，保障不同厂家光伏、储能、负荷设备接入协同",
+        "适应复杂电网环境，具备稳定运行能力，保障微网控制指令可靠执行",
     ],
     srcList: [
-        "https://pmac.leyi.host/downloads/gateway01.png",
-        "https://pmac.leyi.host/downloads/gateway02.png",
-        "https://pmac.leyi.host/downloads/gateway03.png",
+        "https://pmac.leyi.host/downloads/meter01.png",
+        "https://pmac.leyi.host/downloads/meter02.png",
+        "https://pmac.leyi.host/downloads/meter03.png",
     ],
 };
 const product = ref({});

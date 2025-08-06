@@ -76,6 +76,16 @@
                                 >
                             </div>
                         </div>
+                        <div class="info-item" v-if="record.pv_config == 'yes'">
+                            <div class="label">
+                                <i class="bi bi-box-seam"></i> 装机容量:
+                            </div>
+                            <div class="value">
+                                {{
+                                    record.pv_capacity ? record.pv_capacity : 0
+                                }}（kw）
+                            </div>
+                        </div>
                         <div class="info-item">
                             <div class="label">
                                 <i class="bi bi-geo-alt"></i> 地点:

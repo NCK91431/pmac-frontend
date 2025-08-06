@@ -13,7 +13,9 @@
                 <div class="upload-content">
                     <h4>拖放Excel文件到此处</h4>
                     <p class="text-muted">
-                        请上传90天的24小时负荷数据Excel文件<br />
+                        请上传至少
+                        {{ isContinue ? 1 : 90 }}
+                        天的 24 小时负荷数据Excel文件<br />
                     </p>
                     <p class="text-muted">或</p>
                     <el-button type="primary" size="medium">
@@ -76,9 +78,13 @@
 import { Download } from "@element-plus/icons-vue";
 import { computed } from "vue";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
-const formStore = useLoadPreFormStore();
+import { useForecastStore } from "@/store/forecast";
 
-const file = computed(() => formStore.uploadedFile); // 使用计算属性同步 Pinia 状态
+const formStore = useLoadPreFormStore();
+const file = computed(() => formStore.uploadedFile); // 用Pinia管理file
+
+const forecastStore = useForecastStore();
+const isContinue = computed(() => forecastStore.isContinue); // 判断是否处于继续预测状态
 
 // 监听文件上传变化：当文件上传时，更新file变量并触发事件
 function handleFileChange(uploadFile) {

@@ -23,9 +23,22 @@
                             <i class="bi bi-sun"></i> 光伏配置
                         </div>
                         <div class="preview-value">
-                            <span class="status-badge" :class="pvConfigClass">
-                                <i class="bi" :class="pvConfigIcon"></i>
+                            <span class="status-badge">
+                                <i class="bi"></i>
                                 {{ pv_config }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 光伏配置 -->
+                    <div class="preview-item" v-if="pv_config == '已配置'">
+                        <div class="preview-label">
+                            <i class="bi bi-box-seam"></i> 装机容量
+                        </div>
+                        <div class="preview-value">
+                            <span class="status-badge">
+                                <i class="bi"></i>
+                                {{ pv_capacity }}（kw）
                             </span>
                         </div>
                     </div>
@@ -77,8 +90,8 @@
                         }}</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label">数据点数</span>
-                        <span class="stat-value">{{ excel_dataPoints }}</span>
+                        <span class="stat-label">上传日期范围</span>
+                        <span class="stat-value">{{ excel_date_range }}</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">数据状态</span>
@@ -143,6 +156,13 @@ const pv_config = computed(() => {
     }
     return props.record.formData.pv_config == "yes" ? "已配置" : "未配置";
 });
+const pv_capacity = computed(() => {
+    if (!props.record.formData || !props.record.formData.pv_capacity) {
+        return "未知";
+    }
+    return props.record.formData.pv_capacity;
+});
+
 const location_string = computed(() => {
     if (!props.record.formData || !props.record.formData.location) {
         return "未选择";
@@ -178,16 +198,6 @@ const excel_timeGranularity = computed(() => {
     }
     return props.record.excelInfo.stats.timeGranularity;
 });
-const excel_dataPoints = computed(() => {
-    if (
-        !props.record.excelInfo ||
-        !props.record.excelInfo.stats ||
-        !props.record.excelInfo.stats.dataPoints
-    ) {
-        return 0;
-    }
-    return props.record.excelInfo.stats.dataPoints;
-});
 const excel_status = computed(() => {
     if (
         !props.record.excelInfo ||
@@ -209,6 +219,17 @@ const excel_size = computed(() => {
         return 0;
     }
     return props.record.excelInfo.size;
+});
+
+const excel_date_range = computed(() => {
+    if (
+        !props.record.excelInfo ||
+        !props.record.excelInfo.dateRange ||
+        !props.record.excelInfo.dateRange.length
+    ) {
+        return "未知";
+    }
+    return props.record.excelInfo.dateRange.join(" 至 ");
 });
 const excel_uploadTime = computed(() => {
     if (!props.record.excelInfo || !props.record.excelInfo.uploadTime) {

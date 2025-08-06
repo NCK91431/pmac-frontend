@@ -8,8 +8,7 @@
                     alt=""
                 />
                 <div>
-                    <h1>智慧能源工具</h1>
-                    <p>精准预测每一度 智能互联每一端</p>
+                    <h1 class="pmac-title">智慧洞见 毫厘尽显</h1>
                 </div>
             </div>
             <el-menu
@@ -25,6 +24,9 @@
                 >
                 <el-menu-item index="2" @click="gotoPage('describe')"
                     >功能介绍</el-menu-item
+                >
+                <el-menu-item index="4" @click="openChatbotWindow"
+                    >电力交易专家</el-menu-item
                 >
                 <el-menu-item index="3" @click="gotoPage('about_us')"
                     >关于我们</el-menu-item
@@ -199,6 +201,10 @@ function onLogout() {
 
 function gotoPage(page) {
     router.push({ name: page });
+}
+function openChatbotWindow() {
+    // 在新标签页打开外部链接
+    window.open("http://125.88.36.153/chat/xKNQVUj83HlEWtAh", "_blank");
 }
 </script>
 

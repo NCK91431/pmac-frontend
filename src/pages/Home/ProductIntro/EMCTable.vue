@@ -65,28 +65,22 @@ const first_table = [
     },
     {
         category: "",
-        interface: "4G通讯接口（4G版本）",
+        interface: "4G通讯接口",
         description:
             "支持LTE FDD/LTE TDD主流频段，直接对接云平台，内置SIM卡免插卡",
         note: "数据通过MQTT协议上传，推送间隔与存储间隔可配置，默认包8年流量",
     },
-    {
-        category: "",
-        interface: "RS485接口（RS485版本）",
-        description:
-            "1路RS485串口，波特率38400bps，黄色线芯为485A(+)，绿色为485B(-)",
-        note: "支持透传模式，兼容DL/T645-2007协议，可接入物联系统、数据采集网关等设备",
-    },
+
     {
         category: "",
         interface: "电源接口",
         description:
-            "4G版本：DC直流插头；RS485版本：红色线芯为正极，黑色为负极，电压9-12V DC",
+            "DC直流插头；RS485版本：红色线芯为正极，黑色为负极，电压9-12V DC",
         note: "峰值电流<100mA，建议使用原装适配器，避免超压损坏设备",
     },
     {
         category: "",
-        interface: "SIM卡接口（4G版本）",
+        interface: "SIM卡接口",
         description: "内置SIM卡（免插卡设计），支持8年流量套餐",
         note: "不支持热拔插，流量套餐到期后需联系厂商续费",
     },
