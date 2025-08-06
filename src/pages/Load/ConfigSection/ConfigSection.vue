@@ -34,14 +34,39 @@
         </div>
 
         <!-- 按钮区域 -->
-        <div class="d-flex justify-content-end mt-4">
+        <div class="d-flex justify-content-between mt-4">
+            <el-text
+                v-if="isContinuePredict"
+                @click="createNewPrediction"
+                type="primary"
+                class="toggle-tip"
+            >
+                <el-icon><InfoFilled /></el-icon>
+                我要新建模型
+                <el-icon>
+                    <TopRight />
+                </el-icon>
+            </el-text>
+            <el-text
+                v-if="!isContinuePredict"
+                @click="continuePrediction"
+                type="primary"
+                class="toggle-tip"
+            >
+                <el-icon><InfoFilled /></el-icon>
+                基于已建模型进行继续预测
+                <el-icon>
+                    <TopRight />
+                </el-icon>
+            </el-text>
             <button
                 v-if="stage == 0"
                 class="btn-submit btn btn-primary px-4 py-2"
                 :disabled="!isFormValid"
                 @click="submitForm"
             >
-                <i class="bi bi-calculator me-2"></i>开始预测
+                <i class="bi bi-calculator me-2"></i
+                >{{ isContinuePredict ? "继续预测" : "建模并预测" }}
             </button>
             <button
                 v-if="stage == 2"
@@ -64,6 +89,7 @@ import { useLoadPreFormStore } from "@/store/loadpreformStore";
 import { useLoadPreStageStore } from "@/store/loadpreStageStore";
 import { useForecastStore } from "@/store/forecast";
 import { addDays, format } from "date-fns";
+import { InfoFilled, TopRight } from "@element-plus/icons-vue";
 
 const formStore = useLoadPreFormStore();
 const stageStore = useLoadPreStageStore();
@@ -96,6 +122,15 @@ const requiredStartDate = computed(() => {
     const nextDay = addDays(endDate, 1);
     return format(nextDay, "yyyy-MM-dd");
 });
+
+/* ----------------------------------- 继续预测 ------------------------------------------------- */
+function createNewPrediction() {
+    formStore.resetForm(); //重置表单
+    forecastStore.clearContinueData(); // 确保清除状态、清除继续预测数据
+}
+function continuePrediction() {
+    forecastStore.setActiveTab("history");
+}
 </script>
 
 <style lang="scss" scoped>
@@ -112,6 +147,10 @@ const requiredStartDate = computed(() => {
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
     }
+}
+
+.toggle-tip {
+    cursor: pointer;
 }
 
 // 针对继续预测按钮的样式覆盖

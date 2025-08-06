@@ -6,6 +6,7 @@
                 v-model="form.customer_type"
                 placeholder="请选择客户类型"
                 class="w-100"
+                :disabled="isContinue"
             >
                 <el-option label="医院" value="hospital" />
                 <el-option label="商超" value="mall" />
@@ -24,6 +25,7 @@
                         type="radio"
                         value="yes"
                         id="pvYes"
+                        :disabled="isContinue"
                     />
                     <label class="form-check-label" for="pvYes">有</label>
                 </div>
@@ -34,6 +36,7 @@
                         type="radio"
                         value="no"
                         id="pvNo"
+                        :disabled="isContinue"
                     />
                     <label class="form-check-label" for="pvNo">无</label>
                 </div>
@@ -44,6 +47,7 @@
                         type="radio"
                         value="unknown"
                         id="pvUnknown"
+                        :disabled="isContinue"
                     />
                     <label class="form-check-label" for="pvUnknown"
                         >不确定</label
@@ -63,6 +67,7 @@
                 required
                 min="0"
                 step="any"
+                :disabled="isContinue"
             />
         </div>
 
@@ -76,6 +81,7 @@
                 clearable
                 filterable
                 class="w-100"
+                :disabled="isContinue"
             />
         </div>
 
@@ -85,6 +91,7 @@
                 v-model="form.forecast_range"
                 placeholder="请选择预测类型"
                 class="w-100"
+                :disabled="isContinue"
             >
                 <el-option
                     label="D-4 -> D+1 【注：4天前用电量 → 预测未来一天分时负荷】"
@@ -96,14 +103,26 @@
                 />
             </el-select>
         </div>
+        <div v-if="isContinue" class="continue-form-tip">
+            <el-text type="info" size="small">
+                <el-icon><InfoFilled /></el-icon>
+                由于您正在基于已有模型进行预测，原有配置不可改
+            </el-text>
+        </div>
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
+import { InfoFilled } from "@element-plus/icons-vue";
+import { useForecastStore } from "@/store/forecast";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
+
 const formStore = useLoadPreFormStore();
+const forecastStore = useForecastStore(); // 用于处理继续预测
+
+const isContinue = computed(() => forecastStore.isContinue);
 
 // 配置级联选择器属性
 const cascaderProps = {

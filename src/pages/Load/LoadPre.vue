@@ -10,7 +10,8 @@
                             :class="{ active: activeTab === 'upload' }"
                             @click="switchTab('upload')"
                         >
-                            <i class="bi bi-cloud-arrow-up me-2"></i>负荷预测
+                            <i class="bi bi-cloud-arrow-up me-2"></i
+                            >{{ isContinue ? "继续预测" : "新建模型" }}
                         </button>
                     </li>
                     <li class="nav-item">
@@ -19,7 +20,7 @@
                             :class="{ active: activeTab === 'history' }"
                             @click="onClickHistoryTab"
                         >
-                            <i class="bi bi-clock-history me-2"></i>历史记录
+                            <i class="bi bi-clock-history me-2"></i>已建模型
                         </button>
                     </li>
                 </ul>
@@ -34,7 +35,6 @@
                 />
                 <HistoryRecordsList
                     v-if="activeTab === 'history'"
-                    @view-detail="viewDetail"
                     :processingTasks="processingTasks"
                 />
             </div>
@@ -45,10 +45,7 @@
             :record="record"
         />
 
-        <RecordDetail
-            v-if="activeTab === 'history'"
-            :recordId="active_record_id"
-        />
+        <RecordDetail v-if="activeTab == 'history' && activeHistoryRecordId" />
     </main>
 </template>
 
@@ -69,11 +66,11 @@ import { useForecastStore } from "@/store/forecast";
 const formStore = useLoadPreFormStore();
 const stageStore = useLoadPreStageStore();
 const forecastStore = useForecastStore(); // 用于处理继续预测
+const activeHistoryRecordId = computed(() => stageStore.activeHistoryRecordId); //用户选中的某条负荷预测记录
 
 const activeTab = computed(() => forecastStore.activeTab); // 从 store 获取标签状态
 const isContinue = computed(() => forecastStore.isContinue);
 
-const active_record_id = ref(null); // 用户在历史记录列表里选中的记录的id
 const record = computed(() => stageStore.responseData); //后端返回的完整数据；
 const stage = computed(() => stageStore.stage); // 0:初始状态 1:处理中 2:处理完成
 
@@ -142,9 +139,6 @@ async function handleSubmit(formData, fileData) {
     }
 }
 
-const viewDetail = (record) => {
-    active_record_id.value = record.id;
-};
 function onNewPrediction() {
     formStore.resetFileOnly(); // 只删除文件，保留表单配置
     stageStore.setStageZero(); // 重置为初始状态

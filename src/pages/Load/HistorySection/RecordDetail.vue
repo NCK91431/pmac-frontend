@@ -165,14 +165,14 @@ import { useForecastStore } from "@/store/forecast";
 import { useLoadPreStageStore } from "@/store/loadpreStageStore";
 import { useLoadPreFormStore } from "@/store/loadpreformStore";
 
-const props = defineProps({
-    recordId: {
-        required: true,
-    },
-});
+const forecastStore = useForecastStore();
+const formStore = useLoadPreFormStore();
+const stageStore = useLoadPreStageStore();
+const activeHistoryRecordId = computed(() => stageStore.activeHistoryRecordId); //用户在历史记录列表里选中的某条负荷预测记录
+
 const record = ref({});
 async function getRecordDetailById() {
-    const id = props.recordId;
+    const id = activeHistoryRecordId.value;
     if (!id) {
         // ElMessage.error("记录ID不存在，无法获取详情");
         return;
@@ -183,14 +183,11 @@ async function getRecordDetailById() {
 onMounted(() => {
     getRecordDetailById();
 });
-watch(
-    () => props.recordId,
-    (newId) => {
-        if (newId) {
-            getRecordDetailById();
-        }
+watch(activeHistoryRecordId, (newId) => {
+    if (newId) {
+        getRecordDetailById();
     }
-);
+});
 
 const formatCustomerType = (type) => {
     const types = {
@@ -232,18 +229,18 @@ const emit = defineEmits(["close"]);
 
 /*------------下载用户上传的excel文件------------*/
 async function downloadUploadExcel() {
-    const recordId = props.recordId;
-    if (!recordId) {
+    const id = activeHistoryRecordId.value;
+    if (!id) {
         ElMessage.error("记录ID不存在，无法下载文件");
         return;
     }
-    const fileName = recordId + "_upload.xlsx";
+    const fileName = id + "_upload.xlsx";
 
     try {
         ElMessage.success(`正在下载您上传的文件${fileName}`);
         // 发送下载请求
         const response = await request.get(
-            `/api/history/${recordId}/download/upload`,
+            `/api/history/${id}/download/upload`,
             {
                 responseType: "blob",
             }
@@ -270,18 +267,18 @@ async function downloadUploadExcel() {
 }
 /*------------下载预测结果excel文件------------*/
 async function downloadPredictionExcel() {
-    const recordId = props.recordId;
-    if (!recordId) {
+    const id = activeHistoryRecordId.value;
+    if (!id) {
         ElMessage.error("记录ID不存在，无法下载文件");
         return;
     }
-    const fileName = recordId + "_prediction.xlsx";
+    const fileName = id + "_prediction.xlsx";
 
     try {
         ElMessage.success(`正在生成预测结果Excel文件${fileName}`);
         // 发送下载请求
         const response = await request.get(
-            `/api/history/${recordId}/download/prediction`,
+            `/api/history/${id}/download/prediction`,
             {
                 responseType: "blob",
             }
@@ -307,10 +304,6 @@ async function downloadPredictionExcel() {
     }
 }
 /*------------ 继续预测 ------------*/
-const forecastStore = useForecastStore();
-const formStore = useLoadPreFormStore();
-const stageStore = useLoadPreStageStore();
-
 const continueForecast = () => {
     // 如果用户正处在预测进行状态中不可使用
     if (stageStore.stage == 1) {

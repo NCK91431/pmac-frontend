@@ -4,7 +4,7 @@
             <h2 class="h5 text">
                 <i class="bi bi-clock-history me-2"></i>历史记录
             </h2>
-            <div class="search-box">
+            <!-- <div class="search-box">
                 <el-input
                     v-model="searchQuery"
                     placeholder="搜索历史记录..."
@@ -12,57 +12,55 @@
                     suffix-icon="Search"
                     style="width: 300px"
                 />
-            </div>
+            </div> -->
         </div>
 
-        <div class="record-list">
-            <!-- 处理中任务 -->
-            <div
-                v-if="props.processingTasks && props.processingTasks.length > 0"
-                class="mb-4"
-            >
-                <h5 class="mb-3">处理中任务</h5>
-                <div class="processing-tasks">
-                    <div
-                        v-for="(task, idx) in props.processingTasks"
-                        :key="idx"
-                        class="processing-task card mb-3"
-                    >
-                        <div class="card-body">
-                            <div
-                                class="d-flex justify-content-between align-items-center"
-                            >
-                                <div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div
-                                            class="spinner-border spinner-border-sm text-primary me-2"
-                                            role="status"
-                                        ></div>
-                                        <strong class="text-primary">{{
-                                            dsds
-                                        }}</strong>
-                                    </div>
-                                    <div class="text-muted small">
-                                        开始时间:
-                                        {{ task }}
-                                    </div>
-                                </div>
-                                <div class="text-end">
+        <!-- 处理中任务 -->
+        <div
+            class="record-list mb-4"
+            v-if="props.processingTasks && props.processingTasks.length > 0"
+        >
+            <h5 class="mb-3">处理中任务</h5>
+            <div class="processing-tasks">
+                <div
+                    v-for="(task, idx) in props.processingTasks"
+                    :key="idx"
+                    class="processing-task card mb-3"
+                >
+                    <div class="card-body">
+                        <div
+                            class="d-flex justify-content-between align-items-center"
+                        >
+                            <div>
+                                <div class="d-flex align-items-center mb-2">
                                     <div
-                                        class="progress"
-                                        style="width: 150px; height: 10px"
-                                    >
-                                        <div
-                                            class="progress-bar progress-bar-striped progress-bar-animated"
-                                            role="progressbar"
-                                            :style="{
-                                                width: '50%',
-                                            }"
-                                        ></div>
-                                    </div>
-                                    <div class="small text-muted mt-1">
-                                        {{ 50 }}% 完成
-                                    </div>
+                                        class="spinner-border spinner-border-sm text-primary me-2"
+                                        role="status"
+                                    ></div>
+                                    <strong class="text-primary">{{
+                                        dsds
+                                    }}</strong>
+                                </div>
+                                <div class="text-muted small">
+                                    开始时间:
+                                    {{ task }}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div
+                                    class="progress"
+                                    style="width: 150px; height: 10px"
+                                >
+                                    <div
+                                        class="progress-bar progress-bar-striped progress-bar-animated"
+                                        role="progressbar"
+                                        :style="{
+                                            width: '50%',
+                                        }"
+                                    ></div>
+                                </div>
+                                <div class="small text-muted mt-1">
+                                    {{ 50 }}% 完成
                                 </div>
                             </div>
                         </div>
@@ -88,7 +86,7 @@
             default-expand-all
             :props="treeProps"
             ref="treeRef"
-            :current-node-key="currentNodeId"
+            :current-node-key="activeHistoryRecordId"
             :highlight-current="false"
             @node-click="handleNodeClick"
             :expand-on-click-node="false"
@@ -109,26 +107,38 @@
                     <div class="col-date">
                         {{ new Date(data.created_at).toLocaleString() }}
                     </div>
+                    <!-- 位置列：仅根节点显示 -->
                     <div class="col-location">
-                        {{ data.location.join("-") }}
+                        <template v-if="node.level == 1">
+                            {{ data.location.join("-") }}
+                        </template>
+                        <template v-else>-</template>
                     </div>
+                    <!-- 客户类型列：仅根节点显示 -->
                     <div class="col-type">
-                        <span
-                            size="small"
-                            class="customer-badge"
-                            :class="'customer-' + data.customer_type"
-                        >
-                            {{ formatCustomerType(data.customer_type) }}
-                        </span>
+                        <template v-if="node.level == 1">
+                            <span
+                                size="small"
+                                class="customer-badge"
+                                :class="'customer-' + data.customer_type"
+                            >
+                                {{ formatCustomerType(data.customer_type) }}
+                            </span>
+                        </template>
+                        <template v-else>-</template>
                     </div>
+                    <!-- 预测范围列：仅根节点显示 -->
                     <div class="col-range">
-                        <span class="range-badge">
-                            {{
-                                data.forecast_range === "4days"
-                                    ? "D-4 → D+1"
-                                    : "D-1 → D+1"
-                            }}
-                        </span>
+                        <template v-if="node.level == 1">
+                            <span class="range-badge">
+                                {{
+                                    data.forecast_range === "4days"
+                                        ? "D-4 → D+1"
+                                        : "D-1 → D+1"
+                                }}
+                            </span>
+                        </template>
+                        <template v-else>-</template>
                     </div>
                     <div class="col-upload">
                         {{
@@ -143,14 +153,17 @@
                             {{ data.prediction_date }}
                         </el-tag>
                     </div>
+                    <!-- 操作列：仅叶子节点显示删除按钮（添加.stop阻止事件冒泡）-->
                     <div class="col-actions">
-                        <el-button
-                            size="small"
-                            type="danger"
-                            :icon="Delete"
-                            circle
-                            @click="deleteRecord(data)"
-                        ></el-button>
+                        <template v-if="node.isLeaf">
+                            <el-button
+                                size="small"
+                                type="danger"
+                                :icon="Delete"
+                                circle
+                                @click.stop="deleteRecord(data)"
+                            ></el-button>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -170,6 +183,10 @@ import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
 import { Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
+import { useLoadPreStageStore } from "@/store/loadpreStageStore";
+
+const stageStore = useLoadPreStageStore();
+const activeHistoryRecordId = computed(() => stageStore.activeHistoryRecordId); //用户选中的某条负荷预测记录
 
 /* --------------------------- 正在执行的任务 -------------------------- */
 // 新增处理中任务列表
@@ -182,7 +199,6 @@ const treeProps = {
     label: "label",
 };
 const treeRef = ref(null);
-const currentNodeId = ref(null); // 存储当前选中节点ID
 
 const records = ref([]);
 
@@ -227,11 +243,8 @@ const getCustomerTagType = (type) => {
 
 const searchQuery = ref("");
 
-const emit = defineEmits(["view-detail"]);
-
 function handleNodeClick(node) {
-    currentNodeId.value = node.id; // 设置当前选中节点
-    emit("view-detail", node);
+    stageStore.set_activeHistoryRecordId(node.id); // 设置当前选中节点
 }
 
 // 删除历史记录
@@ -248,6 +261,10 @@ async function deleteRecord(record) {
             ElMessage.success(response.data.message);
             // 刷新历史记录列表
             fetchRecords();
+            // 如果删除的这条刚好是用户当前选中的，重置选中的记录为null
+            if (record.id == activeHistoryRecordId.value) {
+                stageStore.set_activeHistoryRecordId(null); // 设置当前选中节点
+            }
         } else {
             ElMessage.error("删除记录失败");
         }
