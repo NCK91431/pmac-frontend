@@ -18,20 +18,28 @@
                 text-color="#fff"
                 active-text-color="#ffd04b"
                 :ellipsis="false"
+                default-active="home"
+                router
             >
-                <el-menu-item index="1" @click="gotoPage('home')"
-                    >首页</el-menu-item
-                >
-                <el-menu-item index="2" @click="gotoPage('describe')"
+                <el-menu-item index="home" route="/home">首页</el-menu-item>
+                <el-menu-item index="describe" route="/describe"
                     >功能介绍</el-menu-item
                 >
-                <el-menu-item index="4" @click="openChatbotWindow"
-                    >电力交易专家</el-menu-item
-                >
-                <el-menu-item index="3" @click="gotoPage('about_us')"
+                <el-menu-item index="about_us" route="/about_us"
                     >关于我们</el-menu-item
                 >
             </el-menu>
+            <!-- 电力交易专家 -->
+            <div class="chatbot" @click="openChatbotWindow">
+                <div class="chatbot-icon">
+                    <img
+                        src="https://pmac.leyi.host/downloads/pmac/rengongzhineng.png"
+                        alt="智能助手"
+                    />
+                    <div class="pulse-effect"></div>
+                </div>
+                <span class="chatbot-text">电力交易专家</span>
+            </div>
             <!-- 用户信息区域 -->
             <div class="user-info">
                 <!-- 有用户 -->
@@ -475,6 +483,109 @@ onUnmounted(() => {
             height: 50px;
             line-height: 50px;
         }
+    }
+}
+.chatbot {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px 6px 12px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        .chatbot-icon img {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .chatbot-text {
+            letter-spacing: 0.5px;
+        }
+
+        &::before {
+            opacity: 0.4;
+        }
+    }
+
+    &:active {
+        transform: translateY(1px);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: radial-gradient(
+            circle,
+            rgba(255, 208, 75, 0.3) 0%,
+            transparent 70%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+}
+
+.chatbot-icon {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 24px;
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+}
+
+.pulse-effect {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 208, 75, 0.2);
+    animation: pulse 2s infinite;
+    z-index: -1;
+}
+
+.chatbot-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    transition: all 0.3s ease;
+    position: relative;
+    letter-spacing: 0;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.4;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.7;
     }
 }
 </style>
