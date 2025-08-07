@@ -52,7 +52,6 @@ provide("clearUser", clearUser);
 <style scoped>
 .page-content {
     background-color: #e6e8ea;
-    width: 100vw;
     min-height: calc(100vh - 405px);
     overflow-x: hidden;
 }
