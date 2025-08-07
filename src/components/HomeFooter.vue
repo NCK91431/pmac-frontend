@@ -1,5 +1,5 @@
 <template>
-    <footer class="footer">
+    <footer class="footer" ref="footerRef">
         <div class="container">
             <div class="footer-flexbox">
                 <div class="footer-column">
@@ -124,7 +124,29 @@ import {
     Service,
     ShoppingCartFull,
 } from "@element-plus/icons-vue";
+import { onMounted, onUnmounted, ref } from "vue";
 const QRcode = "https://pmac.leyi.host/downloads/QR-code.jpg";
+
+/* ------------ 获取 DOM 元素，计算高度后通过 emit 发送给父组件 ----------- */
+const footerRef = ref(null); // 定义 ref 关联 DOM 元素
+const emit = defineEmits(["update:footerHeight"]); // 定义 emits 用于传递高度给父组件
+// 获取并传递 header 高度
+const updateHeaderHeight = () => {
+    if (footerRef.value) {
+        const height = footerRef.value.offsetHeight; // 获取元素实际高度（包括 padding，不包括 margin 和 border）
+        emit("update:footerHeight", height); // 发送高度给父组件
+    }
+};
+// 初始化时获取一次高度
+onMounted(() => {
+    updateHeaderHeight();
+    window.addEventListener("resize", updateHeaderHeight); // 监听窗口大小变化，动态更新高度（适配响应式布局）
+});
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+    window.removeEventListener("resize", updateHeaderHeight);
+});
 </script>
 
 <style lang="scss" scoped>

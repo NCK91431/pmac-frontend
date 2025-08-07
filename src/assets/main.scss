@@ -58,3 +58,31 @@ body {
         );
     }
 }
+/* 滚动条整体样式 */
+::-webkit-scrollbar {
+    width: 6px; /* 纵向滚动条宽度 */
+    height: 6px; /* 横向滚动条高度 */
+}
+
+/* 滚动条轨道 */
+::-webkit-scrollbar-track {
+    background: #f5f7fa; /* 与页面背景色一致 */
+    border-radius: 8px; /* 与项目中卡片圆角呼应 */
+}
+
+/* 滚动条滑块 */
+::-webkit-scrollbar-thumb {
+    background: #c9cdd4; /* 浅灰色滑块 */
+    border-radius: 8px; /* 圆角设计 */
+    transition: background 0.3s ease; /* 过渡动画 */
+}
+
+/* 滑块hover状态 */
+::-webkit-scrollbar-thumb:hover {
+    background: #9da3af; /* 加深颜色，增强交互感 */
+}
+
+/* 滚动条角落（横竖滚动条交叉处） */
+::-webkit-scrollbar-corner {
+    background: #f5f7fa;
+}

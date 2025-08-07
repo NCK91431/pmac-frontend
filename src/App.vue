@@ -1,13 +1,13 @@
 <template>
-    <HeaderSection />
-    <div class="page-content">
+    <HeaderSection @update:headerHeight="handleHeaderHeight" />
+    <div class="page-content" :style="contentStyle">
         <RouterView />
     </div>
-    <HomeFooter />
+    <HomeFooter @update:footerHeight="handleFooterHeight" />
 </template>
 
 <script setup>
-import { ref, provide, onMounted } from "vue";
+import { ref, provide, onMounted, computed } from "vue";
 import HomeFooter from "./components/HomeFooter.vue";
 import HeaderSection from "./components/HeaderSection.vue";
 
@@ -47,12 +47,30 @@ function clearUser() {
 provide("user", user);
 provide("updateUser", updateUser);
 provide("clearUser", clearUser);
+
+// 存储 header 高度
+const headerHeight = ref(0);
+const footerHeight = ref(0);
+// 接收 header 传递的高度
+const handleHeaderHeight = (height) => {
+    headerHeight.value = height;
+};
+// 接收 footer 传递的高度
+const handleFooterHeight = (height) => {
+    footerHeight.value = height;
+};
+
+// 计算内容区域样式（关键修改）
+const contentStyle = computed(() => ({
+    marginTop: `${headerHeight.value}px`,
+    minHeight: `calc(100vh - ${headerHeight.value}px - ${footerHeight.value}px)`,
+}));
 </script>
 
 <style scoped>
 .page-content {
     background-color: #e6e8ea;
-    min-height: calc(100vh - 405px);
     overflow-x: hidden;
+    box-sizing: border-box;
 }
 </style>

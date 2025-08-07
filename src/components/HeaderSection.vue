@@ -1,5 +1,5 @@
 <template>
-    <div class="header-container">
+    <div class="header-container" ref="headerRef">
         <div class="header-content">
             <div class="logo-section">
                 <i class="fas fa-bolt"></i>
@@ -169,7 +169,7 @@
 
 <script setup>
 import { Edit, Notification, User } from "@element-plus/icons-vue";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useForecastStore } from "@/store/forecast";
@@ -225,6 +225,27 @@ function openChatbotWindow() {
     // 在新标签页打开外部链接
     window.open("http://125.88.36.153/chat/xKNQVUj83HlEWtAh", "_blank");
 }
+
+/* ------------ 获取 DOM 元素，计算高度后通过 emit 发送给父组件 ----------- */
+const headerRef = ref(null); // 定义 ref 关联 DOM 元素
+const emit = defineEmits(["update:headerHeight"]); // 定义 emits 用于传递高度给父组件
+// 获取并传递 header 高度
+const updateHeaderHeight = () => {
+    if (headerRef.value) {
+        const height = headerRef.value.offsetHeight; // 获取元素实际高度（包括 padding，不包括 margin 和 border）
+        emit("update:headerHeight", height); // 发送高度给父组件
+    }
+};
+// 初始化时获取一次高度
+onMounted(() => {
+    updateHeaderHeight();
+    window.addEventListener("resize", updateHeaderHeight); // 监听窗口大小变化，动态更新高度（适配响应式布局）
+});
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+    window.removeEventListener("resize", updateHeaderHeight);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -233,6 +254,12 @@ function openChatbotWindow() {
     color: white;
     padding: 1.5rem 0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* 添加固定定位 */
+    position: fixed; /* 固定定位，相对于视口 */
+    top: 0; /* 距离顶部0 */
+    left: 0; /* 距离左侧0 */
+    right: 0; /* 距离右侧0，确保宽度占满屏幕 */
+    z-index: 1000; /* 设置层级，避免被其他元素覆盖（值需大于页面其他元素的z-index） */
 
     .header-content {
         margin: 0 auto;
