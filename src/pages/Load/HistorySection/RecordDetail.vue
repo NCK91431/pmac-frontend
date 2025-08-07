@@ -374,6 +374,7 @@ const continueForecast = () => {
 
         .card-body {
             padding: 25px;
+            padding-bottom: 0;
         }
 
         .info-item {

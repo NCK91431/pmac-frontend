@@ -34,47 +34,49 @@
         </div>
 
         <!-- 按钮区域 -->
-        <div class="d-flex justify-content-between mt-4">
-            <el-text
-                v-if="isContinuePredict"
-                @click="createNewPrediction"
-                type="primary"
-                class="toggle-tip"
-            >
-                <el-icon><InfoFilled /></el-icon>
-                我要新建模型
-                <el-icon>
-                    <TopRight />
-                </el-icon>
-            </el-text>
-            <el-text
-                v-if="!isContinuePredict"
-                @click="continuePrediction"
-                type="primary"
-                class="toggle-tip"
-            >
-                <el-icon><InfoFilled /></el-icon>
-                基于已建模型进行继续预测
-                <el-icon>
-                    <TopRight />
-                </el-icon>
-            </el-text>
-            <button
-                v-if="stage == 0"
-                class="btn-submit btn btn-primary px-4 py-2"
-                :disabled="!isFormValid"
-                @click="submitForm"
-            >
-                <i class="bi bi-calculator me-2"></i
-                >{{ isContinuePredict ? "继续预测" : "建模并预测" }}
-            </button>
-            <button
-                v-if="stage == 2"
-                class="btn-continue btn btn-primary px-4 py-2"
-                @click="emitNewPrediction"
-            >
-                新建预测<i class="bi bi-arrow-down-circle me-2"></i>
-            </button>
+        <div class="action mt-4">
+            <template v-if="stage == 0">
+                <button
+                    class="btn-submit btn btn-primary px-4 py-2"
+                    :disabled="!isFormValid"
+                    @click="submitForm"
+                >
+                    <i class="bi bi-calculator me-2"></i
+                    >{{ isContinuePredict ? "继续预测" : "建模并预测" }}
+                </button>
+                <el-text
+                    v-if="isContinuePredict"
+                    @click="createNewPrediction"
+                    type="primary"
+                    class="toggle-tip"
+                >
+                    <el-icon><InfoFilled /></el-icon>
+                    我要新建模型
+                    <el-icon>
+                        <TopRight />
+                    </el-icon>
+                </el-text>
+                <el-text
+                    v-if="!isContinuePredict"
+                    @click="continuePrediction"
+                    type="primary"
+                    class="toggle-tip"
+                >
+                    <el-icon><InfoFilled /></el-icon>
+                    基于已建模型进行继续预测
+                    <el-icon>
+                        <TopRight />
+                    </el-icon>
+                </el-text>
+            </template>
+            <template v-if="stage == 2">
+                <button
+                    class="btn-continue btn btn-primary px-4 py-2"
+                    @click="emitNewPrediction"
+                >
+                    新建预测<i class="bi bi-arrow-down-circle me-2"></i>
+                </button>
+            </template>
         </div>
     </div>
 </template>
@@ -141,11 +143,23 @@ function continuePrediction() {
         color: #2c6fbb;
     }
 }
-
-.btn-submit {
-    &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+.action {
+    width: 50%;
+    margin-left: 50%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-left: 12px;
+    .btn-submit {
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+    }
+    .btn-continue {
+        justify-self: flex-end;
+        margin-left: auto;
+        margin-right: 24px;
     }
 }
 
