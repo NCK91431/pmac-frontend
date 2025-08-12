@@ -26,7 +26,7 @@
 
             <div class="nav-card">
                 <div class="icon">
-                    <i class="fas fa-battery-full"></i>
+                    <i class="fas fa-solar-panel"></i>
                 </div>
                 <h3>光储定容</h3>
                 <p>光伏储能系统容量优化设计与经济性分析</p>
@@ -36,7 +36,7 @@
             </div>
             <div class="nav-card">
                 <div class="icon">
-                    <i class="fas fa-battery-full"></i>
+                    <i class="fas fa-coins"></i>
                 </div>
                 <h3>慧储&trade;套利模拟</h3>
                 <p>量化分析峰谷套利策略收益，助力储能投资回报最大化</p>
@@ -46,7 +46,7 @@
             </div>
             <div class="nav-card">
                 <div class="icon">
-                    <i class="fas fa-battery-full"></i>
+                    <i class="fas fa-shield-alt"></i>
                 </div>
                 <h3>资产健康哨兵</h3>
                 <p>精准预警故障风险，延长设备生命周期</p>
@@ -99,8 +99,8 @@
         <div class="dialog-content">
             <div class="emoji">🚀</div>
             <h3>正在快马加鞭开发中...</h3>
-            <p>我们的工程师正在全力打造这个功能！</p>
-            <p>功能即将上线，给您带来不便敬请谅解～</p>
+            <p>功能即将上线</p>
+            <p>如有项目对接需求，请联系：15919159383</p>
             <div class="animation-container">
                 <div class="loader">
                     <div class="dot"></div>

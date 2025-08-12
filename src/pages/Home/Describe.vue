@@ -4,11 +4,9 @@
         <div class="intro-section">
             <div class="lead text-center intro-text">
                 <p class="title display-4 fw-bold text-center">
-                    赋能智慧能源管理，驱动绿色未来
+                    智算新能源全链运营，驱动绿色未来
                 </p>
-                派诺智慧能源工具平台利用人工智能与大数据技术，为您提供精准、高效的能源管理解决方案。
-                我们的算法经过千亿级数据训练，预测准确率高达91.7%，已成功为全球500+企业节约能源成本，
-                助力实现双碳目标，让能源管理更智能、更经济、更可持续。
+                新能源资产运营，依托先进的算法引擎与创新技术体系，用创新技术为行业注入精准与高效，从预测到规划，从效益评估到安全守护，为售电与微电网用户筑牢发展根基。
             </div>
         </div>
 
@@ -23,39 +21,45 @@
                 >
                     <div
                         class="feature-card"
-                        @mouseover="hoverIndex = index"
+                        @mouseover="hoverIndex = feature.title"
                         @mouseleave="hoverIndex = -1"
                     >
-                        <!-- 卡片内容保持不变 -->
-
                         <div
                             class="card-icon"
-                            :class="{ 'icon-hover': hoverIndex === index }"
+                            :class="{
+                                'icon-hover': hoverIndex === feature.title,
+                            }"
                         >
                             <component :is="feature.icon" class="icon" />
                         </div>
                         <h3 class="card-title">{{ feature.title }}</h3>
                         <p class="card-desc">{{ feature.description }}</p>
-                        <div class="card-stats">
+                        <!-- <div class="card-stats">
                             <div class="stat-item">
                                 <span class="stat-value">{{
                                     feature.stats[0]
                                 }}</span>
-                                <span class="stat-label">预测精度</span>
+                                <span class="stat-label">{{
+                                    feature.statLabels[0]
+                                }}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-value">{{
                                     feature.stats[1]
                                 }}</span>
-                                <span class="stat-label">成本节约</span>
+                                <span class="stat-label">{{
+                                    feature.statLabels[1]
+                                }}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-value">{{
                                     feature.stats[2]
                                 }}</span>
-                                <span class="stat-label">客户数</span>
+                                <span class="stat-label">{{
+                                    feature.statLabels[2]
+                                }}</span>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -67,40 +71,47 @@
                     :key="index + 2"
                     class="col-md-6 col-lg-4"
                 >
-                    <!-- 卡片内容保持不变 -->
                     <div
                         class="feature-card"
-                        @mouseover="hoverIndex = index"
+                        @mouseover="hoverIndex = feature.title"
                         @mouseleave="hoverIndex = -1"
                     >
                         <div
                             class="card-icon"
-                            :class="{ 'icon-hover': hoverIndex === index }"
+                            :class="{
+                                'icon-hover': hoverIndex === feature.title,
+                            }"
                         >
                             <component :is="feature.icon" class="icon" />
                         </div>
                         <h3 class="card-title">{{ feature.title }}</h3>
                         <p class="card-desc">{{ feature.description }}</p>
-                        <div class="card-stats">
+                        <!-- <div class="card-stats">
                             <div class="stat-item">
                                 <span class="stat-value">{{
                                     feature.stats[0]
                                 }}</span>
-                                <span class="stat-label">预测精度</span>
+                                <span class="stat-label">{{
+                                    feature.statLabels[0]
+                                }}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-value">{{
                                     feature.stats[1]
                                 }}</span>
-                                <span class="stat-label">成本节约</span>
+                                <span class="stat-label">{{
+                                    feature.statLabels[1]
+                                }}</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-value">{{
                                     feature.stats[2]
                                 }}</span>
-                                <span class="stat-label">客户数</span>
+                                <span class="stat-label">{{
+                                    feature.statLabels[2]
+                                }}</span>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -114,7 +125,7 @@
                     <div class="tech-icon">
                         <el-icon><DataAnalysis /></el-icon>
                     </div>
-                    <h4>千亿级数据训练</h4>
+                    <h4>海量数据训练</h4>
                     <p>基于全球能源网络数据构建训练模型</p>
                 </div>
                 <div class="tech-item">
@@ -147,7 +158,7 @@
             <div class="testimonial">
                 <div class="quote-icon">"</div>
                 <p class="quote">
-                    使用派诺智慧能源工具后，我们的能源分配效率提升了35%，预测精度达到行业领先水平，每年节省能源成本超过120万元。
+                    使用派诺智慧能源工具后，我们的能源分配效率显著提升，预测精度达到行业领先水平，每年节省大量能源成本。
                 </p>
                 <div class="client-info">
                     <div class="client-avatar"></div>
@@ -158,14 +169,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- 行动号召 -->
-        <!-- <div class="cta-section text-center">
-            <el-button type="primary" size="large" class="cta-button"
-                >立即体验智慧能源管理</el-button
-            >
-            <p class="cta-note">免费试用14天 · 无需信用卡</p>
-        </div> -->
     </div>
 </template>
 
@@ -183,43 +186,48 @@ import {
     Lock,
 } from "@element-plus/icons-vue";
 
-const hoverIndex = ref(-1);
+const hoverIndex = ref("");
 
 const features = ref([
     {
         title: "负荷预测",
         description:
-            "基于深度学习算法，提供精准的负荷预测分析，预测误差低于2.5%，帮助优化能源分配，减少能源浪费。",
+            "深挖历史数据规律，精准预测 D+1 24 小时逐时负荷，为售电公司撬动利润空间，助力微电网用户高效调度与科学管理",
         icon: TrendCharts,
-        stats: ["91.7%", "18-25%", "320+"],
+        stats: ["行业领先", "高效分配", "广泛适用"],
+        statLabels: ["预测精度", "能源优化", "应用范围"],
     },
     {
         title: "光伏发电预测",
         description:
-            "整合全球气象卫星数据，结合光伏板特性模型，提供未来72小时精确发电量预测，准确率高达97.3%。",
+            "动态工况精准识别，改进 Tansformer 架构，未来24小时发电功率预测为优化调度注入灵活动能",
         icon: Sunny,
-        stats: ["92.3%", "22-30%", "280+"],
+        stats: ["精准可靠", "提升效率", "多云适应"],
+        statLabels: ["预测质量", "效能提升", "环境适应"],
     },
     {
         title: "光储定容",
         description:
-            "光伏储能系统容量优化设计与全生命周期经济性分析，帮助用户找到最佳投资回报方案，平均节省成本25%。",
+            "全天调度仿真与全生命周期成本评估，给出稳健的光伏与储能装机建议，辅助投决与尽调",
         icon: Setting,
-        stats: ["91.1%", "25-35%", "190+"],
+        stats: ["优化设计", "长期收益", "稳定可靠"],
+        statLabels: ["系统设计", "经济效益", "可靠性"],
     },
     {
         title: `慧储™套利模拟`,
         description:
-            "量化分析峰谷套利策略收益，模拟不同场景下的投资回报，助力储能投资回报最大化，平均提升收益30%以上。",
+            "提供全景化场景比对，量化评估储能项目投资效能，助力实现储能投资回报可衡量性与可预见性",
         icon: Money,
-        stats: ["90.8%", "30-42%", "210+"],
+        stats: ["策略多样", "回报显著", "灵活配置"],
+        statLabels: ["套利策略", "投资回报", "配置方案"],
     },
     {
         title: "设备健康预警",
         description:
-            "实时监测设备运行状态，精准预警故障风险，延长设备生命周期，降低维护成本40%，减少意外停机时间。",
+            "实时监测设备运行状态，精准预警故障风险，延长设备生命周期，有效降低维护成本",
         icon: Warning,
-        stats: ["91.4%", "38-45%", "350+"],
+        stats: ["实时监测", "风险预判", "延长寿命"],
+        statLabels: ["监控能力", "风险预警", "设备寿命"],
     },
 ]);
 </script>
@@ -345,7 +353,7 @@ const features = ref([
     .card-desc {
         color: #4a6582;
         line-height: 1.7;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0;
         min-height: 100px;
     }
 
