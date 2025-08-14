@@ -30,7 +30,7 @@
                 </div>
                 <h3>光储定容</h3>
                 <p>光伏储能系统容量优化设计与经济性分析</p>
-                <el-button type="danger" @click="showComingSoon"
+                <el-button type="danger" @click="gotoPage('light')"
                     >进入页面</el-button
                 >
             </div>
@@ -59,22 +59,6 @@
 
     <!-- 中间产品展示区 -->
     <section class="product-section">
-        <!-- <el-carousel
-                    height="250px"
-                    :interval="4000"
-                    indicator-position="outside"
-                >
-                    <el-carousel-item v-for="item in 3" :key="item">
-                        <div class="product-img">
-                            <el-image
-                                style="width: 250px; height: auto"
-                                src="https://omo-oss-image.thefastimg.com/portal-saas/pg2025040218401364287/cms/image/ebe618ac-4b52-4065-a2ea-9275b485b661.png"
-                                :fit="fit"
-                            />
-                        </div>
-                    </el-carousel-item>
-                </el-carousel> -->
-
         <div class="header">
             <h1>{{ headerTitle }}</h1>
             <p>{{ headerSubtitle }}</p>
@@ -87,7 +71,8 @@
             />
         </div>
     </section>
-    <!-- 可爱的提示弹窗 -->
+
+    <!-- 待开发功能:可爱的提示弹窗 -->
     <el-dialog
         v-model="comingSoonVisible"
         title=""
@@ -131,6 +116,9 @@ const gotoPage = (page) => {
             break;
         case "guangfu":
             router.push("/pvpre");
+            break;
+        case "light":
+            router.push("/light");
             break;
         case "chuneng":
             router.push("/chunengpre");

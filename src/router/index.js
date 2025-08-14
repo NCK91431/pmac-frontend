@@ -41,6 +41,11 @@ const router = createRouter({
             name: "describe",
             component: () => import("@/pages/Home/Describe.vue"),
         },
+        {
+            path: "/light",
+            name: "light",
+            component: () => import("../pages/Light/LightPre.vue"),
+        },
     ],
 });
 
