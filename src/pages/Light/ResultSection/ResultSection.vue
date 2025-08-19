@@ -152,7 +152,9 @@ function calculateROI() {
     return (
         (
             resultData.value.annual_savings / resultData.value.investment_cost
-        ).toFixed(2) + " "
+        ).toFixed(2) *
+            100 +
+        " "
     );
 }
 </script>
