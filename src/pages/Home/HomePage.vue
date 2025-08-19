@@ -19,7 +19,7 @@
                 </div>
                 <h3>光伏发电预测</h3>
                 <p>基于气象数据的太阳能发电量预测与分析</p>
-                <el-button type="success" @click="showComingSoon"
+                <el-button type="success" @click="gotoPage('elec')"
                     >进入页面</el-button
                 >
             </div>
@@ -114,8 +114,8 @@ const gotoPage = (page) => {
         case "load":
             router.push("/loadpre");
             break;
-        case "guangfu":
-            router.push("/pvpre");
+        case "elec":
+            router.push("/elec");
             break;
         case "light":
             router.push("/light");

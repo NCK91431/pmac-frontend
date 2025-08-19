@@ -46,6 +46,11 @@ const router = createRouter({
             name: "light",
             component: () => import("../pages/Light/LightPre.vue"),
         },
+        {
+            path: "/elec",
+            name: "elec",
+            component: () => import("../pages/Elec/ElecPre.vue"),
+        },
     ],
 });
 
