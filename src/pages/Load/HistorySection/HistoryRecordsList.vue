@@ -183,10 +183,14 @@ import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
 import { Delete } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import { useLoadPreStageStore } from "@/store/loadpreStageStore";
+import { useLoadForecastStore } from "@/store/load";
 
-const stageStore = useLoadPreStageStore();
-const activeHistoryRecordId = computed(() => stageStore.activeHistoryRecordId); //用户选中的某条负荷预测记录
+const forecastStore = useLoadForecastStore();
+
+//用户选中的某条负荷预测记录
+const activeHistoryRecordId = computed(
+    () => forecastStore.activeHistoryRecordId
+);
 
 /* --------------------------- 正在执行的任务 -------------------------- */
 // 新增处理中任务列表
@@ -244,7 +248,7 @@ const getCustomerTagType = (type) => {
 const searchQuery = ref("");
 
 function handleNodeClick(node) {
-    stageStore.set_activeHistoryRecordId(node.id); // 设置当前选中节点
+    forecastStore.set_activeHistoryRecordId(node.id); // 设置当前选中节点
 }
 
 // 删除历史记录
@@ -263,7 +267,7 @@ async function deleteRecord(record) {
             fetchRecords();
             // 如果删除的这条刚好是用户当前选中的，重置选中的记录为null
             if (record.id == activeHistoryRecordId.value) {
-                stageStore.set_activeHistoryRecordId(null); // 设置当前选中节点
+                forecastStore.set_activeHistoryRecordId(null); // 设置当前选中节点
             }
         } else {
             ElMessage.error("删除记录失败");

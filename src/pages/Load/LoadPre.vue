@@ -59,20 +59,20 @@ import RecordDetail from "./HistorySection/RecordDetail.vue";
 import moment from "moment";
 import { ElMessage, ElNotification, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
-import { useLoadPreFormStore } from "@/store/loadpreformStore";
-import { useLoadPreStageStore } from "@/store/loadpreStageStore";
-import { useForecastStore } from "@/store/forecast";
+import { useLoadForecastStore } from "@/store/load";
 
-const formStore = useLoadPreFormStore();
-const stageStore = useLoadPreStageStore();
-const forecastStore = useForecastStore(); // 用于处理继续预测
-const activeHistoryRecordId = computed(() => stageStore.activeHistoryRecordId); //用户选中的某条负荷预测记录
+const forecastStore = useLoadForecastStore();
+
+//用户选中的某条负荷预测记录
+const activeHistoryRecordId = computed(
+    () => forecastStore.activeHistoryRecordId
+);
 
 const activeTab = computed(() => forecastStore.activeTab); // 从 store 获取标签状态
 const isContinue = computed(() => forecastStore.isContinue);
 
-const record = computed(() => stageStore.responseData); //后端返回的完整数据；
-const stage = computed(() => stageStore.stage); // 0:初始状态 1:处理中 2:处理完成
+const record = computed(() => forecastStore.responseData); //后端返回的完整数据；
+const stage = computed(() => forecastStore.stage); // 0:初始状态 1:处理中 2:处理完成
 
 const user = inject("user"); //注入全局用户状态
 const router = useRouter();
@@ -85,7 +85,7 @@ function switchTab(tabName) {
 const processingTasks = ref([]); //任务队列
 
 async function handleSubmit(formData, fileData) {
-    stageStore.setStageOne(); // 设置为处理中状态 stage = 1
+    forecastStore.setStageOne(); // 设置为处理中状态 stage = 1
     const post_data = new FormData();
     post_data.append("customer_type", formData.customer_type);
     post_data.append("pv_config", formData.pv_config);
@@ -116,12 +116,12 @@ async function handleSubmit(formData, fileData) {
                 title: "预测完成",
                 message: "预测任务已完成，您可以查看结果",
             });
-            stageStore.setCompleted(res.data); // 设置为完成状态 stage = 2
+            forecastStore.setCompleted(res.data); // 设置为完成状态 stage = 2
             forecastStore.clearContinueData(); // 确保清除状态、清除继续预测数据
         }
         // 处理响应
     } catch (error) {
-        stageStore.setStageZero(); // 出错时重置状态 stage = 0
+        forecastStore.setStageZero(); // 出错时重置状态 stage = 0
         if (error.response?.status === 400 || error.response?.status === 500) {
             console.log(error.response);
             ElMessageBox.alert(
@@ -140,8 +140,8 @@ async function handleSubmit(formData, fileData) {
 }
 
 function onNewPrediction() {
-    formStore.resetFileOnly(); // 只删除文件，保留表单配置
-    stageStore.setStageZero(); // 重置为初始状态
+    forecastStore.resetFileOnly(); // 只删除文件，保留表单配置
+    forecastStore.setStageZero(); // 重置为初始状态
 }
 
 function onClickHistoryTab() {
@@ -172,7 +172,7 @@ function onClickHistoryTab() {
             });
     } else {
         if (activeTab.value == "upload" && isContinue.value) {
-            formStore.resetForm();
+            forecastStore.resetForm();
             forecastStore.clearContinueData();
         }
         // 用户已登录或切换到上传标签，直接切换

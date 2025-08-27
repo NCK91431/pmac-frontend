@@ -161,14 +161,12 @@ import ChartDisplay from "../ResultSection/ChartDisplay.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
-import { useForecastStore } from "@/store/forecast";
-import { useLoadPreStageStore } from "@/store/loadpreStageStore";
-import { useLoadPreFormStore } from "@/store/loadpreformStore";
+import { useLoadForecastStore } from "@/store/load";
 
-const forecastStore = useForecastStore();
-const formStore = useLoadPreFormStore();
-const stageStore = useLoadPreStageStore();
-const activeHistoryRecordId = computed(() => stageStore.activeHistoryRecordId); //用户在历史记录列表里选中的某条负荷预测记录
+const forecastStore = useLoadForecastStore();
+const activeHistoryRecordId = computed(
+    () => forecastStore.activeHistoryRecordId
+); //用户在历史记录列表里选中的某条负荷预测记录
 
 const record = ref({});
 async function getRecordDetailById() {
@@ -306,7 +304,7 @@ async function downloadPredictionExcel() {
 /*------------ 继续预测 ------------*/
 const continueForecast = () => {
     // 如果用户正处在预测进行状态中不可使用
-    if (stageStore.stage == 1) {
+    if (forecastStore.stage == 1) {
         ElMessage.error("您有预测正在进行中，请待预测完成后再使用此功能");
         return;
     }
@@ -320,7 +318,7 @@ const continueForecast = () => {
     });
 
     // 预填表单
-    formStore.updateFormData({
+    forecastStore.updateFormData({
         customer_type: record.value.customer_type,
         pv_config: record.value.pv_config,
         location: record.value.location,
@@ -328,9 +326,9 @@ const continueForecast = () => {
         previous_record_id: record.value.id,
     });
 
-    formStore.removeFile(); //清空文件
+    forecastStore.removeFile(); //清空文件
 
-    stageStore.reset(); // 重置stage
+    forecastStore.reset(); // 重置stage
 };
 </script>
 

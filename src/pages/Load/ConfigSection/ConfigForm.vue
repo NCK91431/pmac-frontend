@@ -116,11 +116,9 @@
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
 import { InfoFilled } from "@element-plus/icons-vue";
-import { useForecastStore } from "@/store/forecast";
-import { useLoadPreFormStore } from "@/store/loadpreformStore";
+import { useLoadForecastStore } from "@/store/load";
 
-const formStore = useLoadPreFormStore();
-const forecastStore = useForecastStore(); // 用于处理继续预测
+const forecastStore = useLoadForecastStore();
 
 const isContinue = computed(() => forecastStore.isContinue);
 
@@ -135,8 +133,8 @@ const cascaderProps = {
 
 // 表单数据双向绑定
 const form = computed({
-    get: () => formStore.formData,
-    set: (value) => formStore.updateFormData(value),
+    get: () => forecastStore.formData,
+    set: (value) => forecastStore.updateFormData(value),
 });
 
 const locationOptions = ref([]);
@@ -154,7 +152,7 @@ onMounted(async () => {
 });
 
 defineExpose({
-    isValid: computed(() => formStore.isValid),
+    isValid: computed(() => forecastStore.isValid),
 });
 </script>
 

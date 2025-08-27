@@ -77,25 +77,23 @@
 <script setup>
 import { Download } from "@element-plus/icons-vue";
 import { computed } from "vue";
-import { useLoadPreFormStore } from "@/store/loadpreformStore";
-import { useForecastStore } from "@/store/forecast";
+import { useLoadForecastStore } from "@/store/load"; // 修改为新的Store
 
-const formStore = useLoadPreFormStore();
-const file = computed(() => formStore.uploadedFile); // 用Pinia管理file
+const forecastStore = useLoadForecastStore(); // 使用新的综合Store
 
-const forecastStore = useForecastStore();
+const file = computed(() => forecastStore.uploadedFile); // 直接从新Store获取文件
 const isContinue = computed(() => forecastStore.isContinue); // 判断是否处于继续预测状态
 
 // 监听文件上传变化：当文件上传时，更新file变量并触发事件
 function handleFileChange(uploadFile) {
     if (uploadFile) {
-        formStore.setFile(uploadFile.raw);
+        forecastStore.setFile(uploadFile.raw);
     }
 }
 
 // 当文件被删除时，清空file变量
 function removeFile() {
-    formStore.removeFile();
+    forecastStore.removeFile();
 }
 
 // 格式化文件大小为可读格式

@@ -87,24 +87,23 @@ import ConfigForm from "./ConfigForm.vue";
 import FileUpload from "./FileUpload.vue";
 import FinishView from "./FinishView.vue";
 import LoadingOverlay from "./LoadingOverlay.vue";
-import { useLoadPreFormStore } from "@/store/loadpreformStore";
-import { useLoadPreStageStore } from "@/store/loadpreStageStore";
-import { useForecastStore } from "@/store/forecast";
 import { addDays, format } from "date-fns";
 import { InfoFilled, TopRight } from "@element-plus/icons-vue";
+import { useLoadForecastStore } from "@/store/load";
 
-const formStore = useLoadPreFormStore();
-const stageStore = useLoadPreStageStore();
+const forecastStore = useLoadForecastStore();
 
 const emit = defineEmits(["submit", "new-predictiton"]);
 
-const record = computed(() => stageStore.responseData);
-const stage = computed(() => stageStore.stage);
+const record = computed(() => forecastStore.responseData);
+const stage = computed(() => forecastStore.stage);
 
-const isFormValid = computed(() => formStore.isValid && formStore.hasFile);
+const isFormValid = computed(
+    () => forecastStore.isValid && forecastStore.hasFile
+);
 
 const submitForm = () => {
-    emit("submit", formStore.formData, formStore.uploadedFile);
+    emit("submit", forecastStore.formData, forecastStore.uploadedFile);
 };
 
 function emitNewPrediction() {
@@ -112,7 +111,6 @@ function emitNewPrediction() {
 }
 
 /* ----------------------------------- 继续预测 ------------------------------------------------- */
-const forecastStore = useForecastStore();
 const isContinuePredict = computed(() => forecastStore.isContinue);
 const uploadDateRange = computed(() => {
     if (!forecastStore.continueData?.upload_date_range_format_text) return "";
@@ -127,8 +125,8 @@ const requiredStartDate = computed(() => {
 
 /* ----------------------------------- 继续预测 ------------------------------------------------- */
 function createNewPrediction() {
-    formStore.resetForm(); //重置表单
-    forecastStore.clearContinueData(); // 确保清除状态、清除继续预测数据
+    forecastStore.resetForm();
+    forecastStore.clearContinueData(); // 清除继续预测数据
 }
 function continuePrediction() {
     forecastStore.setActiveTab("history");
