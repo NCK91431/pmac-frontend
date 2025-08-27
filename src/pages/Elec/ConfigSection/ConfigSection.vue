@@ -8,7 +8,7 @@
             <strong>{{ requiredStartDate }}</strong> 之后的数据。
         </div>
         <h2 class="h5 mb-4 text">
-            <i class="bi bi-graph-up me-2"></i>负荷预测配置
+            <i class="bi bi-graph-up me-2"></i>光伏发电预测配置
         </h2>
 
         <div class="row">

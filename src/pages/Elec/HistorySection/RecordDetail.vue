@@ -80,7 +80,7 @@
             <div class="col-md-8">
                 <div class="chart-card card shadow-sm p-3 h-100">
                     <div class="header">
-                        <h5 class="mb-3">负荷预测结果</h5>
+                        <h5 class="mb-3">光伏发电预测结果</h5>
                         <el-button
                             type="success"
                             plain

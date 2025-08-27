@@ -26,7 +26,7 @@
                         <h6>格式要求</h6>
                         <el-link
                             type="primary"
-                            href="https://pmac.leyi.host/downloads/loadforecasr_template.xlsx"
+                            href="https://pmac.leyi.host/downloads/光储定容模版.xlsx"
                             download
                         >
                             <el-icon class="el-icon--right">
