@@ -180,13 +180,9 @@ import { Edit, Notification, User } from "@element-plus/icons-vue";
 import { computed, inject, ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { useForecastStore } from "@/store/forecast";
-import { useLoadPreStageStore } from "@/store/loadpreStageStore";
-import { useLoadPreFormStore } from "@/store/loadpreformStore";
+import { useLoadForecastStore } from "@/store/load"; // 使用新的综合Store
 
-const formStore = useLoadPreFormStore();
-const stageStore = useLoadPreStageStore();
-const forecastStore = useForecastStore(); // 用于处理继续预测
+const forecastStore = useLoadForecastStore(); // 使用新的综合Store
 
 // 注入全局用户状态和方法
 const user = inject("user");
@@ -208,13 +204,11 @@ function onLogout() {
     }).then(() => {
         clearUser();
         // 重置所有状态：
-        stageStore.reset();
-        stageStore.set_activeHistoryRecordId(null);
-
-        formStore.resetForm();
-
-        forecastStore.clearContinueData();
-        forecastStore.setActiveTab("upload");
+        forecastStore.reset(); // 重置stage和responseData
+        forecastStore.set_activeHistoryRecordId(null); // 重置历史记录选择
+        forecastStore.resetForm(); // 重置表单数据
+        forecastStore.clearContinueData(); // 清除继续预测数据
+        forecastStore.setActiveTab("upload"); // 重置标签页
 
         //返回首页：
         router.push({ name: "home" });
