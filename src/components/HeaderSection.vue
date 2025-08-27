@@ -204,7 +204,7 @@ function onLogout() {
     }).then(() => {
         clearUser();
         // 重置所有状态：
-        forecastStore.reset(); // 重置stage和responseData
+        forecastStore.resetStage(); // 重置stage和responseData
         forecastStore.set_activeHistoryRecordId(null); // 重置历史记录选择
         forecastStore.resetForm(); // 重置表单数据
         forecastStore.clearContinueData(); // 清除继续预测数据

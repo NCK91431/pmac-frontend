@@ -22,15 +22,27 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         stage: 0, // 0:初始状态 1:处理中 2:处理完成
         responseData: null,
         activeHistoryRecordId: null,
+
+        mode: "T", // 预测模式，"T"表示总负荷预测，"S"表示分项负荷预测
     }),
 
     getters: {
         // 表单验证状态
-        isValid: (state) =>
-            state.formData.customer_type &&
-            state.formData.pv_config &&
-            state.formData.location.length === 3 &&
-            state.formData.forecast_range,
+        isValid: (state) => {
+            if (state.mode === "S") {
+                return (
+                    state.formData.customer_type &&
+                    state.formData.pv_config &&
+                    state.formData.location.length === 3 &&
+                    state.formData.forecast_range
+                );
+            } else {
+                return (
+                    state.formData.location.length === 2 &&
+                    state.formData.forecast_range
+                );
+            }
+        },
 
         // 文件上传状态
         hasFile: (state) => state.uploadedFile !== null,
@@ -100,6 +112,16 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
         set_activeHistoryRecordId(id) {
             this.activeHistoryRecordId = id;
+        },
+        switchMode() {
+            if (this.mode === "T") {
+                this.mode = "S";
+            } else {
+                this.mode = "T";
+            }
+        },
+        setMode(mode) {
+            this.mode = mode;
         },
     },
 

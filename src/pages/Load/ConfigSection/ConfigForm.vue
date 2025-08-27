@@ -1,75 +1,77 @@
 <template>
     <div class="config-form card border-0 shadow-sm p-3 h-100">
-        <div class="mb-3">
-            <label class="form-label fw-bold">客户类型</label>
-            <el-select
-                v-model="form.customer_type"
-                placeholder="请选择客户类型"
-                class="w-100"
-                :disabled="isContinue"
-            >
-                <el-option label="医院" value="hospital" />
-                <el-option label="商超" value="mall" />
-                <el-option label="离散工业" value="discrete" />
-                <el-option label="连续工业" value="continuous" />
-            </el-select>
-        </div>
+        <template v-if="mode == 'S'">
+            <div class="mb-3">
+                <label class="form-label fw-bold">客户类型</label>
+                <el-select
+                    v-model="form.customer_type"
+                    placeholder="请选择客户类型"
+                    class="w-100"
+                    :disabled="isContinue"
+                >
+                    <el-option label="医院" value="hospital" />
+                    <el-option label="商超" value="mall" />
+                    <el-option label="离散工业" value="discrete" />
+                    <el-option label="连续工业" value="continuous" />
+                </el-select>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label fw-bold">光伏配置</label>
-            <div class="d-flex gap-3">
-                <div class="form-check">
-                    <input
-                        v-model="form.pv_config"
-                        class="form-check-input"
-                        type="radio"
-                        value="yes"
-                        id="pvYes"
-                        :disabled="isContinue"
-                    />
-                    <label class="form-check-label" for="pvYes">有</label>
-                </div>
-                <div class="form-check">
-                    <input
-                        v-model="form.pv_config"
-                        class="form-check-input"
-                        type="radio"
-                        value="no"
-                        id="pvNo"
-                        :disabled="isContinue"
-                    />
-                    <label class="form-check-label" for="pvNo">无</label>
-                </div>
-                <div class="form-check">
-                    <input
-                        v-model="form.pv_config"
-                        class="form-check-input"
-                        type="radio"
-                        value="unknown"
-                        id="pvUnknown"
-                        :disabled="isContinue"
-                    />
-                    <label class="form-check-label" for="pvUnknown"
-                        >不确定</label
-                    >
+            <div class="mb-3">
+                <label class="form-label fw-bold">光伏配置</label>
+                <div class="d-flex gap-3">
+                    <div class="form-check">
+                        <input
+                            v-model="form.pv_config"
+                            class="form-check-input"
+                            type="radio"
+                            value="yes"
+                            id="pvYes"
+                            :disabled="isContinue"
+                        />
+                        <label class="form-check-label" for="pvYes">有</label>
+                    </div>
+                    <div class="form-check">
+                        <input
+                            v-model="form.pv_config"
+                            class="form-check-input"
+                            type="radio"
+                            value="no"
+                            id="pvNo"
+                            :disabled="isContinue"
+                        />
+                        <label class="form-check-label" for="pvNo">无</label>
+                    </div>
+                    <div class="form-check">
+                        <input
+                            v-model="form.pv_config"
+                            class="form-check-input"
+                            type="radio"
+                            value="unknown"
+                            id="pvUnknown"
+                            :disabled="isContinue"
+                        />
+                        <label class="form-check-label" for="pvUnknown"
+                            >不确定</label
+                        >
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 新增装机容量输入框，仅在选择"有"时显示 -->
-        <div class="mb-3" v-if="form.pv_config == 'yes'">
-            <label class="form-label fw-bold">装机容量 (kw)</label>
-            <input
-                type="number"
-                v-model.number="form.pv_capacity"
-                class="form-control"
-                placeholder="请输入装机容量"
-                required
-                min="0"
-                step="any"
-                :disabled="isContinue"
-            />
-        </div>
+            <!-- 新增装机容量输入框，仅在选择"有"时显示 -->
+            <div class="mb-3" v-if="form.pv_config == 'yes'">
+                <label class="form-label fw-bold">装机容量 (kw)</label>
+                <input
+                    type="number"
+                    v-model.number="form.pv_capacity"
+                    class="form-control"
+                    placeholder="请输入装机容量"
+                    required
+                    min="0"
+                    step="any"
+                    :disabled="isContinue"
+                />
+            </div>
+        </template>
 
         <div class="mb-3">
             <label class="form-label fw-bold">地点</label>
@@ -121,6 +123,8 @@ import { useLoadForecastStore } from "@/store/load";
 const forecastStore = useLoadForecastStore();
 
 const isContinue = computed(() => forecastStore.isContinue);
+
+const mode = computed(() => forecastStore.mode); // 预测模式
 
 // 配置级联选择器属性
 const cascaderProps = {

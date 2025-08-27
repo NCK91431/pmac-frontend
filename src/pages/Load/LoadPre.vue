@@ -1,5 +1,27 @@
 <template>
     <main class="container my-4 flex-grow-1">
+        <!-- 预测模式 -->
+        <div v-if="activeTab == 'upload'" class="mode mb-4">
+            <span class="text">
+                <i class="bi bi-info-circle me-2"></i>
+                <span v-if="mode == 'T'">
+                    您正在进行的是 <strong>总负荷预测</strong>
+                </span>
+                <span v-if="mode == 'S'">
+                    您正在进行的是 <strong>分项负荷预测</strong>
+                </span>
+            </span>
+            <span
+                v-if="stage == 0 && !isContinue"
+                class="action"
+                @click="switchMode"
+            >
+                切换到
+                <strong v-if="mode == 'T'">分项负荷预测</strong>
+                <strong v-else>总负荷预测</strong>
+                <i class="bi bi-arrow-left-right"></i>
+            </span>
+        </div>
         <!-- 预测表单 -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white">
@@ -73,6 +95,7 @@ const isContinue = computed(() => forecastStore.isContinue);
 
 const record = computed(() => forecastStore.responseData); //后端返回的完整数据；
 const stage = computed(() => forecastStore.stage); // 0:初始状态 1:处理中 2:处理完成
+const mode = computed(() => forecastStore.mode); // 预测模式
 
 const user = inject("user"); //注入全局用户状态
 const router = useRouter();
@@ -81,18 +104,25 @@ const router = useRouter();
 function switchTab(tabName) {
     forecastStore.setActiveTab(tabName); // 更新 store 状态
 }
+/* ---------------- 切换模式 -----------------*/
+function switchMode() {
+    forecastStore.switchMode();
+}
 /* ---------------- 执行模型预测过程中 -----------------*/
 const processingTasks = ref([]); //任务队列
 
 async function handleSubmit(formData, fileData) {
     forecastStore.setStageOne(); // 设置为处理中状态 stage = 1
     const post_data = new FormData();
-    post_data.append("customer_type", formData.customer_type);
-    post_data.append("pv_config", formData.pv_config);
-    post_data.append("pv_capacity", formData.pv_capacity);
+    if (mode.value == "S") {
+        post_data.append("customer_type", formData.customer_type);
+        post_data.append("pv_config", formData.pv_config);
+        post_data.append("pv_capacity", formData.pv_capacity);
+    }
     post_data.append("location", JSON.stringify(formData.location));
     post_data.append("forecast_range", formData.forecast_range);
     post_data.append("file", fileData);
+    post_data.append("mode", mode.value);
     // 如果有用户ID
     if (user.value) {
         post_data.append("user_id", user.value.id);
@@ -241,6 +271,54 @@ function onClickHistoryTab() {
                     border-color: #0b5ed7;
                 }
             }
+        }
+    }
+}
+.mode {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #f0f7ff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid #2c6fbb;
+    .text {
+        color: #495057;
+        font-size: 1.1rem;
+
+        i {
+            color: #2c6fbb;
+        }
+
+        strong {
+            color: #2c6fbb;
+            font-weight: 600;
+        }
+    }
+
+    .action {
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+
+        &:hover {
+            color: #2c6fbb;
+            transform: translateX(4px);
+        }
+
+        strong {
+            font-weight: 600;
+            color: inherit;
+            padding-right: 12px;
+        }
+
+        i {
+            font-size: 1.2rem;
+            vertical-align: middle;
         }
     }
 }

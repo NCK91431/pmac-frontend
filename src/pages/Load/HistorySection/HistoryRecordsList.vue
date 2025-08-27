@@ -72,8 +72,8 @@
         <div class="table-header">
             <div class="col-id">ID</div>
             <div class="col-date">创建时间</div>
+            <div class="col-mode">预测模式</div>
             <div class="col-location">位置</div>
-            <div class="col-type">客户类型</div>
             <div class="col-range">预测范围</div>
             <div class="col-upload">上传日期范围</div>
             <div class="col-prediction">预测日期</div>
@@ -107,6 +107,19 @@
                     <div class="col-date">
                         {{ new Date(data.created_at).toLocaleString() }}
                     </div>
+                    <!-- 预测模式列：仅根节点显示 -->
+                    <div class="col-mode">
+                        <template v-if="node.level == 1">
+                            <span
+                                size="small"
+                                class="customer-badge"
+                                :class="'customer-' + data.mode"
+                            >
+                                {{ data.mode == "T" ? "总预测" : "分项预测" }}
+                            </span>
+                        </template>
+                        <template v-else>-</template>
+                    </div>
                     <!-- 位置列：仅根节点显示 -->
                     <div class="col-location">
                         <template v-if="node.level == 1">
@@ -114,23 +127,13 @@
                         </template>
                         <template v-else>-</template>
                     </div>
-                    <!-- 客户类型列：仅根节点显示 -->
-                    <div class="col-type">
-                        <template v-if="node.level == 1">
-                            <span
-                                size="small"
-                                class="customer-badge"
-                                :class="'customer-' + data.customer_type"
-                            >
-                                {{ formatCustomerType(data.customer_type) }}
-                            </span>
-                        </template>
-                        <template v-else>-</template>
-                    </div>
                     <!-- 预测范围列：仅根节点显示 -->
                     <div class="col-range">
                         <template v-if="node.level == 1">
-                            <span class="range-badge">
+                            <span
+                                class="range-badge"
+                                :class="'range-' + data.forecast_range"
+                            >
                                 {{
                                     data.forecast_range === "4days"
                                         ? "D-4 → D+1"
@@ -324,6 +327,10 @@ async function deleteRecord(record) {
         flex: 0 0 160px;
     }
 
+    .col-mode {
+        flex: 0 0 100px;
+    }
+
     .col-location {
         flex: 0 0 180px;
     }
@@ -390,6 +397,25 @@ async function deleteRecord(record) {
         flex: 0 0 160px;
     }
 
+    .col-mode {
+        flex: 0 0 100px;
+        .customer-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .customer-S {
+            background-color: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+        }
+        .customer-T {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+    }
+
     .col-location {
         flex: 0 0 180px;
     }
@@ -423,11 +449,19 @@ async function deleteRecord(record) {
         flex: 0 0 120px;
 
         .range-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .range-4days {
             background-color: #e6f7ff;
             color: #1890ff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
+        }
+        .range-1day {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
         }
     }
 

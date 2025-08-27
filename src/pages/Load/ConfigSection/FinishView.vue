@@ -4,45 +4,46 @@
         <div class="col-md-6">
             <div class="preview-card">
                 <div class="preview-list">
-                    <!-- 客户类型 -->
-                    <div class="preview-item">
-                        <div class="preview-label">
-                            <i class="bi bi-building"></i> 客户类型
+                    <template v-if="props.record.formData.mode == 'S'">
+                        <!-- 客户类型 -->
+                        <div class="preview-item">
+                            <div class="preview-label">
+                                <i class="bi bi-building"></i> 客户类型
+                            </div>
+                            <div class="preview-value">
+                                <span class="status-badge customer-type">
+                                    <i class="bi" :class="customerTypeIcon"></i>
+                                    {{ customer_type }}
+                                </span>
+                            </div>
                         </div>
-                        <div class="preview-value">
-                            <span class="status-badge customer-type">
-                                <i class="bi" :class="customerTypeIcon"></i>
-                                {{ customer_type }}
-                            </span>
-                        </div>
-                    </div>
 
-                    <!-- 光伏配置 -->
-                    <div class="preview-item">
-                        <div class="preview-label">
-                            <i class="bi bi-sun"></i> 光伏配置
+                        <!-- 光伏配置 -->
+                        <div class="preview-item">
+                            <div class="preview-label">
+                                <i class="bi bi-sun"></i> 光伏配置
+                            </div>
+                            <div class="preview-value">
+                                <span class="status-badge">
+                                    <i class="bi"></i>
+                                    {{ pv_config }}
+                                </span>
+                            </div>
                         </div>
-                        <div class="preview-value">
-                            <span class="status-badge">
-                                <i class="bi"></i>
-                                {{ pv_config }}
-                            </span>
-                        </div>
-                    </div>
 
-                    <!-- 光伏配置 -->
-                    <div class="preview-item" v-if="pv_config == '已配置'">
-                        <div class="preview-label">
-                            <i class="bi bi-box-seam"></i> 装机容量
+                        <!-- 光伏配置 -->
+                        <div class="preview-item" v-if="pv_config == '已配置'">
+                            <div class="preview-label">
+                                <i class="bi bi-box-seam"></i> 装机容量
+                            </div>
+                            <div class="preview-value">
+                                <span class="status-badge">
+                                    <i class="bi"></i>
+                                    {{ pv_capacity }}（kw）
+                                </span>
+                            </div>
                         </div>
-                        <div class="preview-value">
-                            <span class="status-badge">
-                                <i class="bi"></i>
-                                {{ pv_capacity }}（kw）
-                            </span>
-                        </div>
-                    </div>
-
+                    </template>
                     <!-- 地点 -->
                     <div class="preview-item">
                         <div class="preview-label">

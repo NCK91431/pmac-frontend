@@ -13,6 +13,22 @@
                             </div>
                             <div class="value">{{ record.id }}</div>
                         </div>
+                        <div class="info-item mode">
+                            <div class="label">
+                                <i class="bi bi-clock"></i> 预测类型:
+                            </div>
+                            <div class="value">
+                                <span
+                                    class="badge-custom"
+                                    :class="'customer-' + record.mode"
+                                    >{{
+                                        record.mode == "T"
+                                            ? "总负荷预测"
+                                            : "分项负荷预测"
+                                    }}</span
+                                >
+                            </div>
+                        </div>
                         <div class="info-item">
                             <div class="label">
                                 <i class="bi bi-clock"></i> 请求时间:
@@ -44,48 +60,55 @@
                                 {{ record.prediction_date }}
                             </div>
                         </div>
-                        <div class="info-item">
-                            <div class="label">
-                                <i class="bi bi-person"></i> 客户类型:
+                        <template v-if="record.mode == 'S'">
+                            <div class="info-item">
+                                <div class="label">
+                                    <i class="bi bi-person"></i> 客户类型:
+                                </div>
+                                <div class="value">
+                                    <span class="badge-custom">{{
+                                        formatCustomerType(record.customer_type)
+                                    }}</span>
+                                </div>
                             </div>
-                            <div class="value">
-                                <span class="badge-custom">{{
-                                    formatCustomerType(record.customer_type)
-                                }}</span>
+                            <div class="info-item">
+                                <div class="label">
+                                    <i class="bi bi-sun"></i> 光伏配置:
+                                </div>
+                                <div class="value">
+                                    <span
+                                        v-if="record.pv_config === 'yes'"
+                                        class="badge-custom badge-pv-yes"
+                                        >有</span
+                                    >
+                                    <span
+                                        v-else-if="record.pv_config === 'no'"
+                                        class="badge-custom badge-pv-no"
+                                        >无</span
+                                    >
+                                    <span
+                                        v-else
+                                        class="badge-custom badge-pv-unknown"
+                                        >不确定</span
+                                    >
+                                </div>
                             </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="label">
-                                <i class="bi bi-sun"></i> 光伏配置:
+                            <div
+                                class="info-item"
+                                v-if="record.pv_config == 'yes'"
+                            >
+                                <div class="label">
+                                    <i class="bi bi-box-seam"></i> 装机容量:
+                                </div>
+                                <div class="value">
+                                    {{
+                                        record.pv_capacity
+                                            ? record.pv_capacity
+                                            : 0
+                                    }}（kw）
+                                </div>
                             </div>
-                            <div class="value">
-                                <span
-                                    v-if="record.pv_config === 'yes'"
-                                    class="badge-custom badge-pv-yes"
-                                    >有</span
-                                >
-                                <span
-                                    v-else-if="record.pv_config === 'no'"
-                                    class="badge-custom badge-pv-no"
-                                    >无</span
-                                >
-                                <span
-                                    v-else
-                                    class="badge-custom badge-pv-unknown"
-                                    >不确定</span
-                                >
-                            </div>
-                        </div>
-                        <div class="info-item" v-if="record.pv_config == 'yes'">
-                            <div class="label">
-                                <i class="bi bi-box-seam"></i> 装机容量:
-                            </div>
-                            <div class="value">
-                                {{
-                                    record.pv_capacity ? record.pv_capacity : 0
-                                }}（kw）
-                            </div>
-                        </div>
+                        </template>
                         <div class="info-item">
                             <div class="label">
                                 <i class="bi bi-geo-alt"></i> 地点:
@@ -326,9 +349,11 @@ const continueForecast = () => {
         previous_record_id: record.value.id,
     });
 
+    forecastStore.setMode(record.value.mode); // 设置预测模式
+
     forecastStore.removeFile(); //清空文件
 
-    forecastStore.reset(); // 重置stage
+    forecastStore.resetStage(); // 重置stage
 };
 </script>
 
@@ -428,6 +453,22 @@ const continueForecast = () => {
                         background-color: #f3e5f5;
                         color: #9c27b0;
                     }
+                }
+            }
+            &.mode {
+                .badge-custom {
+                    font-weight: 500;
+                    padding: 5px 12px;
+                    border-radius: 20px;
+                    font-size: 0.9rem;
+                }
+                .customer-S {
+                    background-color: rgba(155, 89, 182, 0.1);
+                    color: #9b59b6;
+                }
+                .customer-T {
+                    background-color: rgba(52, 152, 219, 0.1);
+                    color: #3498db;
                 }
             }
         }
