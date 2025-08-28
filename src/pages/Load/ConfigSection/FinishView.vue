@@ -165,10 +165,14 @@ const pv_capacity = computed(() => {
 });
 
 const location_string = computed(() => {
-    if (!props.record.formData || !props.record.formData.location) {
+    if (typeof props.record.formData.location === "string") {
+        const locationStr = props.record.formData.location;
+        return JSON.parse(locationStr).join("-");
+    } else if (!props.record.formData || !props.record.formData.location) {
         return "未选择";
+    } else {
+        return "-";
     }
-    return props.record.formData.location.join("-");
 });
 const forecast_range = computed(() => {
     if (!props.record.formData || !props.record.formData.forecast_range) {
