@@ -38,7 +38,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
                 );
             } else {
                 return (
-                    state.formData.location.length === 2 &&
+                    state.formData.location.length === 3 &&
                     state.formData.forecast_range
                 );
             }
