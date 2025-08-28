@@ -77,9 +77,10 @@
             <label class="form-label fw-bold">地点</label>
             <el-cascader
                 v-model="form.location"
-                :options="locationOptions"
+                :options="mode === 'T' ? provinceOptions : locationOptions"
                 :props="cascaderProps"
-                placeholder="请选择省/市/区"
+                :placeholder="mode === 'T' ? '请选择省份' : '请选择省/市/区'"
+                :show-all-levels="mode !== 'T'"
                 clearable
                 filterable
                 class="w-100"
@@ -126,14 +127,40 @@ const isContinue = computed(() => forecastStore.isContinue);
 
 const mode = computed(() => forecastStore.mode); // 预测模式
 
+// 添加一个计算属性来获取省份数据
+const provinceOptions = computed(() => {
+    return locationOptions.value.map((province) => ({
+        value: province.value,
+        label: province.label,
+        // 清空children以确保不能选择下级
+        children: undefined,
+    }));
+});
+
 // 配置级联选择器属性
-const cascaderProps = {
-    value: "label",
-    label: "label",
-    children: "children",
-    expandTrigger: "hover",
-    pv_capacity: 0,
-};
+const cascaderProps = computed(() => {
+    const baseProps = {
+        value: "label",
+        label: "label",
+        expandTrigger: "hover",
+    };
+
+    // 当mode为'T'时，禁用children选择
+    if (mode.value === "T") {
+        return {
+            ...baseProps,
+            // 设置为叶子节点，防止展开
+            leaf: () => true,
+            // 禁用子选项
+            children: undefined,
+        };
+    }
+
+    return {
+        ...baseProps,
+        children: "children",
+    };
+});
 
 // 表单数据双向绑定
 const form = computed({
