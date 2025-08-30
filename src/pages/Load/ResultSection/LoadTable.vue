@@ -8,7 +8,7 @@
         >
             <el-table-column prop="title" label="时间" />
             <el-table-column
-                v-for="time in header"
+                v-for="time in headerData"
                 :key="time"
                 :prop="time"
                 :label="time"
@@ -18,20 +18,24 @@
 </template>
 
 <script setup>
+import { onMounted } from "vue";
+
 const props = defineProps({
     predictionData: Array,
+    headerData: Array,
 });
-const header = Array(24)
-    .fill()
-    .map((_, i) => `${i}:00`);
+
+onMounted(() => {
+    console.log("LoadTable predictionData:", props.predictionData);
+});
 
 function getTableData() {
     let row = {
         title: "负荷值",
     };
-    const data = [...props.predictionData];
-    data.forEach((item) => {
-        row[item.time] = item.value;
+    const data = props.predictionData;
+    props.headerData.forEach((time, idx) => {
+        row[time] = data[idx];
     });
     return [row];
 }

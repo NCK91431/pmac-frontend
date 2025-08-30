@@ -62,10 +62,7 @@
             </div>
         </div>
 
-        <ResultSection
-            v-if="activeTab == 'upload' && stage == 2"
-            :record="record"
-        />
+        <ResultSection v-if="activeTab == 'upload' && stage == 2" />
 
         <RecordDetail v-if="activeTab == 'history' && activeHistoryRecordId" />
     </main>

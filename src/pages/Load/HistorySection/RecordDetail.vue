@@ -167,11 +167,7 @@
                             <i class="bi bi-download me-2"></i>下载预测结果
                         </el-button>
                     </div>
-                    <ChartDisplay
-                        :uploadData="getUploadData(record)"
-                        :predictionData="getPredictionDataForDate()"
-                        :date="getSampleDate(record)"
-                    />
+                    <ChartDisplay :prediction_result="prediction_result" />
                 </div>
             </div>
         </div>
@@ -192,6 +188,7 @@ const activeHistoryRecordId = computed(
 ); //用户在历史记录列表里选中的某条负荷预测记录
 
 const record = ref({});
+const prediction_result = computed(() => record.value.prediction_data || {}); //后端返回的预测结果数据
 async function getRecordDetailById() {
     const id = activeHistoryRecordId.value;
     if (!id) {

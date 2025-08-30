@@ -2,17 +2,19 @@
     <div class="chart-display">
         <div ref="chartEl" class="chart-container" style="height: 400px"></div>
     </div>
-    <LoadTable :predictionData="props.predictionData" />
+    <LoadTable
+        :predictionData="props.prediction_result.values"
+        :headerData="x_data"
+    />
 </template>
 
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount } from "vue";
 import * as echarts from "echarts";
-import LoadTable from "@/components/LoadTable.vue";
+import LoadTable from "./LoadTable.vue";
 
 const props = defineProps({
-    predictionData: Array,
-    date: String,
+    prediction_result: Object,
 });
 
 const chartEl = ref(null);
@@ -45,7 +47,7 @@ const initChart = () => {
         xAxis: {
             type: "category",
             boundaryGap: false,
-            data: x_data,
+            data: x_data, // 横坐标数据
             axisLabel: {
                 interval: 0,
             },
@@ -63,16 +65,22 @@ const initChart = () => {
             {
                 name: "预测负荷",
                 type: "line",
-                data: props.predictionData.map((item) => item.value),
+                data: props.prediction_result.values, // 纵坐标数据
                 smooth: true,
                 lineStyle: {
                     width: 3,
                     // type: "dashed",
-                    color: "#91cc75",
+                    color: "#5470c6",
                 },
                 // symbol: "emptyCircle",
                 symbol: "circle",
                 symbolSize: 8,
+                areaStyle: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: "rgba(84, 112, 198, 0.5)" },
+                        { offset: 1, color: "rgba(84, 112, 198, 0.1)" },
+                    ]),
+                },
             },
         ],
     };
@@ -81,16 +89,19 @@ const initChart = () => {
 };
 
 watch(
-    () => props.date,
+    () => props.prediction_result,
     () => {
+        console.log("props.prediction_result changed", props.prediction_result);
         if (chartInstance) {
             chartInstance.dispose();
             initChart();
         }
-    }
+    },
+    { deep: true }
 );
 
 onMounted(() => {
+    console.log("props.prediction_result", props.prediction_result);
     initChart();
     window.addEventListener("resize", handleResize);
 });

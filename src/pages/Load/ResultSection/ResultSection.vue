@@ -16,26 +16,14 @@
             <div
                 class="date-selector mb-4 d-flex justify-content-between align-items-center"
             >
-                <h5 class="mb-0">预测日期: {{ selectedDate }}</h5>
+                <h5 class="mb-0">预测日期: {{ date_format }}</h5>
                 <div class="d-flex gap-2">
-                    <button
-                        v-for="date in date_btns"
-                        :key="date"
-                        class="btn btn-sm"
-                        :class="{
-                            'btn-primary': selectedDate === date,
-                            'btn-outline-primary': selectedDate !== date,
-                        }"
-                        @click="selectDate(date)"
-                    >
-                        {{ formatDate(date) }}
+                    <button class="btn btn-sm btn-primary">
+                        {{ date_format }}
                     </button>
                 </div>
             </div>
-            <ChartDisplay
-                :predictionData="getPredictionDataForDate(selectedDate)"
-                :date="selectedDate"
-            />
+            <ChartDisplay :prediction_result="prediction_result" />
         </div>
     </div>
 </template>
@@ -46,18 +34,32 @@ import ChartDisplay from "./ChartDisplay.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
-const props = defineProps({
-    record: Object, //请求后台返回的数据
-});
+import { useLoadForecastStore } from "@/store/load";
+const forecastStore = useLoadForecastStore();
 
+const record = computed(() => forecastStore.responseData); //后端返回的完整数据；
+//后端返回的预测结果数据
+const prediction_result = computed(
+    () => forecastStore.responseData.predictionData
+);
+
+const date_format = computed(() => {
+    if (prediction_result.value && prediction_result.value.date) {
+        const date = new Date(prediction_result.value.date);
+        return `${date.getFullYear()}年${
+            date.getMonth() + 1
+        }月${date.getDate()}日`;
+    }
+    return "";
+});
 /*------------下载预测结果excel文件------------*/
 async function downloadPredictionExcel() {
-    const recordId = props.record.recordId;
+    const recordId = record.value.recordId;
     if (!recordId) {
         ElMessage.error("记录ID不存在，无法下载文件");
         return;
     }
-    const fileName = props.record.resultFileName;
+    const fileName = record.value.resultFileName;
 
     try {
         ElMessage.success(`正在生成预测结果Excel文件${fileName}`);
@@ -88,38 +90,6 @@ async function downloadPredictionExcel() {
         }
     }
 }
-/*------------选择预测结果是哪一天------------*/
-// 选择日期的按钮组
-const date_btns = computed(() => {
-    const dates = props.record.predictionData.dates;
-    //目前只取第一个日期
-    const temporary_dates = dates.slice(0, 1);
-    return temporary_dates;
-});
-//默认选择第一个日期
-const selectedDate = ref(props.record.predictionData.dates[0]);
-
-function selectDate(date) {
-    selectedDate.value = date;
-}
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return `${date.getMonth() + 1}月${date.getDate()}日`;
-};
-
-/*-----------图表组件-------------*/
-const getPredictionDataForDate = (date) => {
-    console.log("获取预测数据", props.record.predictionData);
-    const dateIndex = props.record.predictionData.dates.indexOf(date);
-    const dates = props.record.predictionData.values[dateIndex].map(
-        (value, i) => ({
-            time: `${i}:00`,
-            value: value,
-        })
-    );
-    console.log("日期对应的预测数据", dates);
-    return dates;
-};
 </script>
 
 <style lang="scss" scoped>
