@@ -2,10 +2,7 @@
     <div class="chart-display">
         <div ref="chartEl" class="chart-container" style="height: 400px"></div>
     </div>
-    <LoadTable
-        :predictionData="props.prediction_result.values"
-        :headerData="x_data"
-    />
+    <LoadTable :loads="props.loads" :headerData="x_data" />
 </template>
 
 <script setup>
@@ -14,7 +11,8 @@ import * as echarts from "echarts";
 import LoadTable from "./LoadTable.vue";
 
 const props = defineProps({
-    prediction_result: Object,
+    loads: Array,
+    date: String,
 });
 
 const chartEl = ref(null);
@@ -65,7 +63,7 @@ const initChart = () => {
             {
                 name: "预测负荷",
                 type: "line",
-                data: props.prediction_result.values, // 纵坐标数据
+                data: props.loads, // 纵坐标数据
                 smooth: true,
                 lineStyle: {
                     width: 3,
@@ -89,9 +87,8 @@ const initChart = () => {
 };
 
 watch(
-    () => props.prediction_result,
+    () => props.date,
     () => {
-        console.log("props.prediction_result changed", props.prediction_result);
         if (chartInstance) {
             chartInstance.dispose();
             initChart();
@@ -101,7 +98,6 @@ watch(
 );
 
 onMounted(() => {
-    console.log("props.prediction_result", props.prediction_result);
     initChart();
     window.addEventListener("resize", handleResize);
 });

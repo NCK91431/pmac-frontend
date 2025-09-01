@@ -23,14 +23,17 @@
                     </button>
                 </div>
             </div>
-            <ChartDisplay :prediction_result="prediction_result" />
+            <LoadChart
+                :date="prediction_result.date"
+                :loads="prediction_result.predictionData"
+            />
         </div>
     </div>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
-import ChartDisplay from "./ChartDisplay.vue";
+import LoadChart from "./LoadChart.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
@@ -39,9 +42,7 @@ const forecastStore = useLoadForecastStore();
 
 const record = computed(() => forecastStore.responseData); //后端返回的完整数据；
 //后端返回的预测结果数据
-const prediction_result = computed(
-    () => forecastStore.responseData.predictionData
-);
+const prediction_result = computed(() => forecastStore.responseData.result);
 
 const date_format = computed(() => {
     if (prediction_result.value && prediction_result.value.date) {

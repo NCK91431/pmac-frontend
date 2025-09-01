@@ -167,7 +167,10 @@
                             <i class="bi bi-download me-2"></i>下载预测结果
                         </el-button>
                     </div>
-                    <ChartDisplay :prediction_result="prediction_result" />
+                    <LoadChart
+                        :loads="result.predictionData"
+                        :date="result.date"
+                    />
                 </div>
             </div>
         </div>
@@ -176,7 +179,7 @@
 
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
-import ChartDisplay from "../ResultSection/ChartDisplay.vue";
+import LoadChart from "../ResultSection/LoadChart.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
@@ -188,7 +191,7 @@ const activeHistoryRecordId = computed(
 ); //用户在历史记录列表里选中的某条负荷预测记录
 
 const record = ref({});
-const prediction_result = computed(() => record.value.prediction_data || {}); //后端返回的预测结果数据
+const result = computed(() => record.value.result || {}); //后端返回的预测结果数据
 async function getRecordDetailById() {
     const id = activeHistoryRecordId.value;
     if (!id) {

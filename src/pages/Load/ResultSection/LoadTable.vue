@@ -21,19 +21,19 @@
 import { onMounted } from "vue";
 
 const props = defineProps({
-    predictionData: Array,
+    loads: Array,
     headerData: Array,
 });
 
 onMounted(() => {
-    console.log("LoadTable predictionData:", props.predictionData);
+    console.log("LoadTable:", props.loads);
 });
 
 function getTableData() {
     let row = {
         title: "负荷值",
     };
-    const data = props.predictionData;
+    const data = props.loads;
     props.headerData.forEach((time, idx) => {
         row[time] = data[idx];
     });
