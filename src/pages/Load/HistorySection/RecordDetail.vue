@@ -152,7 +152,7 @@
             <div class="col-md-8">
                 <div class="chart-card card shadow-sm p-3 h-100">
                     <div class="header">
-                        <h5 class="mb-3">负荷预测结果</h5>
+                        <h5 class="mb-3 text-success">负荷预测结果</h5>
                         <el-button
                             type="success"
                             plain
@@ -174,12 +174,61 @@
                 </div>
             </div>
         </div>
+        <!-- 天气预测结果 -->
+        <div v-if="selectedCityWeather" class="row mb-4">
+            <div class="col-md-4">
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-info-circle"></i> 天气信息</h5>
+                    </div>
+                    <WeatherInfo
+                        :weather-info="selectedCityWeather.weatherInfo"
+                    />
+                </div>
+            </div>
+            <div
+                class="col-md-8"
+                v-if="cityWeatherForecast && cityWeatherForecast.length"
+            >
+                <div class="chart-card card shadow-sm p-3 h-100">
+                    <div class="header">
+                        <h5 class="h5 mb-3 text-success">
+                            <i class="bi bi-cloud-sun me-2"></i>天气信息
+                        </h5>
+                        <div class="city-selector">
+                            <el-select
+                                v-model="selectedCityIndex"
+                                placeholder="选择城市"
+                                style="width: 300px"
+                            >
+                                <el-option
+                                    v-for="(city, index) in cityWeatherForecast"
+                                    :key="index"
+                                    :label="city.location"
+                                    :value="index"
+                                />
+                            </el-select>
+                        </div>
+                    </div>
+                    <WeatherChart
+                        :temperature-data="
+                            selectedCityWeather.temperatureForecast
+                        "
+                        :irradiation-data="
+                            selectedCityWeather.irradiationForecast
+                        "
+                    />
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import LoadChart from "../ResultSection/LoadChart.vue";
+import WeatherChart from "../ResultSection/WeatherChart.vue";
+import WeatherInfo from "../ResultSection/WeatherInfo.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
@@ -192,6 +241,27 @@ const activeHistoryRecordId = computed(
 
 const record = ref({});
 const result = computed(() => record.value.result || {}); //后端返回的预测结果数据
+/*------------天气预测------------*/
+// 城市天气预测数据
+const cityWeatherForecast = computed(
+    () => (record.value.result && record.value.result.cityWeatherForecast) || []
+);
+// 当前选中的城市索引
+const selectedCityIndex = ref(0);
+// 当前选中的城市天气数据
+const selectedCityWeather = computed(() => {
+    return cityWeatherForecast.value[selectedCityIndex.value] || null;
+});
+// 监听城市天气数据变化，默认选择第一个城市
+watch(
+    cityWeatherForecast,
+    (newVal) => {
+        if (newVal && newVal.length > 0) {
+            selectedCityIndex.value = 0;
+        }
+    },
+    { immediate: true }
+);
 async function getRecordDetailById() {
     const id = activeHistoryRecordId.value;
     if (!id) {
@@ -218,32 +288,6 @@ const formatCustomerType = (type) => {
         continuous: "连续工业",
     };
     return types[type] || type;
-};
-
-const getUploadData = (record) => {
-    // 模拟数据
-    return Array(24)
-        .fill()
-        .map((_, i) => ({
-            time: `${i}:00`,
-            value: Math.random() * 800 + 300,
-        }));
-};
-
-const getPredictionDataForDate = () => {
-    const prediction_data = record.value.prediction_data;
-    if (!prediction_data) return [];
-    const dateIndex = 0; // 目前只取第一个日期的索引
-    if (!prediction_data.dates || !prediction_data.values) return [];
-    const dates = prediction_data.values[dateIndex].map((value, i) => ({
-        time: `${i}:00`,
-        value: value,
-    }));
-    return dates;
-};
-
-const getSampleDate = (record) => {
-    return new Date(record.created_at).toISOString().split("T")[0];
 };
 
 const emit = defineEmits(["close"]);
@@ -359,8 +403,6 @@ const continueForecast = () => {
 
 <style lang="scss" scoped>
 .record-detail {
-    padding: 10px;
-
     .info-card {
         background: white;
         border-radius: 12px;

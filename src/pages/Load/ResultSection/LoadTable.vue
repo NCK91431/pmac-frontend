@@ -18,15 +18,9 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-
 const props = defineProps({
     loads: Array,
     headerData: Array,
-});
-
-onMounted(() => {
-    console.log("LoadTable:", props.loads);
 });
 
 function getTableData() {

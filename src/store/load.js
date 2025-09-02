@@ -1,3 +1,4 @@
+import { set } from "date-fns";
 import { defineStore } from "pinia";
 
 export const useLoadForecastStore = defineStore("loadForecast", {
@@ -24,6 +25,11 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         activeHistoryRecordId: null,
 
         mode: "T", // 预测模式，"T"表示总负荷预测，"S"表示分项负荷预测
+
+        // LoadCompare.vue 需要用到的状态:
+        compare_data: null, // 用于存储对比数据
+        compare_baseinfo: null, // 用于存储对比的基本信息
+        compare_merge: null, // 用于存储合并后的数据
     }),
 
     getters: {
@@ -122,6 +128,15 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
         setMode(mode) {
             this.mode = mode;
+        },
+        setCompareData(data) {
+            this.compare_data = data;
+        },
+        setCompareBaseinfo(info) {
+            this.compare_baseinfo = info;
+        },
+        setCompareMerge(merge) {
+            this.compare_merge = merge;
         },
     },
 

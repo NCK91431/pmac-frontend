@@ -51,6 +51,12 @@ const router = createRouter({
             name: "elec",
             component: () => import("../pages/Elec/ElecPre.vue"),
         },
+        {
+            path: "/loadcompare/:recordId?",
+            name: "LoadCompare",
+            component: () =>
+                import("../pages/Load/HistorySection/LoadCompare.vue"),
+        },
     ],
 });
 

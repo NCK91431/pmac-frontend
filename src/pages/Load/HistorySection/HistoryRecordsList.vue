@@ -156,8 +156,9 @@
                             {{ data.prediction_date }}
                         </el-tag>
                     </div>
-                    <!-- 操作列：仅叶子节点显示删除按钮（添加.stop阻止事件冒泡）-->
+                    <!-- 操作列-->
                     <div class="col-actions">
+                        <!-- 仅叶子节点显示删除按钮（添加.stop阻止事件冒泡） -->
                         <template v-if="node.isLeaf">
                             <el-button
                                 size="small"
@@ -165,6 +166,16 @@
                                 :icon="Delete"
                                 circle
                                 @click.stop="deleteRecord(data)"
+                            ></el-button>
+                        </template>
+                        <!-- 仅根节点显示查看回测按钮 -->
+                        <template v-if="node.level == 1">
+                            <el-button
+                                size="small"
+                                type="success"
+                                :icon="View"
+                                circle
+                                @click.stop="goComparePage(data.id)"
                             ></el-button>
                         </template>
                     </div>
@@ -184,8 +195,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
-import { Delete } from "@element-plus/icons-vue";
+import { Delete, View } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
+import { useRouter } from "vue-router";
 import { useLoadForecastStore } from "@/store/load";
 
 const forecastStore = useLoadForecastStore();
@@ -195,6 +207,7 @@ const activeHistoryRecordId = computed(
     () => forecastStore.activeHistoryRecordId
 );
 
+const router = useRouter();
 /* --------------------------- 正在执行的任务 -------------------------- */
 // 新增处理中任务列表
 const props = defineProps({
@@ -279,6 +292,11 @@ async function deleteRecord(record) {
         ElMessage.error("删除记录请求失败");
         console.error("删除记录失败:", error);
     }
+}
+
+// 跳转到负荷对比页面
+function goComparePage(recordId) {
+    router.push({ name: "LoadCompare", params: { recordId } });
 }
 </script>
 
