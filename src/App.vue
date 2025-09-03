@@ -1,6 +1,7 @@
 <template>
     <HeaderSection @update:headerHeight="handleHeaderHeight" />
     <div class="page-content" :style="contentStyle">
+        <Breadcrumb />
         <RouterView />
     </div>
     <HomeFooter @update:footerHeight="handleFooterHeight" />
@@ -8,9 +9,9 @@
 
 <script setup>
 import { ref, provide, onMounted, computed } from "vue";
-import HomeFooter from "./components/HomeFooter.vue";
 import HeaderSection from "./components/HeaderSection.vue";
-
+import Breadcrumb from "./components/Breadcrumb.vue";
+import HomeFooter from "./components/HomeFooter.vue";
 // 用户状态响应式变量
 const user = ref(null);
 
