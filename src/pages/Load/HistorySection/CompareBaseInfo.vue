@@ -86,31 +86,63 @@
                 </div>
             </div>
         </div>
-        <!-- 模型评估指标 -->
+
+        <!-- 模型评估指标 - 修改为两列布局 -->
         <div class="model-metrics">
-            <h4 class="mb-0"></h4>
-            <div class="metrics-grid">
-                <div
-                    class="metric-card"
-                    v-for="(value, key) in metrics"
-                    :key="key"
-                >
-                    <div class="metric-icon">
-                        <i class="bi" :class="getMetricIcon(key)"></i>
-                    </div>
-                    <div class="metric-content">
-                        <div class="metric-label">
-                            {{ getMetricLabel(key) }}
+            <div class="metrics-section">
+                <div class="metrics-title">总体误差</div>
+                <div class="metrics-grid compact">
+                    <div
+                        class="metric-card compact"
+                        v-for="(value, key) in filteredOverallMetrics"
+                        :key="'overall-' + key"
+                    >
+                        <div class="metric-icon compact">
+                            <i class="bi" :class="getMetricIcon(key)"></i>
                         </div>
-                        <div class="metric-value">
-                            {{ value }}{{ getMetricUnit(key) }}
+                        <div class="metric-content compact">
+                            <div class="metric-label compact">
+                                {{ getMetricLabel(key) }}
+                            </div>
+                            <div class="metric-value compact">
+                                {{ value }}{{ getMetricUnit(key) }}
+                            </div>
+                        </div>
+                        <div class="metric-tooltip compact">
+                            <i
+                                class="bi bi-info-circle"
+                                :title="getMetricDescription(key)"
+                            ></i>
                         </div>
                     </div>
-                    <div class="metric-tooltip">
-                        <i
-                            class="bi bi-info-circle"
-                            :title="getMetricDescription(key)"
-                        ></i>
+                </div>
+            </div>
+
+            <div class="metrics-section">
+                <div class="metrics-title">单日误差</div>
+                <div class="metrics-grid compact">
+                    <div
+                        class="metric-card compact"
+                        v-for="(value, key) in filteredDailyMetrics"
+                        :key="'daily-' + key"
+                    >
+                        <div class="metric-icon compact">
+                            <i class="bi" :class="getMetricIcon(key)"></i>
+                        </div>
+                        <div class="metric-content compact">
+                            <div class="metric-label compact">
+                                {{ getMetricLabel(key) }}
+                            </div>
+                            <div class="metric-value compact">
+                                {{ value }}{{ getMetricUnit(key) }}
+                            </div>
+                        </div>
+                        <div class="metric-tooltip compact">
+                            <i
+                                class="bi bi-info-circle"
+                                :title="getMetricDescription(key)"
+                            ></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -156,7 +188,19 @@ const formatLocation = (location) => {
 
 /* ---------------- 模型评估指标 --------------- */
 
-const metrics = computed(() => forecastStore.compare_data?.modelMetrics || {});
+// 计算属性 - 总体指标（过滤掉MAPE）
+const filteredOverallMetrics = computed(() => {
+    const metrics = forecastStore.compare_data?.modelMetrics || {};
+    const { MAPE, ...rest } = metrics;
+    return rest;
+});
+
+// 计算属性 - 单日指标（过滤掉MAPE）
+const filteredDailyMetrics = computed(() => {
+    const metrics = forecastStore.compare_data?.dailyMetrics || {};
+    const { MAPE, ...rest } = metrics;
+    return rest;
+});
 
 const metricConfig = {
     MAE: {
@@ -178,7 +222,7 @@ const metricConfig = {
         description: "以百分比形式表示的平均预测误差",
     },
     WMAPE: {
-        label: "加权平均绝对百分比误差",
+        label: `加权平均绝对百分比误差`,
         unit: "%",
         icon: "bi-bar-chart-line",
         description: "考虑数据权重的平均百分比误差",
@@ -338,9 +382,25 @@ const getMetricDescription = (key) => {
 
 /* 模型评估指标 */
 .model-metrics {
+    display: flex;
+    gap: 14px;
+    margin-top: 20px;
+    .metrics-section {
+        flex: 1;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+
+        .metrics-title {
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            font-size: 1rem;
+        }
+    }
     .metrics-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: 1fr 1fr 1.5fr;
         gap: 16px;
     }
 
@@ -348,31 +408,29 @@ const getMetricDescription = (key) => {
         display: flex;
         align-items: center;
         margin-top: 12px;
-        padding: 10px;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
         position: relative;
-
+        padding: 8px;
         // &:hover {
         //     transform: translateY(-3px);
         //     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         // }
 
         .metric-icon {
-            width: 50px;
-            height: 50px;
+            width: 36px;
+            height: 36px;
+            margin-right: 12px;
             border-radius: 50%;
             background: linear-gradient(135deg, #2c6fbb 0%, #1a4e8e 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 16px;
             flex-shrink: 0;
-
             i {
-                font-size: 1.5rem;
+                font-size: 1.1rem;
                 color: white;
             }
         }
@@ -381,13 +439,13 @@ const getMetricDescription = (key) => {
             flex: 1;
 
             .metric-label {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
                 color: #6c757d;
                 margin-bottom: 4px;
             }
 
             .metric-value {
-                font-size: 1.5rem;
+                font-size: 1.1rem;
                 font-weight: 700;
                 color: #2c3e50;
             }
@@ -395,12 +453,12 @@ const getMetricDescription = (key) => {
 
         .metric-tooltip {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 6px;
+            right: 6px;
 
             i {
                 color: #6c757d;
-                font-size: 0.9rem;
+                font-size: 0.8rem;
                 cursor: help;
 
                 &:hover {

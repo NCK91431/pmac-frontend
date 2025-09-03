@@ -6,19 +6,13 @@
             border
             :header-cell-style="{ background: '#f5f7fa', color: '#303133' }"
         >
-            <el-table-column prop="title" label="时间" fixed />
+            <el-table-column prop="title" label="时间" fixed width="100" />
             <el-table-column
                 v-for="time in headerData"
                 :key="time"
                 :prop="time"
                 :label="time"
-            >
-            </el-table-column>
-            <el-table-column
-                v-for="time in headerData"
-                :key="time"
-                :prop="time"
-                :label="time"
+                width="70"
             >
             </el-table-column>
         </el-table>
