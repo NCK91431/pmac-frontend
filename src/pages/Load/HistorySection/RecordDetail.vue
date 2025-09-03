@@ -152,7 +152,9 @@
             <div class="col-md-8">
                 <div class="chart-card card shadow-sm p-3 h-100">
                     <div class="header">
-                        <h5 class="mb-3 text-success">负荷预测结果</h5>
+                        <h5 class="mb-3 text-success">
+                            <i class="bi bi-graph-up"></i>负荷预测结果
+                        </h5>
                         <el-button
                             type="success"
                             plain
@@ -558,6 +560,9 @@ const continueForecast = () => {
             h5 {
                 justify-self: flex-start;
                 margin-right: auto;
+                i {
+                    margin-right: 8px;
+                }
             }
         }
     }

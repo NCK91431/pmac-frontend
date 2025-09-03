@@ -104,6 +104,7 @@
                         ></span>
                         {{ data.id }}
                     </div>
+                    <!-- 创建时间 -->
                     <div class="col-date">
                         {{ new Date(data.created_at).toLocaleString() }}
                     </div>
@@ -172,11 +173,14 @@
                         <template v-if="node.level == 1">
                             <el-button
                                 size="small"
-                                type="success"
-                                :icon="View"
-                                circle
+                                color="#626aef"
+                                plain
                                 @click.stop="goComparePage(data.id)"
-                            ></el-button>
+                                >回测分析
+                                <el-icon class="el-icon--right"
+                                    ><TopRight
+                                /></el-icon>
+                            </el-button>
                         </template>
                     </div>
                 </div>
@@ -195,8 +199,8 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
-import { Delete, View } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
+import { Delete, View, TopRight } from "@element-plus/icons-vue";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import { useLoadForecastStore } from "@/store/load";
 
@@ -275,6 +279,16 @@ async function deleteRecord(record) {
         return;
     }
     try {
+        await ElMessageBox.confirm(
+            `确定要删除记录 #${record.id} 吗？此操作不可撤销。`,
+            "删除确认",
+            {
+                confirmButtonText: "确认删除",
+                cancelButtonText: "取消",
+                type: "warning",
+                center: true,
+            }
+        );
         const response = await request.delete(`/api/history/${recordId}`);
 
         if (response.data.success) {
