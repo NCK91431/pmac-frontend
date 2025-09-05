@@ -175,7 +175,9 @@ onMounted(async () => {
     try {
         const response = await request.get("/api/locationtree");
         if (response.data.code === 200) {
-            locationOptions.value = response.data.data;
+            const list = response.data.data;
+            const filteredList = list.filter((item) => item.value == "44"); //暂时只支持广东省
+            locationOptions.value = filteredList;
         }
     } catch (error) {
         console.error("获取省市区数据失败:", error);

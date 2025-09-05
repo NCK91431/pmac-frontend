@@ -149,6 +149,7 @@ async function handleSubmit(formData, fileData) {
         // 处理响应
     } catch (error) {
         forecastStore.setStageZero(); // 出错时重置状态 stage = 0
+        forecastStore.removeFile();
         if (error.response?.status === 400 || error.response?.status === 500) {
             console.log(error.response);
             ElMessageBox.alert(

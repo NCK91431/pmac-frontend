@@ -44,56 +44,133 @@
                 </div>
             </div>
         </template>
+        <!-- 文件信息卡片 -->
         <template v-else>
-            <div
-                class="w-100 d-flex justify-content-between align-items-center mb-3"
-            >
-                <h5 class="mb-0">已上传文件</h5>
-                <button
-                    class="btn btn-sm btn-outline-danger"
-                    @click="removeFile"
-                >
-                    <i class="bi bi-trash"></i>
-                </button>
-            </div>
-            <div class="file-info card p-3">
-                <div class="d-flex align-items-center">
-                    <i
-                        class="bi bi-file-earmark-excel text-success fs-3 me-3"
-                    ></i>
-                    <div>
-                        <div class="fw-bold">{{ file.name }}</div>
-                        <div class="text-muted small">
-                            {{ formatFileSize(file.size) }} • 上传时间:
-                            {{ new Date().toLocaleTimeString() }}
+            <template v-if="excelInfo">
+                <!-- 检验结果 -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">数据天数</span>
+                        <span class="stat-value"
+                            >{{ excelInfo.stats.days }} 天</span
+                        >
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">时间粒度</span>
+                        <span class="stat-value">{{
+                            excelInfo.stats.timeGranularity
+                        }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">日期范围</span>
+                        <span class="stat-value">{{
+                            excelInfo.dateRange.join(" 至 ")
+                        }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">数据状态</span>
+                        <span class="stat-value">{{
+                            excelInfo.stats.status
+                        }}</span>
+                    </div>
+                </div>
+                <!-- 文件预览 -->
+                <div class="file-info-card" @click="downloadUploadExcel">
+                    <div class="file-details">
+                        <div class="file-icon">
+                            <i class="bi bi-file-earmark-excel"></i>
+                        </div>
+                        <div class="file-meta">
+                            <div class="file-name">
+                                {{ excelInfo.name }}
+                            </div>
+                            <div class="file-size">
+                                文件大小:
+                                {{ formatFileSize(excelInfo.size * 1024) }}
+                            </div>
+                            <div class="upload-time">
+                                上传时间:
+                                {{ formatDate(excelInfo.uploadTime) }}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                <!-- 删除文件 -->
+                <div class="remove-file">
+                    <button
+                        class="btn btn-sm btn-outline-danger"
+                        @click="removeFile"
+                    >
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </template>
         </template>
     </div>
 </template>
 
 <script setup>
 import { Download } from "@element-plus/icons-vue";
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { useLoadForecastStore } from "@/store/load"; // 修改为新的Store
+import request from "@/utils/request";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const forecastStore = useLoadForecastStore(); // 使用新的综合Store
 
 const file = computed(() => forecastStore.uploadedFile); // 直接从新Store获取文件
 const isContinue = computed(() => forecastStore.isContinue); // 判断是否处于继续预测状态
 
+const excelInfo = ref(null);
 // 监听文件上传变化：当文件上传时，更新file变量并触发事件
-function handleFileChange(uploadFile) {
+async function handleFileChange(uploadFile) {
     if (uploadFile) {
         forecastStore.setFile(uploadFile.raw);
+
+        // 调用新接口获取文件信息
+        try {
+            const formData = new FormData();
+            formData.append("file", uploadFile.raw);
+
+            const response = await request.post("/api/fileinfo", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            if (response.data.success) {
+                excelInfo.value = response.data.excelInfo;
+            }
+        } catch (error) {
+            if (
+                error.response &&
+                error.response.data &&
+                error.response.data.details
+            ) {
+                ElMessageBox.alert(
+                    error.response.data.details,
+                    "请重新上传文件",
+                    {
+                        confirmButtonText: "知道了",
+                    }
+                );
+            } else {
+                ElMessage.error("获取文件信息失败，请检查文件格式");
+            }
+            forecastStore.removeFile();
+            excelInfo.value = null;
+            console.error("Error getting file info:", error);
+        }
     }
 }
-
 // 当文件被删除时，清空file变量
 function removeFile() {
     forecastStore.removeFile();
+    excelInfo.value = null;
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleString();
 }
 
 // 格式化文件大小为可读格式
@@ -205,6 +282,107 @@ function formatFileSize(bytes) {
         .el-button {
             margin-left: auto;
         }
+    }
+}
+
+// 文件信息卡片样式 (从FinishView复制)
+.file-info-card {
+    background: white;
+    border-radius: 10px;
+    padding: 16px;
+    margin: 15px 0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    width: 100%;
+
+    .file-details {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+
+        .file-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            i {
+                font-size: 1.8rem;
+                color: #1a73e8;
+            }
+        }
+
+        .file-meta {
+            flex: 1;
+
+            .file-name {
+                font-weight: 600;
+                font-size: 1rem;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+
+            .file-size,
+            .upload-time {
+                font-size: 0.85rem;
+                color: #6c757d;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                margin-bottom: 3px;
+            }
+        }
+    }
+
+    /* 悬停效果优化 */
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(52, 152, 219, 0.2);
+        border-color: #3498db;
+
+        .file-icon {
+            background: linear-gradient(135deg, #d1e7ff, #a3d0fd);
+        }
+    }
+}
+.remove-file {
+    width: 100%;
+    display: flex;
+    justify-content: end;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f8ff;
+    padding: 8px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-bottom: 4px;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.85rem;
     }
 }
 </style>
