@@ -103,6 +103,7 @@
                 <el-option
                     label="D-1 -> D+1 【注：1天前用电量 → 预测未来一天分时负荷】"
                     value="1day"
+                    disabled
                 />
             </el-select>
         </div>
