@@ -131,6 +131,7 @@ async function handleFileChange(uploadFile) {
         try {
             const formData = new FormData();
             formData.append("file", uploadFile.raw);
+            formData.append("isContinue", isContinue.value ? "1" : "0");
 
             const response = await request.post("/api/fileinfo", formData, {
                 headers: {
