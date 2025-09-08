@@ -89,12 +89,6 @@
                                 }}</span>
                             </div>
                             <div class="metric-item">
-                                <span class="metric-label">MAPE</span>
-                                <span class="metric-value"
-                                    >{{ modelMetrics.MAPE }}%</span
-                                >
-                            </div>
-                            <div class="metric-item">
                                 <span class="metric-label">WMAPE</span>
                                 <span class="metric-value"
                                     >{{ modelMetrics.WMAPE }}%</span
@@ -119,9 +113,7 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">时间粒度</span>
-                        <span class="stat-value">{{
-                            excel_timeGranularity
-                        }}</span>
+                        <span class="stat-value">小时</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">上传日期范围</span>

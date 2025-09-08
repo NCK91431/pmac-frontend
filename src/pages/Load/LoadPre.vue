@@ -21,6 +21,14 @@
                 <strong v-else>总负荷预测</strong>
                 <i class="bi bi-arrow-left-right"></i>
             </span>
+            <template v-if="stage == 2">
+                <button
+                    class="btn-add-new btn btn-primary px-4 py-2"
+                    @click="onNewPrediction"
+                >
+                    新建预测<i class="bi bi-plus-circle"></i>
+                </button>
+            </template>
         </div>
         <!-- 预测表单 -->
         <div class="card shadow-sm mb-4">
@@ -51,7 +59,6 @@
                 <ConfigSection
                     v-if="activeTab === 'upload'"
                     @submit="handleSubmit"
-                    @new-predictiton="onNewPrediction"
                     :record="record"
                     :stage="stage"
                 />
@@ -173,7 +180,6 @@ function onNewPrediction() {
 }
 
 function onClickHistoryTab() {
-    console.log(user.value);
     if (!user.value) {
         // 显示登录提示框
         ElMessageBox.confirm(
@@ -317,6 +323,29 @@ function onClickHistoryTab() {
         i {
             font-size: 1.2rem;
             vertical-align: middle;
+        }
+    }
+
+    .btn-add-new {
+        background: linear-gradient(135deg, #2ecc71 0%, #1abc9c 100%);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        &:hover {
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.6);
+            transform: translateY(-4px);
+        }
+        &:active {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 10px rgba(46, 204, 113, 0.4);
+        }
+        i {
+            margin-left: 8px;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        &:hover i {
+            transform: translateY(3px);
         }
     }
 }

@@ -57,9 +57,7 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">时间粒度</span>
-                        <span class="stat-value">{{
-                            excelInfo.stats.timeGranularity
-                        }}</span>
+                        <span class="stat-value">小时</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">日期范围</span>
