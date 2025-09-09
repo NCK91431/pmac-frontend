@@ -168,7 +168,7 @@
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
 import { Delete, TopRight } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useElecStore } from "@/store/elec"; // 使用新的综合Store
 import { useRouter } from "vue-router";
 
@@ -245,7 +245,17 @@ async function deleteRecord(record) {
         return;
     }
     try {
-        const response = await request.delete(`/api/history/${recordId}`);
+        await ElMessageBox.confirm(
+            `确定要删除记录 #${record.id} 吗？此操作不可撤销。`,
+            "删除确认",
+            {
+                confirmButtonText: "确认删除",
+                cancelButtonText: "取消",
+                type: "warning",
+                center: true,
+            }
+        );
+        const response = await request.delete(`/api/elec_history/${recordId}`);
 
         if (response.data.success) {
             ElMessage.success(response.data.message);
@@ -259,6 +269,11 @@ async function deleteRecord(record) {
             ElMessage.error("删除记录失败");
         }
     } catch (error) {
+        // 判断错误是否为用户取消操作
+        if (error === "cancel" || error === "close") {
+            // 用户点击取消或关闭，不显示错误消息
+            return;
+        }
         ElMessage.error("删除记录请求失败");
         console.error("删除记录失败:", error);
     }

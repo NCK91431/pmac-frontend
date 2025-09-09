@@ -303,6 +303,11 @@ async function deleteRecord(record) {
             ElMessage.error("删除记录失败");
         }
     } catch (error) {
+        // 判断错误是否为用户取消操作
+        if (error === "cancel" || error === "close") {
+            // 用户点击取消或关闭，不显示错误消息
+            return;
+        }
         ElMessage.error("删除记录请求失败");
         console.error("删除记录失败:", error);
     }
