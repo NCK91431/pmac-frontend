@@ -9,7 +9,7 @@ const router = createRouter({
         {
             path: "/home",
             name: "home",
-            component: () => import("@/pages/Home/HomePage.vue"),
+            component: () => import("@/pages/Home/Home.vue"),
         },
         {
             path: "/loadpre",
