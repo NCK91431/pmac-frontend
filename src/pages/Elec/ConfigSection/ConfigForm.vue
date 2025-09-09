@@ -2,7 +2,7 @@
     <div class="config-form card border-0 shadow-sm p-3 h-100">
         <!-- 装机容量 -->
         <div class="mb-3">
-            <label class="form-label fw-bold">装机容量 (kw)</label>
+            <label class="form-label fw-bold">装机容量 (kWp)</label>
             <input
                 type="number"
                 v-model.number="form.pv_capacity"

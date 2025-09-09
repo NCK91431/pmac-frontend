@@ -15,7 +15,7 @@
                     <p class="text-muted">
                         请上传至少
                         {{ isContinue ? 1 : 90 }}
-                        天的 24 小时负荷数据Excel文件<br />
+                        天的历史光伏发电数据Excel文件<br />
                     </p>
                     <p class="text-muted">或</p>
                     <el-button type="primary" size="medium">
@@ -39,7 +39,9 @@
                         </el-link>
                     </div>
                     <small class="text-muted"
-                        >列名为0:00-23:00, 行为YYYY-MM-DD格式的日期</small
+                        >列为 0:00｜0:15｜0:30｜0:45｜...
+                        ｜23:00（数据粒度为15分钟）
+                        <br />行为YYYY-MM-DD格式的日期</small
                     >
                 </div>
             </div>

@@ -137,6 +137,19 @@
                                 @click.stop="deleteRecord(data)"
                             ></el-button>
                         </template>
+                        <!-- 仅根节点显示查看回测按钮 -->
+                        <template v-if="node.level == 1">
+                            <el-button
+                                size="small"
+                                color="#626aef"
+                                plain
+                                @click.stop="goComparePage(data.id)"
+                                >回测分析
+                                <el-icon class="el-icon--right"
+                                    ><TopRight
+                                /></el-icon>
+                            </el-button>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -154,14 +167,16 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
-import { Delete } from "@element-plus/icons-vue";
+import { Delete, TopRight } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useElecStore } from "@/store/elec"; // 使用新的综合Store
+import { useRouter } from "vue-router";
 
 const forecastStore = useElecStore(); // 使用新的综合Store
 const activeHistoryRecordId = computed(
     () => forecastStore.activeHistoryRecordId
 ); //用户选中的某条负荷预测记录
+const router = useRouter();
 
 /* --------------------------- 正在执行的任务 -------------------------- */
 // 新增处理中任务列表
@@ -247,6 +262,10 @@ async function deleteRecord(record) {
         ElMessage.error("删除记录请求失败");
         console.error("删除记录失败:", error);
     }
+}
+// 跳转到负荷对比页面
+function goComparePage(recordId) {
+    router.push({ name: "ElecCompare", params: { recordId } });
 }
 </script>
 

@@ -142,7 +142,6 @@ function onNewPrediction() {
 }
 
 function onClickHistoryTab() {
-    console.log(user.value);
     if (!user.value) {
         // 显示登录提示框
         ElMessageBox.confirm(

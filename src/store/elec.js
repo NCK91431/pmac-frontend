@@ -19,6 +19,11 @@ export const useElecStore = defineStore("elec", {
         stage: 0, // 0:初始状态 1:处理中 2:处理完成
         responseData: null,
         activeHistoryRecordId: null,
+
+        // LoadCompare.vue 需要用到的状态:
+        compare_data: null, // 用于存储对比数据
+        compare_baseinfo: null, // 用于存储对比的基本信息
+        compare_merge: null, // 用于存储合并后的数据
     }),
 
     getters: {
@@ -90,6 +95,15 @@ export const useElecStore = defineStore("elec", {
         },
         set_activeHistoryRecordId(id) {
             this.activeHistoryRecordId = id;
+        },
+        setCompareData(data) {
+            this.compare_data = data;
+        },
+        setCompareBaseinfo(info) {
+            this.compare_baseinfo = info;
+        },
+        setCompareMerge(merge) {
+            this.compare_merge = merge;
         },
     },
 

@@ -41,7 +41,9 @@
                 {{ currentPageTitle }}
             </div> -->
             <el-button
-                v-if="curPageName == 'LoadCompare'"
+                v-if="
+                    curPageName == 'LoadCompare' || curPageName == 'ElecCompare'
+                "
                 type="primary"
                 :icon="Back"
                 @click="$router.back()"
@@ -68,6 +70,10 @@ const routeToBreadcrumb = {
         icon: "bi bi-lightning-charge",
     },
     LoadCompare: {
+        title: "回测分析",
+        icon: "bi bi-graph-up-arrow",
+    },
+    ElecCompare: {
         title: "回测分析",
         icon: "bi bi-graph-up-arrow",
     },
@@ -109,6 +115,10 @@ const updateBreadcrumbs = () => {
     if (routeName === "LoadCompare") {
         crumbs.push(routeToBreadcrumb["loadpre"]);
     }
+    // 如果是光伏发电回测分析页面，添加光伏发电预测预测作为父级
+    if (routeName === "ElecCompare") {
+        crumbs.push(routeToBreadcrumb["elec"]);
+    }
 
     // 添加当前页面
     if (routeName && routeToBreadcrumb[routeName]) {
@@ -116,6 +126,10 @@ const updateBreadcrumbs = () => {
 
         // 如果是回测分析页面，添加记录ID
         if (routeName === "LoadCompare" && route.params.recordId) {
+            breadcrumbItem.title = `回测分析 - 记录 ${route.params.recordId}`;
+        }
+        // 如果是光伏发电预测回测分析页面，添加记录ID
+        if (routeName === "ElecCompare" && route.params.recordId) {
             breadcrumbItem.title = `回测分析 - 记录 ${route.params.recordId}`;
         }
 

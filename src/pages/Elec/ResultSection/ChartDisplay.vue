@@ -81,7 +81,7 @@ const initChart = () => {
         },
         yAxis: {
             type: "value",
-            name: "负荷值 (kW)",
+            name: "预测值 (kW)",
             nameLocation: "middle",
             nameGap: 40,
             axisLine: {
@@ -90,7 +90,7 @@ const initChart = () => {
         },
         series: [
             {
-                name: "预测负荷",
+                name: "预测值",
                 type: "line",
                 data: props.predictionData.map((item) => item.value),
                 smooth: true,

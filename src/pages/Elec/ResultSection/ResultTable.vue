@@ -25,7 +25,7 @@ const props = defineProps({
 
 function getTableData() {
     let row = {
-        title: "负荷值",
+        title: "预测值",
     };
     const data = [...props.predictionData];
     data.forEach((item) => {
