@@ -105,10 +105,17 @@ const curPageName = computed(() => route.name || "");
 
 // 更新面包屑
 const updateBreadcrumbs = () => {
-    const crumbs = [];
     const routeName = route.name;
 
-    // 添加首页
+    // 如果是首页，不显示面包屑
+    if (routeName === "home") {
+        breadcrumbs.value = [];
+        return;
+    }
+
+    const crumbs = [];
+
+    // 添加首页（非首页情况下）
     crumbs.push(routeToBreadcrumb["home"]);
 
     // 如果是回测分析页面，添加负荷预测作为父级
