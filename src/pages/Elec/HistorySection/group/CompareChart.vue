@@ -128,11 +128,8 @@ const initChart = () => {
             },
             axisLabel: {
                 color: "#606266",
-                interval: 0,
+                interval: 2,
                 fontSize: 11,
-                formatter: function (value) {
-                    return value.replace(":00", "h");
-                },
             },
             axisTick: {
                 alignWithLabel: true,
@@ -170,18 +167,18 @@ const initChart = () => {
                 data: props.actualData,
                 smooth: true,
                 lineStyle: {
-                    width: 3,
+                    width: 3, // 线条更细
                     color: "#5470C6",
-                    shadowColor: "rgba(84, 112, 198, 0.3)",
+                    shadowColor: "rgba(84, 112, 198, 0.15)",
                     shadowBlur: 8,
                     shadowOffsetY: 3,
                 },
-                symbol: "emptyCircle",
-                symbolSize: 7,
+                symbol: "circle", // 使用实心圆点
+                symbolSize: 7, // 点的大小
                 itemStyle: {
-                    color: "#5470C6",
-                    borderWidth: 2,
-                    borderColor: "#fff",
+                    color: "#5470C6", // 点的颜色
+                    borderWidth: 0, // 无边框
+                    opacity: 0.8, // 稍微透明
                 },
                 areaStyle: {
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -206,37 +203,38 @@ const initChart = () => {
                 name: "预测值",
                 type: "line",
                 data: props.predictionData,
-                smooth: true,
+                smooth: 0.4,
                 lineStyle: {
-                    width: 3,
+                    width: 2, // 线条更细
                     color: "#91CC75",
-                    shadowColor: "rgba(145, 204, 117, 0.3)",
-                    shadowBlur: 8,
-                    shadowOffsetY: 3,
+                    shadowColor: "rgba(145, 204, 117, 0.15)",
+                    shadowBlur: 4,
+                    shadowOffsetY: 1,
                 },
-                symbol: "emptyCircle",
-                symbolSize: 7,
+                symbol: "circle", // 使用实心圆点
+                symbolSize: 5, // 点的大小
                 itemStyle: {
-                    color: "#91CC75",
-                    borderWidth: 2,
-                    borderColor: "#fff",
+                    color: "#91CC75", // 点的颜色
+                    borderWidth: 0, // 无边框
+                    opacity: 0.8, // 稍微透明
                 },
                 areaStyle: {
                     color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: "rgba(145, 204, 117, 0.4)" },
-                        { offset: 1, color: "rgba(145, 204, 117, 0.1)" },
+                        { offset: 0, color: "rgba(145, 204, 117, 0.25)" },
+                        { offset: 1, color: "rgba(145, 204, 117, 0.03)" },
                     ]),
                 },
                 emphasis: {
                     itemStyle: {
-                        color: "#fff",
-                        borderColor: "#91CC75",
+                        opacity: 1, // 高亮时完全不透明
+                        color: "#91CC75",
                         borderWidth: 2,
-                        shadowColor: "rgba(145, 204, 117, 0.8)",
-                        shadowBlur: 10,
+                        borderColor: "#fff",
+                        shadowBlur: 8,
+                        shadowColor: "rgba(145, 204, 117, 0.6)",
                     },
                     lineStyle: {
-                        width: 4,
+                        width: 3,
                     },
                 },
             },
@@ -286,8 +284,8 @@ const handleResize = () => {
         border-radius: 12px;
         padding: 20px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        border: 1px solid #eaeaea;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f0f0f0;
     }
 }
 </style>
