@@ -16,8 +16,8 @@
                                         type="primary"
                                         href="http://www.pmac.com.cn/"
                                         target="_blank"
-                                        >www.pmac.com.cn</el-link
-                                    >
+                                        >www.pmac.com.cn
+                                    </el-link>
                                 </p>
                             </div>
                         </div>
@@ -33,8 +33,8 @@
                                         type="primary"
                                         href="https://pilotdg.tmall.com/"
                                         target="_blank"
-                                        >pilot旗舰店</el-link
-                                    >
+                                        >pilot旗舰店
+                                    </el-link>
                                 </p>
                             </div>
                         </div>
@@ -49,13 +49,13 @@
                                 <el-icon><Message /></el-icon>
                             </div>
                             <div>
-                                <strong>邮箱 </strong>
+                                <strong>邮箱</strong>
                                 <p>market@pmac.com.cn</p>
                             </div>
                         </div>
                         <div class="contact-item">
                             <div class="contact-icon">
-                                <el-icon><Service /></el-icon>
+                                <el-icon><Connection /></el-icon>
                             </div>
                             <div>
                                 <strong>合作热线</strong>
@@ -68,14 +68,11 @@
                     <h3>派诺科技园</h3>
                     <div class="contact-item">
                         <div class="contact-icon">
-                            <el-icon><Timer /></el-icon>
+                            <el-icon><Service /></el-icon>
                         </div>
                         <div>
-                            <strong>服务时间</strong>
-                            <p>
-                                周一至周五：9:00 - 18:00
-                                周六周日及法定节假日休息
-                            </p>
+                            <strong>客服电话</strong>
+                            <p>0756-6931888</p>
                         </div>
                     </div>
                     <div class="contact-info">
@@ -123,6 +120,7 @@ import {
     Timer,
     Service,
     ShoppingCartFull,
+    Connection,
 } from "@element-plus/icons-vue";
 import { onMounted, onUnmounted, ref } from "vue";
 const QRcode = "https://pmac.leyi.host/downloads/QR-code.jpg";

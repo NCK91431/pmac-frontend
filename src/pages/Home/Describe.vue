@@ -200,7 +200,7 @@ const features = ref([
     {
         title: "光伏发电预测",
         description:
-            "动态工况精准识别，改进 Tansformer 架构，未来24小时发电功率预测为优化调度注入灵活动能",
+            "动态工况精准识别，通过改进 Transformer 架构，对未来24小时发电功率进行准确预测，为优化调度注入灵活动能",
         icon: Sunny,
         stats: ["精准可靠", "提升效率", "多云适应"],
         statLabels: ["预测质量", "效能提升", "环境适应"],

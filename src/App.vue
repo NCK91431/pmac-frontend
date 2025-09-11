@@ -52,6 +52,10 @@ provide("clearUser", clearUser);
 // 存储 header 高度
 const headerHeight = ref(0);
 const footerHeight = ref(0);
+
+// 提供headerHeight给所有子组件
+provide("headerHeight", headerHeight);
+
 // 接收 header 传递的高度
 const handleHeaderHeight = (height) => {
     headerHeight.value = height;
