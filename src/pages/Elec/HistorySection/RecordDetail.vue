@@ -1,12 +1,21 @@
 <template>
     <div class="record-detail">
-        <div v-if="record.created_at" class="row mb-4">
-            <div class="col-md-4">
-                <div class="card info-card">
-                    <div class="card-header">
-                        <h5><i class="bi bi-info-circle"></i> 基本信息</h5>
-                    </div>
-                    <div class="card-body">
+        <div v-if="record.created_at" class="mb-4">
+            <div class="chart-card card shadow-sm h-100">
+                <div class="card-header">
+                    <h5>
+                        <i class="bi bi-bookmark-check"></i>光伏发电预测结果
+                    </h5>
+                    <button
+                        class="continue-btn btn btn-primary"
+                        @click="continueForecast"
+                    >
+                        <i class="bi bi-lightning-charge me-2"></i>
+                        继续预测
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="base-info">
                         <div class="info-item">
                             <div class="label">
                                 <i class="bi bi-key"></i> ID:
@@ -65,22 +74,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <button
-                            class="continue-btn btn btn-primary"
-                            @click="continueForecast"
-                        >
-                            <i class="bi bi-lightning-charge me-2"></i>
-                            继续预测
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-8">
-                <div class="chart-card card shadow-sm p-3 h-100">
-                    <div class="header">
-                        <h5 class="mb-3">光伏发电预测结果</h5>
+                    <div class="options">
                         <el-button
                             type="success"
                             plain
@@ -95,6 +89,7 @@
                             <i class="bi bi-download me-2"></i>下载预测结果
                         </el-button>
                     </div>
+
                     <ChartDisplay
                         :uploadData="getUploadData(record)"
                         :predictionData="getPredictionDataForDate()"
@@ -104,41 +99,34 @@
             </div>
         </div>
         <!-- 天气预测结果 -->
-        <div v-if="selectedCityWeather" class="row mb-4">
-            <div class="col-md-4">
-                <div class="card info-card">
-                    <div class="card-header">
-                        <h5><i class="bi bi-info-circle"></i> 天气信息</h5>
+        <template
+            v-if="
+                selectedCityWeather &&
+                cityWeatherForecast &&
+                cityWeatherForecast.length
+            "
+        >
+            <div class="chart-card card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="h5 text-success">
+                        <i class="bi bi-cloud-sun me-2"></i>天气信息
+                    </h5>
+                    <div class="city-selector">
+                        <el-select
+                            v-model="selectedCityIndex"
+                            placeholder="选择城市"
+                            style="width: 300px"
+                        >
+                            <el-option
+                                v-for="(city, index) in cityWeatherForecast"
+                                :key="index"
+                                :label="city.location"
+                                :value="index"
+                            />
+                        </el-select>
                     </div>
-                    <WeatherInfo
-                        :weather-info="selectedCityWeather.weatherInfo"
-                    />
                 </div>
-            </div>
-            <div
-                class="col-md-8"
-                v-if="cityWeatherForecast && cityWeatherForecast.length"
-            >
-                <div class="chart-card card shadow-sm p-3 h-100">
-                    <div class="header">
-                        <h5 class="h5 mb-3 text-success">
-                            <i class="bi bi-cloud-sun me-2"></i>天气信息
-                        </h5>
-                        <div class="city-selector">
-                            <el-select
-                                v-model="selectedCityIndex"
-                                placeholder="选择城市"
-                                style="width: 300px"
-                            >
-                                <el-option
-                                    v-for="(city, index) in cityWeatherForecast"
-                                    :key="index"
-                                    :label="city.location"
-                                    :value="index"
-                                />
-                            </el-select>
-                        </div>
-                    </div>
+                <div class="card-body">
                     <WeatherChart
                         :temperature-data="
                             selectedCityWeather.temperatureForecast
@@ -147,9 +135,13 @@
                             selectedCityWeather.irradiationForecast
                         "
                     />
+                    <div class="mb-3"></div>
+                    <WeatherInfo
+                        :weather-info="selectedCityWeather.weatherInfo"
+                    />
                 </div>
             </div>
-        </div>
+        </template>
     </div>
 </template>
 
@@ -370,29 +362,18 @@ const continueForecast = () => {
 
 <style lang="scss" scoped>
 .record-detail {
-    padding: 10px;
-
-    .info-card {
+    .chart-card {
         background: white;
         border-radius: 12px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
         border: none;
         overflow: hidden;
-        height: 100%;
-
-        &:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-        }
-
+        color: #2c6fbb;
         .card-header {
-            background: linear-gradient(135deg, #3498db, #1a5f9e);
-            color: white;
-            padding: 18px 20px;
-            border-bottom: none;
-            position: relative;
-
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
             h5 {
                 font-weight: 600;
                 margin: 0;
@@ -405,114 +386,53 @@ const continueForecast = () => {
                 }
             }
         }
+    }
+    .base-info {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr 1.6fr 1.2fr;
+        gap: 10px;
 
-        .card-body {
-            padding: 25px;
-            padding-bottom: 0;
-        }
+        padding-bottom: 16px;
+        border-bottom: 1px solid #eaeaea;
 
         .info-item {
             display: flex;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            align-items: flex-start;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s ease;
 
-            &:last-child {
-                border-bottom: none;
+            &:hover {
+                background: #e9ecef;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
             }
 
             .label {
-                width: 120px;
-                font-weight: 500;
-                color: #7f8c8d;
+                font-weight: 600;
+                color: #2c3e50;
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 0.5rem;
+                margin-right: 10px;
+
+                i {
+                    font-size: 1.1rem;
+                    color: #3498db;
+                }
             }
 
             .value {
-                flex: 1;
-                color: #2c3e50;
-                font-weight: 500;
-                display: flex;
-                align-items: center;
-
-                .badge-custom {
-                    background-color: #e3f2fd;
-                    color: #1a73e8;
-                    font-weight: 500;
-                    padding: 5px 12px;
-                    border-radius: 20px;
-                    font-size: 0.9rem;
-
-                    &.badge-pv-yes {
-                        background-color: #e8f5e9;
-                        color: #2e7d32;
-                    }
-
-                    &.badge-pv-no {
-                        background-color: #ffebee;
-                        color: #c62828;
-                    }
-
-                    &.badge-pv-unknown {
-                        background-color: #fff8e1;
-                        color: #f57f17;
-                    }
-
-                    &.forecast-badge {
-                        background-color: #f3e5f5;
-                        color: #9c27b0;
-                    }
-                }
-            }
-        }
-
-        .card-footer {
-            background-color: #f8f9fa;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            padding: 15px 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            .continue-btn {
-                justify-content: flex-end;
-                margin-left: auto;
-            }
-            .timestamp {
-                font-style: italic;
-            }
-
-            .actions button {
-                border: none;
-                background: transparent;
-                color: #3498db;
-                padding: 5px 10px;
-                border-radius: 4px;
-                transition: all 0.2s;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-
-                &:hover {
-                    background-color: #e3f2fd;
-                }
+                color: #555;
+                font-size: 0.95rem;
             }
         }
     }
-
-    .chart-card {
-        background-color: #fff;
-        .header {
-            display: flex;
-            justify-content: flex-end;
-            h5 {
-                justify-self: flex-start;
-                margin-right: auto;
-            }
-        }
+    .options {
+        margin-top: 16px;
+        display: flex;
+        justify-content: end;
     }
 }
 </style>

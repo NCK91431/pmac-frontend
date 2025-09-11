@@ -71,10 +71,10 @@
             </template>
             <template v-if="stage == 2">
                 <button
-                    class="btn-continue btn btn-primary px-4 py-2"
-                    @click="emitNewPrediction"
+                    class="btn-compare btn btn-primary px-4 py-2"
+                    @click="goComparePage"
                 >
-                    新建预测<i class="bi bi-arrow-down-circle me-2"></i>
+                    回测分析<i class="bi bi-arrow-up-right-circle"></i>
                 </button>
             </template>
         </div>
@@ -88,12 +88,14 @@ import FileUpload from "./FileUpload.vue";
 import FinishView from "./FinishView.vue";
 import LoadingOverlay from "./LoadingOverlay.vue";
 import { addDays, format } from "date-fns";
+import { useRouter } from "vue-router";
 import { InfoFilled, TopRight } from "@element-plus/icons-vue";
 import { useElecStore } from "@/store/elec"; // 修改为新的Store
+const router = useRouter();
 
 const forecastStore = useElecStore(); // 使用新的综合Store
 
-const emit = defineEmits(["submit", "new-predictiton"]);
+const emit = defineEmits(["submit"]);
 
 const record = computed(() => forecastStore.responseData);
 const stage = computed(() => forecastStore.stage);
@@ -105,10 +107,6 @@ const isFormValid = computed(
 const submitForm = () => {
     emit("submit", forecastStore.formData, forecastStore.uploadedFile);
 };
-
-function emitNewPrediction() {
-    emit("new-predictiton");
-}
 
 /* ----------------------------------- 继续预测 ------------------------------------------------- */
 const isContinuePredict = computed(() => forecastStore.isContinue);
@@ -130,6 +128,13 @@ function createNewPrediction() {
 }
 function continuePrediction() {
     forecastStore.setActiveTab("history");
+}
+
+/* ----------------------------------- 跳转至回测分析页面 ------------------------------------------------- */
+function goComparePage() {
+    const recordId = record.value?.recordId;
+    if (!recordId) return;
+    router.push({ name: "ElecCompare", params: { recordId } });
 }
 </script>
 
@@ -154,10 +159,28 @@ function continuePrediction() {
             box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
         }
     }
-    .btn-continue {
+    .btn-compare {
+        background: linear-gradient(135deg, #626aef 0%, #a090f9 100%);
+        border: none;
         justify-self: flex-end;
         margin-left: auto;
         margin-right: 24px;
+        &:hover {
+            box-shadow: 0 5px 20px rgba(98, 106, 239, 0.6);
+            transform: translateY(-4px);
+        }
+        &:active {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 10px rgba(98, 106, 239, 0.4);
+        }
+        i {
+            margin-left: 8px;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        &:hover i {
+            transform: translateY(3px);
+        }
     }
 }
 

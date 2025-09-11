@@ -12,6 +12,7 @@
                 :key="time"
                 :prop="time"
                 :label="time"
+                width="70"
             />
         </el-table>
     </div>

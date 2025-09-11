@@ -42,10 +42,20 @@ const initChart = () => {
     const option = {
         tooltip: {
             trigger: "axis",
-            formatter: "{b}: {c} kW",
+            formatter: function (params) {
+                const time = params[0].axisValue;
+                const value = params[0].data;
+                console.log(params);
+                return `
+				 <div style="display: flex; align-items: center; margin: 5px 0;">
+                    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #91CC75; margin-right: 8px;"></span>
+                    <span style="margin-right: 15px;">${time}:</span>
+                    <span style="font-weight: bold; color: #91CC75;">${value} kW</span>
+                </div>
+				`;
+            },
         },
         legend: {
-            // data: ["实际负荷", "预测负荷"],
             data: ["预测负荷"],
             bottom: 10,
         },
@@ -56,27 +66,23 @@ const initChart = () => {
             top: "10%",
             containLabel: true,
         },
-        dataZoom: [
-            {
-                type: "inside", // 内置缩放（鼠标滚轮）
-                start: 0,
-                end: 20,
-            },
-            {
-                type: "slider", // 底部滑动条
-                show: true,
-                bottom: "5%",
-                start: 0,
-                end: 50,
-                height: 20,
-            },
-        ],
+
         xAxis: {
             type: "category",
             boundaryGap: false,
             data: x_data,
+            axisLine: {
+                lineStyle: {
+                    color: "#dcdfe6",
+                },
+            },
             axisLabel: {
-                interval: 0,
+                color: "#606266",
+                interval: 2,
+                fontSize: 11,
+            },
+            axisTick: {
+                alignWithLabel: true,
             },
         },
         yAxis: {
@@ -84,8 +90,24 @@ const initChart = () => {
             name: "预测值 (kW)",
             nameLocation: "middle",
             nameGap: 40,
+            nameTextStyle: {
+                fontSize: 12,
+                color: "#606266",
+            },
             axisLine: {
                 show: true,
+                lineStyle: {
+                    color: "#dcdfe6",
+                },
+            },
+            axisLabel: {
+                color: "#606266",
+            },
+            splitLine: {
+                lineStyle: {
+                    type: "dashed",
+                    color: "#e4e7ed",
+                },
             },
         },
         series: [
@@ -96,11 +118,11 @@ const initChart = () => {
                 smooth: true,
                 lineStyle: {
                     width: 3,
-                    // type: "dashed",
-                    // color: "#91cc75",
+                    color: "#5470C6",
+                    shadowColor: "rgba(84, 112, 198, 0.15)",
+                    shadowBlur: 8,
                     color: "#5470c6",
                 },
-                // symbol: "emptyCircle",
                 symbol: "circle",
                 symbolSize: 8,
                 areaStyle: {

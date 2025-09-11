@@ -1,5 +1,13 @@
 <template>
     <main class="container my-4 flex-grow-1">
+        <div class="top-action mb-3" v-if="stage == 2">
+            <button
+                class="btn-add-new btn btn-primary px-4 py-2"
+                @click="onNewPrediction"
+            >
+                新建预测<i class="bi bi-plus-circle"></i>
+            </button>
+        </div>
         <!-- 预测表单 -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white">
@@ -29,7 +37,6 @@
                 <ConfigSection
                     v-if="activeTab === 'upload'"
                     @submit="handleSubmit"
-                    @new-predictiton="onNewPrediction"
                     :record="record"
                     :stage="stage"
                 />
@@ -178,6 +185,33 @@ function onClickHistoryTab() {
 </script>
 
 <style lang="scss" scoped>
+.top-action {
+    display: flex;
+    justify-content: flex-end;
+    .btn-add-new {
+        background: linear-gradient(135deg, #2ecc71 0%, #1abc9c 100%);
+        border: none;
+        position: relative;
+        overflow: hidden;
+        &:hover {
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.6);
+            transform: translateY(-4px);
+        }
+        &:active {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 10px rgba(46, 204, 113, 0.4);
+        }
+        i {
+            margin-left: 8px;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        &:hover i {
+            transform: translateY(3px);
+        }
+    }
+}
+
 .card {
     border-radius: 8px;
     border: 1px solid #dee2e6;

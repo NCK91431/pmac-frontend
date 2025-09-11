@@ -30,46 +30,41 @@
         </div>
     </div>
     <!-- 天气预测结果 -->
-    <div class="weather-section card border-0 shadow-sm mt-4">
-        <div v-if="cityWeatherForecast && cityWeatherForecast.length">
-            <div
-                class="card-header bg-white d-flex justify-content-between align-items-center"
-            >
-                <h3 class="h5 mb-0 text-success">
-                    <i class="bi bi-cloud-sun me-2"></i>天气信息
-                </h3>
-                <div class="city-selector">
-                    <el-select
-                        v-model="selectedCityIndex"
-                        placeholder="选择城市"
-                        style="width: 300px"
-                    >
-                        <el-option
-                            v-for="(city, index) in cityWeatherForecast"
-                            :key="index"
-                            :label="city.location"
-                            :value="index"
-                        />
-                    </el-select>
-                </div>
+    <div
+        class="weather-section card border-0 shadow-sm mt-4"
+        v-if="cityWeatherForecast && cityWeatherForecast.length"
+    >
+        <div
+            class="card-header bg-white d-flex justify-content-between align-items-center"
+        >
+            <h3 class="h5 mb-0 text-success">
+                <i class="bi bi-cloud-sun me-2"></i>天气信息
+            </h3>
+            <div class="city-selector">
+                <el-select
+                    v-model="selectedCityIndex"
+                    placeholder="选择城市"
+                    style="width: 300px"
+                >
+                    <el-option
+                        v-for="(city, index) in cityWeatherForecast"
+                        :key="index"
+                        :label="city.location"
+                        :value="index"
+                    />
+                </el-select>
             </div>
+        </div>
 
-            <div v-if="selectedCityWeather" class="weather-content">
-                <div class="weather-chart">
-                    <WeatherChart
-                        :temperature-data="
-                            selectedCityWeather.temperatureForecast
-                        "
-                        :irradiation-data="
-                            selectedCityWeather.irradiationForecast
-                        "
-                    />
-                </div>
-                <div class="weather-info card mb-4">
-                    <WeatherInfo
-                        :weather-info="selectedCityWeather.weatherInfo"
-                    />
-                </div>
+        <div v-if="selectedCityWeather" class="weather-content">
+            <div class="weather-chart">
+                <WeatherChart
+                    :temperature-data="selectedCityWeather.temperatureForecast"
+                    :irradiation-data="selectedCityWeather.irradiationForecast"
+                />
+            </div>
+            <div class="weather-info card mb-4">
+                <WeatherInfo :weather-info="selectedCityWeather.weatherInfo" />
             </div>
         </div>
     </div>
