@@ -26,6 +26,7 @@
             <ChartDisplay
                 :predictionData="getPredictionDataForDate()"
                 :date="result_date"
+                :capacity="formData.pv_capacity"
             />
         </div>
     </div>
@@ -83,6 +84,7 @@ import { useElecStore } from "@/store/elec";
 const forecastStore = useElecStore();
 
 const result = computed(() => forecastStore.responseData);
+const formData = computed(() => forecastStore.responseData.formData);
 const prediction_result = computed(
     () => forecastStore.responseData.algorithm_result.values
 );

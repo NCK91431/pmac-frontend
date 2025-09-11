@@ -94,6 +94,7 @@
                         :uploadData="getUploadData(record)"
                         :predictionData="getPredictionDataForDate()"
                         :date="getSampleDate(record)"
+                        :capacity="record.pv_capacity"
                     />
                 </div>
             </div>

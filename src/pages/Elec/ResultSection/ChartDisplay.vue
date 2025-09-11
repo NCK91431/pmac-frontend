@@ -16,6 +16,10 @@ import ResultTable from "./ResultTable.vue";
 const props = defineProps({
     predictionData: Array,
     date: String,
+    capacity: {
+        type: Number,
+        default: 0,
+    },
 });
 
 const chartEl = ref(null);
@@ -109,6 +113,10 @@ const initChart = () => {
                     color: "#e4e7ed",
                 },
             },
+            // 添加 max 配置，固定纵坐标最大值为装机容量
+            max: props.capacity > 0 ? props.capacity : null,
+            // 添加 interval 配置，控制刻度间隔
+            interval: props.capacity > 0 ? Math.ceil(props.capacity / 5) : null,
         },
         series: [
             {

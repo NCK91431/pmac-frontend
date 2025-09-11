@@ -60,6 +60,7 @@
                         <CompareChart
                             :actual-data="compareData.sourseData"
                             :prediction-data="compareData.predictionData"
+                            :capacity="compare_baseinfo.pv_capacity"
                         />
                     </div>
                 </div>
@@ -149,6 +150,8 @@ const recordId = ref(route.params.recordId || null);
 console.log("setup get recordId->", recordId.value);
 const selectedDate = ref(null);
 const compareData = computed(() => forecastStore.compare_data || {});
+
+const compare_baseinfo = computed(() => forecastStore.compare_baseinfo || {});
 const loading = ref(false);
 const error = ref(null);
 const selectedCityIndex = ref(0);
