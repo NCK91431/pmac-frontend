@@ -132,14 +132,24 @@ const formatLocation = (location) => {
 
 // 计算属性 - 总体指标（过滤掉MAPE）
 const filteredOverallMetrics = computed(() => {
-    const metrics = forecastStore.compare_data?.modelMetrics || {};
-    return metrics;
+    const modelMetrics = forecastStore.compare_data?.modelMetrics;
+    if (!modelMetrics) return {};
+    return {
+        MAE: modelMetrics.MAE, //平均绝对误差
+        RMSE: modelMetrics.RMSE, //均方根误差
+        E_RMSE: modelMetrics.E_RMSE, //相对均方根误差
+    };
 });
 
 // 计算属性 - 单日指标（过滤掉MAPE）
 const filteredDailyMetrics = computed(() => {
-    const metrics = forecastStore.compare_data?.dailyMetrics || {};
-    return metrics;
+    const dailyMetrics = forecastStore.compare_data?.dailyMetrics;
+    if (!dailyMetrics) return {};
+    return {
+        MAE: dailyMetrics.MAE, //平均绝对误差
+        RMSE: dailyMetrics.RMSE, //均方根误差
+        E_RMSE: dailyMetrics.E_RMSE, //相对均方根误差
+    };
 });
 
 const metricConfig = {

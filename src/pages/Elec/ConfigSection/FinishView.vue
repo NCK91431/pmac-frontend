@@ -29,31 +29,12 @@
                         </div>
                     </div>
                     <!-- 模型评估指标 -->
-                    <div class="preview-item" v-if="modelMetrics">
+                    <div class="preview-item metric" v-if="modelMetrics">
                         <div class="preview-label">
                             <i class="bi bi-clipboard-data"></i> 模型评估
                         </div>
-                        <div class="preview-value">
-                            <div class="metrics-grid">
-                                <div class="metric-item">
-                                    <span class="metric-label">MAE</span>
-                                    <span class="metric-value">{{
-                                        modelMetrics.MAE
-                                    }}</span>
-                                </div>
-                                <div class="metric-item">
-                                    <span class="metric-label">RMSE</span>
-                                    <span class="metric-value">{{
-                                        modelMetrics.RMSE
-                                    }}</span>
-                                </div>
-                                <div class="metric-item">
-                                    <span class="metric-label">E_RMSE</span>
-                                    <span class="metric-value"
-                                        >{{ modelMetrics.E_RMSE }}%</span
-                                    >
-                                </div>
-                            </div>
+                        <div class="wrap">
+                            <MetricInfo :metrics="filtered_modelMetrics" />
                         </div>
                     </div>
                 </div>
@@ -115,6 +96,7 @@ import { computed } from "vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
+import MetricInfo from "../HistorySection/group/MetricInfo.vue";
 import { useElecStore } from "@/store/elec"; // 修改为新的Store
 const forecastStore = useElecStore();
 const result = computed(() => forecastStore.responseData.algorithm_result);
@@ -122,6 +104,18 @@ const modelMetrics = computed(() => {
     return result.value && result.value.modelMetrics
         ? result.value.modelMetrics
         : null;
+});
+const filtered_modelMetrics = computed(() => {
+    if (result.value && result.value.modelMetrics) {
+        const modelMetrics = result.value.modelMetrics;
+        return {
+            MAE: modelMetrics.MAE, //平均绝对误差
+            RMSE: modelMetrics.RMSE, //均方根误差
+            E_RMSE: modelMetrics.E_RMSE, //相对均方根误差
+        };
+    } else {
+        return {};
+    }
 });
 const props = defineProps({
     record: {
@@ -293,39 +287,13 @@ async function downloadUploadExcel() {
             font-size: 0.9rem;
         }
 
-        .preview-value {
-            flex: 1;
-            color: #2c3e50;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-            /* 模型评估指标样式 */
-            .metrics-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
+        &.metric {
+            flex-direction: column;
+            .wrap {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
                 gap: 10px;
-                .metric-item {
-                    display: flex;
-                    flex-direction: column;
-                    background-color: #f8f9fa;
-                    padding: 8px 12px;
-                    border-radius: 6px;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-                    .metric-label {
-                        font-size: 0.75rem;
-                        color: #6c757d;
-                        margin-bottom: 4px;
-                        font-weight: 500;
-                    }
-
-                    .metric-value {
-                        font-weight: 600;
-                        color: #2c3e50;
-                        font-size: 0.9rem;
-                    }
-                }
             }
         }
     }
