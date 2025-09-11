@@ -9,7 +9,7 @@
                 >
                     <router-link
                         v-if="index < breadcrumbs.length - 1 && item.to"
-                        :to="item.to"
+                        :to="ensureAbsolutePath(item.to)"
                         class="breadcrumb-link"
                     >
                         <i
@@ -61,9 +61,9 @@ import { Back } from "@element-plus/icons-vue";
 const route = useRoute();
 const breadcrumbs = ref([]);
 
-// 路由到面包屑的映射（增强版）
+// 路由到面包屑的映射
 const routeToBreadcrumb = {
-    home: { title: "首页", to: "/", icon: "bi bi-house" },
+    home: { title: "首页", to: "/home", icon: "bi bi-house" },
     loadpre: {
         title: "负荷预测",
         to: "/loadpre",
@@ -94,6 +94,15 @@ const routeToBreadcrumb = {
     elec: { title: "光伏发电预测", to: "/elec", icon: "bi bi-lightning" },
 };
 
+// 确保路径是绝对路径的辅助函数
+function ensureAbsolutePath(path) {
+    // 如果路径不是以斜杠开头，添加斜杠
+    if (path && !path.startsWith("/")) {
+        return "/" + path;
+    }
+    return path;
+}
+
 // 计算当前页面标题
 const currentPageTitle = computed(() => {
     if (breadcrumbs.value.length > 0) {
@@ -122,7 +131,7 @@ const updateBreadcrumbs = () => {
     if (routeName === "LoadCompare") {
         crumbs.push(routeToBreadcrumb["loadpre"]);
     }
-    // 如果是光伏发电回测分析页面，添加光伏发电预测预测作为父级
+    // 如果是光伏发电回测分析页面，添加光伏发电预测作为父级
     if (routeName === "ElecCompare") {
         crumbs.push(routeToBreadcrumb["elec"]);
     }
