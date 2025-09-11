@@ -41,9 +41,8 @@
 import { ref, computed, onMounted } from "vue";
 import request from "@/utils/request";
 import { InfoFilled } from "@element-plus/icons-vue";
-import { useElecStore } from "@/store/elec"; // 修改为新的Store
+import { useElecStore } from "@/store/elec";
 
-// 使用新的综合Store
 const forecastStore = useElecStore();
 
 const isContinue = computed(() => forecastStore.isContinue);
@@ -70,7 +69,8 @@ onMounted(async () => {
     try {
         const response = await request.get("/api/locationtree");
         if (response.data.code === 200) {
-            locationOptions.value = response.data.data;
+            const list = response.data.data;
+            locationOptions.value = list.filter((item) => item.value == "44"); //暂时只支持广东省
         }
     } catch (error) {
         console.error("获取省市区数据失败:", error);
