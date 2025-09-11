@@ -70,31 +70,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="preview-item" v-if="modelMetrics">
+                <div class="preview-item metric" v-if="modelMetrics">
                     <div class="preview-label">
                         <i class="bi bi-clipboard-data"></i> 模型评估
                     </div>
-                    <div class="preview-value">
-                        <div class="metrics-grid">
-                            <div class="metric-item">
-                                <span class="metric-label">MAE</span>
-                                <span class="metric-value">{{
-                                    modelMetrics.MAE
-                                }}</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-label">RMSE</span>
-                                <span class="metric-value">{{
-                                    modelMetrics.RMSE
-                                }}</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-label">WMAPE</span>
-                                <span class="metric-value"
-                                    >{{ modelMetrics.WMAPE }}%</span
-                                >
-                            </div>
-                        </div>
+                    <div class="wrap">
+                        <MetricInfo :metrics="filtered_modelMetrics" />
                     </div>
                 </div>
             </div>
@@ -156,6 +137,7 @@ import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
 import { useLoadForecastStore } from "@/store/load";
+import MetricInfo from "./components/MetricInfo.vue";
 const forecastStore = useLoadForecastStore();
 const result = computed(() => forecastStore.responseData.result);
 const modelMetrics = computed(() => {
@@ -163,7 +145,18 @@ const modelMetrics = computed(() => {
         ? result.value.modelMetrics
         : null;
 });
-
+const filtered_modelMetrics = computed(() => {
+    if (result.value && result.value.modelMetrics) {
+        const modelMetrics = result.value.modelMetrics;
+        return {
+            MAE: modelMetrics.MAE,
+            RMSE: modelMetrics.RMSE,
+            WMAPE: modelMetrics.WMAPE,
+        };
+    } else {
+        return {};
+    }
+});
 const props = defineProps({
     record: {
         // 用户提交成功后从后端返回的完整数据
@@ -372,6 +365,15 @@ async function downloadUploadExcel() {
             display: flex;
             align-items: center;
             font-size: 0.9rem;
+        }
+        &.metric {
+            flex-direction: column;
+            .wrap {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr 1.4fr;
+                gap: 10px;
+            }
         }
     }
 

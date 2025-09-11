@@ -38,8 +38,8 @@ const metricConfig = {
         icon: "bi-graph-down-arrow",
         description: "衡量预测误差的标准差，对大误差更敏感",
     },
-    E_RMSE: {
-        label: `相对均方根误差`,
+    WMAPE: {
+        label: `加权平均绝对百分比误差`,
         unit: "%",
         icon: "bi-percent",
         description: "考虑数据权重的平均百分比误差",
