@@ -58,7 +58,7 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">时间粒度</span>
-                        <span class="stat-value">小时</span>
+                        <span class="stat-value">15分钟</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">日期范围</span>
