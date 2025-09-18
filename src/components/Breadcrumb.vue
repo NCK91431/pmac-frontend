@@ -41,9 +41,7 @@
                 {{ currentPageTitle }}
             </div> -->
             <el-button
-                v-if="
-                    curPageName == 'LoadCompare' || curPageName == 'ElecCompare'
-                "
+                v-if="showBackBtn"
                 type="primary"
                 :icon="Back"
                 @click="$router.back()"
@@ -72,10 +70,27 @@ const routeToBreadcrumb = {
     LoadCompare: {
         title: "回测分析",
         icon: "bi bi-graph-up-arrow",
+        hasBackBtn: true,
+    },
+    load_example: {
+        title: "负荷预测-案例展示",
+        icon: "bi bi-bookmark-check",
+        hasBackBtn: true,
+    },
+    elec: {
+        title: "光伏发电预测",
+        to: "/elec",
+        icon: "bi bi-lightning",
     },
     ElecCompare: {
         title: "回测分析",
         icon: "bi bi-graph-up-arrow",
+        hasBackBtn: true,
+    },
+    elec_example: {
+        title: "光伏发电预测-案例展示",
+        icon: "bi bi-bookmark-check",
+        hasBackBtn: true,
     },
     login: { title: "登录", icon: "bi bi-box-arrow-in-right" },
     modifyuser: { title: "用户设置", icon: "bi bi-person-gear" },
@@ -91,7 +106,6 @@ const routeToBreadcrumb = {
         icon: "bi bi-journal-text",
     },
     light: { title: "光储定容", to: "/light", icon: "bi bi-sun" },
-    elec: { title: "光伏发电预测", to: "/elec", icon: "bi bi-lightning" },
 };
 
 // 确保路径是绝对路径的辅助函数
@@ -111,6 +125,12 @@ const currentPageTitle = computed(() => {
     return null;
 });
 const curPageName = computed(() => route.name || "");
+
+const showBackBtn = computed(() => {
+    const key = curPageName.value;
+    if (!key) return false;
+    return routeToBreadcrumb[key].hasBackBtn;
+});
 
 // 更新面包屑
 const updateBreadcrumbs = () => {

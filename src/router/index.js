@@ -63,6 +63,16 @@ const router = createRouter({
             component: () =>
                 import("../pages/Elec/HistorySection/ElecCompare.vue"),
         },
+        {
+            path: "/elec_example",
+            name: "elec_example",
+            component: () => import("@/pages/Elec/HistorySection/Example.vue"),
+        },
+        {
+            path: "/load_example",
+            name: "load_example",
+            component: () => import("@/pages/Load/HistorySection/Example.vue"),
+        },
     ],
 });
 

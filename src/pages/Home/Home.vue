@@ -129,6 +129,11 @@
         </div>
     </section>
 
+    <!-- 功能介绍宣传 -->
+    <div class="intro-containner">
+        <Intro />
+    </div>
+
     <!-- 待开发功能:可爱的提示弹窗 -->
     <el-dialog
         v-model="comingSoonVisible"
@@ -164,6 +169,7 @@ import { ElDialog } from "element-plus";
 // 导入Swiper相关组件和样式
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay, Pagination } from "swiper/modules";
+import Intro from "./Intro.vue";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -561,6 +567,10 @@ const showComingSoon = () => {
             }
         }
     }
+}
+
+/*功能介绍宣传样式 */
+.intro-containner {
 }
 
 /* 响应式设计 */
