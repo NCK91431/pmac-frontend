@@ -40,15 +40,41 @@
                         <h4 class="mb-0 card-title">
                             <i class="bi bi-bar-chart me-2"></i>负荷对比分析
                         </h4>
-                        <div class="selected-date-display">
-                            <i class="bi bi-calendar-event me-1"></i>
-                            {{ selectedDate }}
+                        <!-- 日期信息展示部分 -->
+                        <div class="date-info" v-if="compareData.date">
+                            <div class="selected-date-display">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                {{ selectedDate }}
+                            </div>
+
+                            <div class="weekday">
+                                <i class="bi bi-calendar-week me-1"></i>
+                                {{ getWeekday(compareData.date.value) }}
+                            </div>
+                            <div
+                                class="date-type"
+                                :class="compareData.date.type"
+                            >
+                                <i
+                                    class="me-1"
+                                    :class="{
+                                        'bi-briefcase':
+                                            compareData.date.type === 'weekday',
+                                        'bi-emoji-sunglasses':
+                                            compareData.date.type === 'weekend',
+                                        'bi-balloon':
+                                            compareData.date.type === 'holiday',
+                                    }"
+                                ></i>
+                                {{ formatDateType(compareData.date.type) }}
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
                         <CompareChart
                             :actual-data="compareData.sourseData"
                             :prediction-data="compareData.predictionData"
+                            :similarDayLoad="compareData.similarDayLoad"
                         />
                     </div>
                 </div>
@@ -128,6 +154,26 @@ const selectedCityIndex = ref(0);
 
 const selectedDate = "2025-08-10";
 
+/* ----------------------------- 日期信息 ------------------------------ */
+// 获取星期几
+const getWeekday = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+    return `星期${weekdays[date.getDay()]}`;
+};
+
+// 格式化日期类型
+const formatDateType = (type) => {
+    const typeMap = {
+        weekday: "工作日",
+        weekend: "周末",
+        holiday: "节假日",
+    };
+    return typeMap[type] || type;
+};
+
+/* ----------------------------- 天气 ------------------------------ */
 // 计算选中的城市天气数据
 const selectedCityWeather = computed(() => {
     if (!compareData.value || !compareData.value.cityWeatherForecast)
@@ -288,14 +334,65 @@ onMounted(() => {
                 color: #2c3e50;
                 font-weight: 600;
             }
+            // 日期信息样式
+            .date-info {
+                display: flex;
+                gap: 12px;
+                text-align: center;
 
-            .selected-date-display {
-                color: #1890ff;
-                padding: 6px 12px;
-                border-radius: 6px;
-                font-weight: 600;
-                background-color: rgba(24, 144, 255, 0.1);
-                border: 1px solid rgba(24, 144, 255, 0.2);
+                .selected-date-display,
+                .weekday,
+                .date-type {
+                    display: flex;
+                    align-items: center; /* 内部元素垂直居中 */
+                    min-height: 36px; /* 设置最小高度确保一致性 */
+                }
+
+                .selected-date-display {
+                    color: #1890ff;
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    background-color: rgba(24, 144, 255, 0.1);
+                    border: 1px solid rgba(24, 144, 255, 0.2);
+                }
+
+                .weekday {
+                    padding: 4px 12px;
+                    background: rgba(44, 111, 187, 0.1);
+                    border-radius: 4px;
+                    color: #2c6fbb;
+                    font-weight: 500;
+                    border: 1px solid rgba(#2c6fbb, 0.2);
+                }
+
+                .date-type {
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-weight: 500;
+
+                    &.weekday {
+                        background: rgba(76, 175, 80, 0.1);
+                        color: #4caf50;
+                        border: 1px solid rgba(#4caf50, 0.2);
+                    }
+
+                    &.weekend {
+                        background: rgba(156, 39, 176, 0.1);
+                        color: #9c27b0;
+                        border: 1px solid rgba(#9c27b0, 0.2);
+                    }
+
+                    &.holiday {
+                        background: linear-gradient(
+                            135deg,
+                            #fff1f0 0%,
+                            #ffccc7 100%
+                        );
+                        color: #cf1322;
+                        border: 1px solid rgba(#f44336, 0.2);
+                    }
+                }
             }
         }
 

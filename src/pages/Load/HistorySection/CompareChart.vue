@@ -4,6 +4,7 @@
         <CompareTable
             :actual-data="props.actualData"
             :prediction-data="props.predictionData"
+            :similar-day-load="props.similarDayLoad"
         />
     </div>
 </template>
@@ -19,6 +20,10 @@ const props = defineProps({
         default: () => [],
     },
     predictionData: {
+        type: Array,
+        default: () => [],
+    },
+    similarDayLoad: {
         type: Array,
         default: () => [],
     },
@@ -90,7 +95,12 @@ const initChart = () => {
             },
         },
         legend: {
-            data: ["实际负荷", "预测负荷"],
+            data: ["实际负荷", "预测负荷", "同类型日负荷"],
+            selected: {
+                实际负荷: true,
+                预测负荷: true,
+                同类型日负荷: false, // 默认不显示同类型日负荷
+            },
             bottom: 10,
             itemGap: 20,
             itemWidth: 15,
@@ -227,6 +237,34 @@ const initChart = () => {
                     },
                     lineStyle: {
                         width: 4,
+                    },
+                },
+            },
+            {
+                name: "同类型日负荷",
+                type: "line",
+                data: props.similarDayLoad,
+                smooth: true,
+                lineStyle: {
+                    width: 2,
+                    color: "#FF9800",
+                    type: "dashed",
+                },
+                symbol: "emptyCircle",
+                symbolSize: 6,
+                itemStyle: {
+                    color: "#FF9800",
+                    borderWidth: 1,
+                    borderColor: "#fff",
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: "#fff",
+                        borderColor: "#FF9800",
+                        borderWidth: 2,
+                    },
+                    lineStyle: {
+                        width: 3,
                     },
                 },
             },

@@ -154,7 +154,7 @@
                     </div>
                     <div class="col-prediction">
                         <el-tag type="success">
-                            {{ data.prediction_date }}
+                            {{ data.prediction_date.value }}
                         </el-tag>
                     </div>
                     <!-- 操作列-->

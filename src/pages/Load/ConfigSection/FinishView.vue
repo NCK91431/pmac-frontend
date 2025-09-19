@@ -39,7 +39,7 @@
                             <div class="preview-value">
                                 <span class="status-badge">
                                     <i class="bi"></i>
-                                    {{ pv_capacity }}（kw）
+                                    {{ pv_capacity }}（kWp）
                                 </span>
                             </div>
                         </div>
@@ -74,8 +74,17 @@
                     <div class="preview-label">
                         <i class="bi bi-clipboard-data"></i> 模型评估
                     </div>
-                    <div class="wrap">
-                        <MetricInfo :metrics="filtered_modelMetrics" />
+                    <div class="metric-card compact">
+                        <div class="metric-icon compact">
+                            <i class="bi bi-bar-chart-line"></i>
+                        </div>
+                        <div class="metric-content compact">
+                            <div class="metric-label compact">总体误差</div>
+                            <div class="metric-value compact">
+                                <text>{{ modelMetrics.WMAPE }}</text>
+                                <text class="unit">%</text>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -137,7 +146,6 @@ import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
 import { useLoadForecastStore } from "@/store/load";
-import MetricInfo from "./components/MetricInfo.vue";
 const forecastStore = useLoadForecastStore();
 const result = computed(() => forecastStore.responseData.result);
 const modelMetrics = computed(() => {
@@ -145,18 +153,7 @@ const modelMetrics = computed(() => {
         ? result.value.modelMetrics
         : null;
 });
-const filtered_modelMetrics = computed(() => {
-    if (result.value && result.value.modelMetrics) {
-        const modelMetrics = result.value.modelMetrics;
-        return {
-            MAE: modelMetrics.MAE,
-            RMSE: modelMetrics.RMSE,
-            WMAPE: modelMetrics.WMAPE,
-        };
-    } else {
-        return {};
-    }
-});
+
 const props = defineProps({
     record: {
         // 用户提交成功后从后端返回的完整数据
@@ -368,11 +365,58 @@ async function downloadUploadExcel() {
         }
         &.metric {
             flex-direction: column;
-            .wrap {
-                width: 100%;
-                display: grid;
-                grid-template-columns: 1fr 1fr 1.4fr;
-                gap: 10px;
+
+            .metric-card {
+                display: flex;
+                align-items: center;
+                margin-top: 12px;
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+                position: relative;
+                padding: 8px 25px;
+                .metric-icon {
+                    width: 36px;
+                    height: 36px;
+                    margin-right: 12px;
+                    border-radius: 50%;
+                    background: linear-gradient(
+                        135deg,
+                        #ffc107 0%,
+                        #e0a800 100%
+                    );
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    i {
+                        font-size: 1.1rem;
+                        color: white;
+                    }
+                }
+
+                .metric-content {
+                    flex: 1;
+                    .metric-label {
+                        font-size: 0.8rem;
+                        color: #6c757d;
+                        margin-bottom: 4px;
+                    }
+
+                    .metric-value {
+                        font-size: 1.1rem;
+                        font-weight: 700;
+                        color: #2c3e50;
+                        display: flex;
+                        gap: 15px;
+                        align-items: center;
+                        .unit {
+                            font-size: 0.8rem;
+                            color: #6c757d;
+                        }
+                    }
+                }
             }
         }
     }

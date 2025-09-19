@@ -59,7 +59,7 @@
 
             <!-- 新增装机容量输入框，仅在选择"有"时显示 -->
             <div class="mb-3" v-if="form.pv_config == 'yes'">
-                <label class="form-label fw-bold">装机容量 (kw)</label>
+                <label class="form-label fw-bold">装机容量 (kWp)</label>
                 <input
                     type="number"
                     v-model.number="form.pv_capacity"

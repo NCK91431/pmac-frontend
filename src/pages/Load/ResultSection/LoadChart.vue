@@ -2,7 +2,11 @@
     <div class="chart-display">
         <div ref="chartEl" class="chart-container" style="height: 400px"></div>
     </div>
-    <LoadTable :loads="props.loads" :headerData="x_data" />
+    <LoadTable
+        :loads="props.loads"
+        :headerData="x_data"
+        :similarDayLoad="props.similarDayLoad"
+    />
 </template>
 
 <script setup>
@@ -13,6 +17,10 @@ import LoadTable from "./LoadTable.vue";
 const props = defineProps({
     loads: Array,
     date: String,
+    similarDayLoad: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const chartEl = ref(null);
@@ -31,8 +39,11 @@ const initChart = () => {
             formatter: "{b}: {c} kW",
         },
         legend: {
-            // data: ["实际负荷", "预测负荷"],
-            data: ["预测负荷"],
+            data: ["预测负荷", "同类型日负荷"],
+            selected: {
+                预测负荷: true,
+                同类型日负荷: false, // 默认不显示同类型日负荷
+            },
             bottom: 10,
         },
         grid: {
@@ -78,6 +89,34 @@ const initChart = () => {
                         { offset: 0, color: "rgba(84, 112, 198, 0.5)" },
                         { offset: 1, color: "rgba(84, 112, 198, 0.1)" },
                     ]),
+                },
+            },
+            {
+                name: "同类型日负荷",
+                type: "line",
+                data: props.similarDayLoad,
+                smooth: true,
+                lineStyle: {
+                    width: 2,
+                    color: "#FF9800",
+                    type: "dashed",
+                },
+                symbol: "emptyCircle",
+                symbolSize: 6,
+                itemStyle: {
+                    color: "#FF9800",
+                    borderWidth: 1,
+                    borderColor: "#fff",
+                },
+                emphasis: {
+                    itemStyle: {
+                        color: "#fff",
+                        borderColor: "#FF9800",
+                        borderWidth: 2,
+                    },
+                    lineStyle: {
+                        width: 3,
+                    },
                 },
             },
         ],

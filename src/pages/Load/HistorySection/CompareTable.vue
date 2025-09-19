@@ -6,7 +6,7 @@
             border
             :header-cell-style="{ background: '#f5f7fa', color: '#303133' }"
         >
-            <el-table-column prop="title" label="时间" fixed width="100" />
+            <el-table-column prop="title" label="时间" fixed width="110" />
             <el-table-column
                 v-for="time in headerData"
                 :key="time"
@@ -23,6 +23,7 @@
 const props = defineProps({
     actualData: Array,
     predictionData: Array,
+    similarDayLoad: Array,
 });
 
 const headerData = Array(24)
@@ -30,6 +31,7 @@ const headerData = Array(24)
     .map((_, i) => `${i}:00`);
 
 function getTableData() {
+    // 预测值
     let row1 = {
         title: "预测负荷",
     };
@@ -38,6 +40,7 @@ function getTableData() {
         row1[time] = p_data[idx];
     });
 
+    // 实际值
     const row2 = {
         title: "实际负荷",
     };
@@ -46,7 +49,17 @@ function getTableData() {
         row2[time] = a_data[idx];
     });
 
-    return [row1, row2];
+    // 同类型日值
+    const row3 = {
+        title: "同类型日负荷",
+    };
+    const s_data = props.similarDayLoad;
+
+    headerData.forEach((time, idx) => {
+        row3[time] = s_data[idx];
+    });
+
+    return [row1, row2, row3];
 }
 </script>
 

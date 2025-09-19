@@ -54,10 +54,10 @@
                         </div>
                         <div class="info-item">
                             <div class="label">
-                                <i class="bi bi-clipboard-pulse"></i> 预测日期:
+                                <i class="bi bi-clipboard-pulse"></i> 预测日:
                             </div>
                             <div class="value">
-                                {{ record.prediction_date }}
+                                {{ record.prediction_date.value }}
                             </div>
                         </div>
                         <template v-if="record.mode == 'S'">
@@ -105,7 +105,7 @@
                                         record.pv_capacity
                                             ? record.pv_capacity
                                             : 0
-                                    }}（kw）
+                                    }}（kWp）
                                 </div>
                             </div>
                         </template>
@@ -150,11 +150,45 @@
             </div>
 
             <div class="col-md-8">
-                <div class="chart-card card shadow-sm p-3 h-100">
+                <div class="chart-card load card shadow-sm p-3 h-100">
                     <div class="header">
                         <h5 class="mb-3 text-success">
                             <i class="bi bi-graph-up"></i>负荷预测结果
                         </h5>
+                        <!-- 日期信息展示部分 -->
+                        <div class="date-info" v-if="result.date.value">
+                            <div class="selected-date-display">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                {{ result.date.value }}
+                            </div>
+
+                            <div class="weekday">
+                                <i class="bi bi-calendar-week me-1"></i>
+                                {{ getWeekday(result.date.value) }}
+                            </div>
+                            <div class="date-type" :class="result.date.type">
+                                <i
+                                    class="me-1"
+                                    :class="{
+                                        'bi-briefcase':
+                                            result.date.type === 'weekday',
+                                        'bi-emoji-sunglasses':
+                                            result.date.type === 'weekend',
+                                        'bi-balloon':
+                                            result.date.type === 'holiday',
+                                    }"
+                                ></i>
+                                {{ formatDateType(result.date.type) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <LoadChart
+                        :loads="result.predictionData"
+                        :date="result.date"
+                        :similarDayLoad="result.similarDayLoad"
+                    />
+                    <div class="options">
                         <el-button
                             type="success"
                             plain
@@ -169,10 +203,6 @@
                             <i class="bi bi-download me-2"></i>下载预测结果
                         </el-button>
                     </div>
-                    <LoadChart
-                        :loads="result.predictionData"
-                        :date="result.date"
-                    />
                 </div>
             </div>
         </div>
@@ -243,6 +273,28 @@ const activeHistoryRecordId = computed(
 
 const record = ref({});
 const result = computed(() => record.value.result || {}); //后端返回的预测结果数据
+
+/*------------日期信息------------*/
+
+const date_type = computed(() => result.date.type);
+
+// 获取星期几
+const getWeekday = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+    return `星期${weekdays[date.getDay()]}`;
+};
+
+// 格式化日期类型
+const formatDateType = (type) => {
+    const typeMap = {
+        weekday: "工作日",
+        weekend: "周末",
+        holiday: "节假日",
+    };
+    return typeMap[type] || type;
+};
 /*------------天气预测------------*/
 // 城市天气预测数据
 const cityWeatherForecast = computed(
@@ -405,6 +457,9 @@ const continueForecast = () => {
 
 <style lang="scss" scoped>
 .record-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     .info-card {
         background: white;
         border-radius: 12px;
@@ -554,6 +609,77 @@ const continueForecast = () => {
 
     .chart-card {
         background-color: #fff;
+        &.load {
+            display: flex;
+            flex-direction: column;
+            // 日期信息样式
+            .date-info {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 15px;
+                text-align: center;
+
+                .selected-date-display,
+                .weekday,
+                .date-type {
+                    display: flex;
+                    align-items: center; /* 内部元素垂直居中 */
+                    min-height: 36px; /* 设置最小高度确保一致性 */
+                }
+
+                .selected-date-display {
+                    color: #1890ff;
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    background-color: rgba(24, 144, 255, 0.1);
+                    border: 1px solid rgba(24, 144, 255, 0.2);
+                }
+
+                .weekday {
+                    padding: 4px 12px;
+                    background: rgba(44, 111, 187, 0.1);
+                    border-radius: 4px;
+                    color: #2c6fbb;
+                    font-weight: 500;
+                    border: 1px solid rgba(#2c6fbb, 0.2);
+                }
+
+                .date-type {
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-weight: 500;
+
+                    &.weekday {
+                        background: rgba(76, 175, 80, 0.1);
+                        color: #4caf50;
+                        border: 1px solid rgba(#4caf50, 0.2);
+                    }
+
+                    &.weekend {
+                        background: rgba(156, 39, 176, 0.1);
+                        color: #9c27b0;
+                        border: 1px solid rgba(#9c27b0, 0.2);
+                    }
+
+                    &.holiday {
+                        background: linear-gradient(
+                            135deg,
+                            #fff1f0 0%,
+                            #ffccc7 100%
+                        );
+                        color: #cf1322;
+                        border: 1px solid rgba(#f44336, 0.2);
+                    }
+                }
+            }
+            .options {
+                flex-grow: 1;
+                display: flex;
+                justify-content: flex-end;
+                align-items: flex-end;
+            }
+        }
         .header {
             display: flex;
             justify-content: flex-end;

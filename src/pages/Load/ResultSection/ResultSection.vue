@@ -16,18 +16,45 @@
             </div>
             <div class="card-body">
                 <div
-                    class="date-selector mb-4 d-flex justify-content-between align-items-center"
+                    class="date-selector d-flex justify-content-between align-items-center"
                 >
-                    <h5 class="mb-0">预测日期: {{ date_format }}</h5>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-primary">
-                            {{ date_format }}
-                        </button>
+                    <!-- 日期信息展示部分 -->
+                    <div class="date-info" v-if="prediction_result.date.value">
+                        <div class="selected-date-display">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            {{ prediction_result.date.value }}
+                        </div>
+
+                        <div class="weekday">
+                            <i class="bi bi-calendar-week me-1"></i>
+                            {{ getWeekday(prediction_result.date.value) }}
+                        </div>
+                        <div
+                            class="date-type"
+                            :class="prediction_result.date.type"
+                        >
+                            <i
+                                class="me-1"
+                                :class="{
+                                    'bi-briefcase':
+                                        prediction_result.date.type ===
+                                        'weekday',
+                                    'bi-emoji-sunglasses':
+                                        prediction_result.date.type ===
+                                        'weekend',
+                                    'bi-balloon':
+                                        prediction_result.date.type ===
+                                        'holiday',
+                                }"
+                            ></i>
+                            {{ formatDateType(prediction_result.date.type) }}
+                        </div>
                     </div>
                 </div>
                 <LoadChart
                     :date="prediction_result.date"
                     :loads="prediction_result.predictionData"
+                    :similarDayLoad="prediction_result.similarDayLoad"
                 />
             </div>
         </div>
@@ -93,15 +120,23 @@ const record = computed(() => forecastStore.responseData); //后端返回的完�
 //后端返回的预测结果数据
 const prediction_result = computed(() => forecastStore.responseData.result);
 
-const date_format = computed(() => {
-    if (prediction_result.value && prediction_result.value.date) {
-        const date = new Date(prediction_result.value.date);
-        return `${date.getFullYear()}年${
-            date.getMonth() + 1
-        }月${date.getDate()}日`;
-    }
-    return "";
-});
+// 获取星期几
+const getWeekday = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+    return `星期${weekdays[date.getDay()]}`;
+};
+
+// 格式化日期类型
+const formatDateType = (type) => {
+    const typeMap = {
+        weekday: "工作日",
+        weekend: "周末",
+        holiday: "节假日",
+    };
+    return typeMap[type] || type;
+};
 
 /*------------天气预测------------*/
 // 城市天气预测数据
@@ -179,6 +214,67 @@ async function downloadPredictionExcel() {
 
     .card-body {
         padding: 20px;
+        // 日期信息样式
+        .date-info {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+
+            .selected-date-display,
+            .weekday,
+            .date-type {
+                display: flex;
+                align-items: center; /* 内部元素垂直居中 */
+                min-height: 36px; /* 设置最小高度确保一致性 */
+            }
+
+            .selected-date-display {
+                color: #1890ff;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-weight: 600;
+                background-color: rgba(24, 144, 255, 0.1);
+                border: 1px solid rgba(24, 144, 255, 0.2);
+            }
+
+            .weekday {
+                padding: 4px 12px;
+                background: rgba(44, 111, 187, 0.1);
+                border-radius: 4px;
+                color: #2c6fbb;
+                font-weight: 500;
+                border: 1px solid rgba(#2c6fbb, 0.2);
+            }
+
+            .date-type {
+                padding: 4px 12px;
+                border-radius: 4px;
+                font-weight: 500;
+
+                &.weekday {
+                    background: rgba(76, 175, 80, 0.1);
+                    color: #4caf50;
+                    border: 1px solid rgba(#4caf50, 0.2);
+                }
+
+                &.weekend {
+                    background: rgba(156, 39, 176, 0.1);
+                    color: #9c27b0;
+                    border: 1px solid rgba(#9c27b0, 0.2);
+                }
+
+                &.holiday {
+                    background: linear-gradient(
+                        135deg,
+                        #fff1f0 0%,
+                        #ffccc7 100%
+                    );
+                    color: #cf1322;
+                    border: 1px solid rgba(#f44336, 0.2);
+                }
+            }
+        }
     }
 }
 .weather-section {
