@@ -1,7 +1,7 @@
 <template>
     <section class="intro-section">
         <div class="section-title">
-            <h2>为什么选择我们的智能能源解决方案？</h2>
+            <h2>为什么选择我们的源网荷储智策平台？</h2>
             <p>精准预测，智能分析，助力企业能源管理降本增效</p>
         </div>
 
@@ -65,14 +65,14 @@ const router = useRouter();
 const features = ref([
     {
         tag: "精准预测",
-        title: "负荷预测",
+        title: "日前负荷预测",
         pathName: "load_example",
         description: "基于国际获奖算法模型，提供业界领先的预测精度",
         image: "https://pmac.leyi.host/downloads/features/load.jpg",
         items: [
-            "日前预测总体负荷最高精度可达<span class='highlight'>97%</span>",
-            "医院商超场景预测精度高达<span class='highlight'>95%</span>",
-            "工业制造场景预测精度达<span class='highlight'>90%</span>",
+            "<span class='bold'>总负荷</span>最高精度可达<span class='highlight'>97%</span>",
+            "<span class='bold'>医院商超</span>单一客户预测精度最高可达<span class='highlight'>95%</span>",
+            "<span class='bold'>工业制造</span>单一客户预测精度最高可达<span class='highlight'>91%</span>",
             "已为多家大型售电公司节省数百万成本",
         ],
     },
@@ -83,9 +83,9 @@ const features = ref([
         description: "精准预测光伏发电量，最大化绿色能源收益",
         image: "https://pmac.leyi.host/downloads/features/pv.jpg",
         items: [
-            "国家级气象数据支持，预测准确率超<span class='highlight'>92%</span>",
-            "15分钟超短期预测，误差小于<span class='highlight'>8%</span>",
-            "日前预测晴天平均误差3.68%，阴天平均误差5.74%",
+            "国家级气象数据支持",
+            "日前预测晴天平均误差3.68%",
+            "日前预测阴天平均误差5.74%",
             "已成功服务<span class='highlight'>200+</span>光伏站点",
         ],
     },
@@ -205,7 +205,7 @@ function goExamplePage(pathName) {
 
     .content-container {
         flex: 0.8;
-        padding: 30px 50px;
+        padding: 30px 0;
 
         .feature-tag {
             display: inline-block;
@@ -267,6 +267,9 @@ function goExamplePage(pathName) {
                     );
                     padding: 0 4px;
                     border-radius: 4px;
+                }
+                :deep(.bold) {
+                    font-weight: 700;
                 }
             }
         }

@@ -70,7 +70,7 @@
     <!-- 顶部导航区 -->
     <section class="top-section">
         <div class="section-title">
-            <h2>智能能源解决方案</h2>
+            <h2>源网荷储智策平台</h2>
             <p>一站式能源管理平台，助力企业高效用能</p>
         </div>
         <div class="nav-cards">
@@ -172,6 +172,10 @@ import { Autoplay, Pagination } from "swiper/modules";
 import Intro from "./Intro.vue";
 import "swiper/css";
 import "swiper/css/pagination";
+import { useLoadForecastStore } from "@/store/load";
+import { useElecStore } from "@/store/elec";
+const LoadStore = useLoadForecastStore();
+const ElecStore = useElecStore();
 
 const router = useRouter();
 
@@ -202,10 +206,18 @@ const gotoPage = (page) => {
             router.push("/");
             break;
         case "load":
-            router.push("/loadpre");
+            if (LoadStore.stage == 0) {
+                router.push("/load_example");
+            } else {
+                router.push("/loadpre");
+            }
             break;
         case "elec":
-            router.push("/elec");
+            if (ElecStore.stage == 0) {
+                router.push("/elec_example");
+            } else {
+                router.push("/elec");
+            }
             break;
         case "light":
             router.push("/light");
