@@ -137,19 +137,17 @@
                                 @click.stop="deleteRecord(data)"
                             ></el-button>
                         </template>
-                        <!-- 仅根节点显示查看回测按钮 -->
-                        <template v-if="node.level == 1">
-                            <el-button
-                                size="small"
-                                color="#626aef"
-                                plain
-                                @click.stop="goComparePage(data.id)"
-                                >回测分析
-                                <el-icon class="el-icon--right"
-                                    ><TopRight
-                                /></el-icon>
-                            </el-button>
-                        </template>
+                        <!-- 所有节点都可以显示回测按钮 -->
+                        <el-button
+                            size="small"
+                            color="#626aef"
+                            plain
+                            @click.stop="goComparePage(data.id)"
+                            >回测分析
+                            <el-icon class="el-icon--right"
+                                ><TopRight
+                            /></el-icon>
+                        </el-button>
                     </div>
                 </div>
             </template>
