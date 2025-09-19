@@ -1,5 +1,7 @@
 <template>
     <div class="load-compare-container">
+        <!-- 在这里添加进入负荷预测功能页入口 -->
+        <Banner />
         <!-- 基本信息 -->
         <div class="card info-card">
             <div class="card-header header-section">
@@ -144,6 +146,7 @@ import CompareBaseInfo from "./CompareBaseInfo.vue";
 import CompareChart from "./CompareChart.vue";
 import WeatherInfo from "../ResultSection/WeatherInfo.vue";
 import WeatherChart from "../ResultSection/WeatherChart.vue";
+import Banner from "./Banner.vue";
 import { useLoadForecastStore } from "@/store/load";
 const forecastStore = useLoadForecastStore();
 

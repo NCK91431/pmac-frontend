@@ -1,5 +1,7 @@
 <template>
     <div class="load-compare-container">
+        <!-- 在这里添加进入光伏发电预测功能页入口 -->
+        <Banner />
         <!-- 基本信息 -->
         <div class="card info-card">
             <div class="card-header header-section">
@@ -152,6 +154,7 @@ import CompareBaseInfo from "./group/CompareBaseInfo.vue";
 import CompareChart from "./group/CompareChart.vue";
 import WeatherInfo from "../ResultSection/WeatherInfo.vue";
 import WeatherChart from "../ResultSection/WeatherChart.vue";
+import Banner from "./group/Banner.vue";
 import { useElecStore } from "@/store/elec";
 const forecastStore = useElecStore();
 
