@@ -289,7 +289,6 @@ const handleResize = () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
 
     h3 {
         color: #2c3e50;

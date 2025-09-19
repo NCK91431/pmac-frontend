@@ -166,6 +166,9 @@ defineProps({
             color: #6f42c1;
         }
     }
+    .weather-value {
+        font-size: 1rem;
+    }
 }
 
 .weather-item:nth-child(4) {
@@ -177,6 +180,9 @@ defineProps({
         i {
             color: #fd7e14;
         }
+    }
+    .weather-value {
+        font-size: 1rem;
     }
 }
 

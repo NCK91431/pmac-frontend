@@ -181,6 +181,9 @@ defineProps({
             color: #fd7e14;
         }
     }
+    .weather-value {
+        font-size: 1rem;
+    }
 }
 
 @media (max-width: 768px) {
