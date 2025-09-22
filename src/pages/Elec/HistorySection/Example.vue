@@ -343,6 +343,15 @@ onMounted(() => {
                 font-weight: 600;
             }
 
+            .selected-date-display {
+                color: #1890ff;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-weight: 600;
+                background-color: rgba(24, 144, 255, 0.1);
+                border: 1px solid rgba(24, 144, 255, 0.2);
+            }
+
             .weather-selector {
                 display: flex;
                 justify-content: flex-end;
