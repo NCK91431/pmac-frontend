@@ -40,7 +40,7 @@
                             <div class="metric-content compact">
                                 <div class="metric-label compact">总体误差</div>
                                 <div class="metric-value compact">
-                                    <text>{{ modelMetrics.WMAPE }}</text>
+                                    <text>{{ modelMetrics.E_RMSE }}</text>
                                     <text class="unit">%</text>
                                 </div>
                             </div>
