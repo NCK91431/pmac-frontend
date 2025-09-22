@@ -8,6 +8,33 @@
                 <h5 class="page-title">
                     <i class="bi bi-graph-up-arrow me-2"></i>负荷预测案例展示
                 </h5>
+                <!-- 选择 "总负荷案例" "分项负荷案例" -->
+                <div class="mode-selector">
+                    <div
+                        class="btn-group"
+                        role="group"
+                        aria-label="案例类型选择"
+                    >
+                        <button
+                            type="button"
+                            class="btn mode-btn btn-outline-primary"
+                            :class="mode == 'T' && 'active'"
+                            @click="changeMode('T')"
+                        >
+                            <i class="bi bi-circle-fill"></i>
+                            <text style="margin-left: 5px">总负荷案例</text>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn mode-btn btn-outline-primary"
+                            :class="mode == 'S' && 'active'"
+                            @click="changeMode('S')"
+                        >
+                            <i class="bi bi-circle-half"></i>
+                            <text style="margin-left: 5px">分项负荷案例</text>
+                        </button>
+                    </div>
+                </div>
             </div>
             <CompareBaseInfo class="mb-4" />
         </div>
@@ -155,8 +182,18 @@ const loading = ref(false);
 const error = ref(null);
 const selectedCityIndex = ref(0);
 
-const selectedDate = "2025-08-10";
+const selectedDate = ref("2025-07-04");
 
+/* ----------------------------- 切换模式 ------------------------------ */
+
+const mode = ref("T");
+
+const changeMode = (val) => {
+    mode.value = val;
+    selectedDate.value = val == "T" ? "2025-07-04" : "2025-08-10";
+    fetchRecordDetail();
+    fetchExampleData();
+};
 /* ----------------------------- 日期信息 ------------------------------ */
 // 获取星期几
 const getWeekday = (dateString) => {
@@ -190,7 +227,16 @@ const selectedCityWeather = computed(() => {
 const fetchRecordDetail = async () => {
     try {
         loading.value = true;
-        const response = {
+        const T_response = {
+            data: {
+                id: -1,
+                mode: "T",
+                location: ["广东省"],
+                forecast_range: "4days",
+                created_at: "2025-07-01",
+            },
+        };
+        const S_response = {
             data: {
                 id: -1,
                 mode: "S",
@@ -203,6 +249,7 @@ const fetchRecordDetail = async () => {
                 prediction_date: "2025-08-10",
             },
         };
+        const response = mode.value == "T" ? T_response : S_response;
         forecastStore.setCompareBaseinfo(response.data);
         forecastStore.setCompareMerge({
             merge_range: ["2025-01-01", "2025-08-05"],
@@ -221,11 +268,17 @@ const fetchExampleData = async () => {
     try {
         loading.value = true;
         error.value = null;
-        const response = await request.post(`/api/history/example`, {
-            headers: {
-                "Content-Type": "application/json",
+        const response = await request.post(
+            `/api/history/example`,
+            {
+                mode: mode.value,
             },
-        });
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
         if (response.data.success) {
             forecastStore.setCompareData(response.data.result);
         } else {
@@ -336,6 +389,67 @@ onMounted(() => {
             .card-title {
                 color: #2c3e50;
                 font-weight: 600;
+            }
+            .mode-selector {
+                .btn-group {
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #dee2e6;
+
+                    .mode-btn {
+                        padding: 8px 16px;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                        border: none;
+
+                        i {
+                            font-size: 1.1rem;
+                        }
+
+                        &:hover {
+                            color: #fff;
+                            background-color: #0d6efd;
+                            border-color: rgba(#0d6efd, 0.2);
+                        }
+                        &.active {
+                            color: #fff;
+                            background-color: #0d6efd;
+                            border-color: #0d6efd;
+                        }
+
+                        &:first-child {
+                            border-top-left-radius: 8px;
+                            border-bottom-left-radius: 8px;
+                        }
+
+                        &:last-child {
+                            border-top-right-radius: 8px;
+                            border-bottom-right-radius: 8px;
+                        }
+
+                        &.btn-primary {
+                            background: linear-gradient(
+                                135deg,
+                                #2c6fbb 0%,
+                                #1e5aa0 100%
+                            );
+                            color: white;
+                            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+                        }
+
+                        &.btn-outline-secondary {
+                            background: white;
+                            color: #6c757d;
+                            border: 1px solid #dee2e6;
+
+                            &:hover {
+                                background: #f8f9fa;
+                                color: #2c6fbb;
+                            }
+                        }
+                    }
+                }
             }
             // 日期信息样式
             .date-info {
