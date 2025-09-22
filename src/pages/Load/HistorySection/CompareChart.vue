@@ -75,21 +75,21 @@ const initChart = () => {
                     <span style="margin-right: 15px;">实际负荷:</span>
                     <span style="font-weight: bold; color: #5470C6;">${
                         actualData.value
-                    } kW</span>
+                    } MW</span>
                 </div>
                 <div style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #91CC75; margin-right: 8px;"></span>
                     <span style="margin-right: 15px;">预测负荷:</span>
                     <span style="font-weight: bold; color: #91CC75;">${
                         predictionData.value
-                    } kW</span>
+                    } MW</span>
                 </div>
                 <div style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff6b6b; margin-right: 8px;"></span>
                     <span style="margin-right: 15px;">误差:</span>
                     <span style="font-weight: bold; color: #ff6b6b;">${Math.abs(
                         actualData.value - predictionData.value
-                    ).toFixed(2)} kW</span>
+                    ).toFixed(2)} MW</span>
                 </div>
                 `;
             },
@@ -140,7 +140,7 @@ const initChart = () => {
         },
         yAxis: {
             type: "value",
-            name: "负荷值 (kW)",
+            name: "负荷值 (MW)",
             nameLocation: "middle",
             nameGap: 40,
             nameTextStyle: {

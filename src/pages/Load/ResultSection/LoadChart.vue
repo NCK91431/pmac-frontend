@@ -36,7 +36,7 @@ const initChart = () => {
     const option = {
         tooltip: {
             trigger: "axis",
-            formatter: "{b}: {c} kW",
+            formatter: "{b}: {c} MW",
         },
         legend: {
             data: ["预测负荷", "同类型日负荷"],
@@ -63,7 +63,7 @@ const initChart = () => {
         },
         yAxis: {
             type: "value",
-            name: "负荷值 (kW)",
+            name: "负荷值 (MW)",
             nameLocation: "middle",
             nameGap: 40,
             axisLine: {
