@@ -70,9 +70,9 @@ const features = ref([
         description: "基于国际获奖算法模型，提供业界领先的预测精度",
         image: "https://pmac.leyi.host/downloads/features/load.jpg",
         items: [
-            "<span class='bold'>总负荷</span>最高精度可达<span class='highlight'>97%</span>",
-            "<span class='bold'>医院商超</span>单一客户预测精度最高可达<span class='highlight'>97%</span>",
-            "<span class='bold'>工业制造</span>单一客户预测精度最高可达<span class='highlight'>91%</span>",
+            "<span class='bold'>总负荷</span>平均预测精度<span class='highlight'>97%</span>",
+            "<span class='bold'>医院商超</span>单一客户平均预测精度<span class='highlight'>96%</span>",
+            "<span class='bold'>工业制造</span>单一客户平均预测精度<span class='highlight'>91%</span>",
             "已为多家大型售电公司节省数百万成本",
         ],
     },

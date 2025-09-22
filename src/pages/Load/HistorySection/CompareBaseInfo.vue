@@ -95,7 +95,10 @@
                 模型评估指标
             </h5>
             <div class="content">
-                <div class="metric-card compact">
+                <div
+                    class="metric-card first compact"
+                    v-if="route.name !== 'load_example'"
+                >
                     <div class="metric-icon compact">
                         <i class="bi bi-bar-chart-line"></i>
                     </div>
@@ -108,7 +111,7 @@
                     </div>
                 </div>
 
-                <div class="metric-card compact">
+                <div class="metric-card second compact">
                     <div class="metric-icon compact">
                         <i class="bi bi-calendar-day"></i>
                     </div>
@@ -127,8 +130,11 @@
 
 <script setup>
 import { useLoadForecastStore } from "@/store/load";
+import { useRoute } from "vue-router";
 import { computed } from "vue";
 const forecastStore = useLoadForecastStore();
+
+const route = useRoute();
 
 const record = computed(() => forecastStore.compare_baseinfo || {});
 const merge_range = computed(
@@ -372,13 +378,13 @@ const dailyMetrics = computed(
                 }
             }
         }
-        .metric-card:nth-child(1) {
+        .metric-card.first {
             .metric-icon {
                 background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
             }
         }
 
-        .metric-card:nth-child(2) {
+        .metric-card.second {
             .metric-icon {
                 background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
             }
