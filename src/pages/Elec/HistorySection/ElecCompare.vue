@@ -7,15 +7,9 @@
                     <i class="bi bi-graph-up-arrow me-2"></i
                     >光伏发电预测回测分析
                 </h5>
-                <div class="date-selector">
-                    <el-date-picker
-                        v-model="selectedDate"
-                        type="date"
-                        placeholder="选择回测日期"
-                        :disabled-date="disabledDates"
-                        @change="handleDateChange"
-                        value-format="YYYY-MM-DD"
-                    />
+                <div class="selected-date-display">
+                    <i class="bi bi-calendar-event me-1"></i>
+                    {{ selectedDate }}
                 </div>
             </div>
             <CompareBaseInfo class="mb-4" />
@@ -51,9 +45,19 @@
                         <h4 class="mb-0 card-title">
                             <i class="bi bi-bar-chart me-2"></i>发电功率对比分析
                         </h4>
-                        <div class="selected-date-display">
-                            <i class="bi bi-calendar-event me-1"></i>
-                            {{ selectedDate }}
+
+                        <div class="date-selector">
+                            <span class="date-selector-label">
+                                <i class="bi bi-cursor me-1"></i>选择回测日期:
+                            </span>
+                            <el-date-picker
+                                v-model="selectedDate"
+                                type="date"
+                                placeholder="选择回测日期"
+                                :disabled-date="disabledDates"
+                                @change="handleDateChange"
+                                value-format="YYYY-MM-DD"
+                            />
                         </div>
                     </div>
                     <div class="card-body">
@@ -141,6 +145,8 @@ import WeatherInfo from "../ResultSection/WeatherInfo.vue";
 import WeatherChart from "../ResultSection/WeatherChart.vue";
 import { useElecStore } from "@/store/elec";
 const forecastStore = useElecStore();
+
+// 在组件配置中添加语言设置
 
 const route = useRoute();
 const router = useRouter();
@@ -343,6 +349,15 @@ onMounted(() => {
         margin: 0;
         font-weight: 600;
     }
+
+    .selected-date-display {
+        color: #1890ff;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        background-color: rgba(24, 144, 255, 0.1);
+        border: 1px solid rgba(24, 144, 255, 0.2);
+    }
 }
 
 .content-section {
@@ -402,13 +417,21 @@ onMounted(() => {
                 font-weight: 600;
             }
 
-            .selected-date-display {
-                color: #1890ff;
-                padding: 6px 12px;
-                border-radius: 6px;
-                font-weight: 600;
-                background-color: rgba(24, 144, 255, 0.1);
-                border: 1px solid rgba(24, 144, 255, 0.2);
+            .date-selector {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+
+                .date-selector-label {
+                    font-weight: 600;
+                    color: #2c6fbb;
+                    display: flex;
+                    align-items: center;
+
+                    i {
+                        font-size: 1.1rem;
+                    }
+                }
             }
         }
 
