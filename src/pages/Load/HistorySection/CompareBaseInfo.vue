@@ -116,7 +116,13 @@
                         <i class="bi bi-calendar-day"></i>
                     </div>
                     <div class="metric-content compact">
-                        <div class="metric-label compact">单日误差</div>
+                        <div class="metric-label compact">
+                            {{
+                                route.name == "load_example"
+                                    ? "预测误差"
+                                    : "单日误差"
+                            }}
+                        </div>
                         <div class="metric-value compact">
                             <text>{{ dailyMetrics.WMAPE }}</text>
                             <text class="unit">%</text>

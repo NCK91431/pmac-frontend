@@ -37,7 +37,10 @@
                 模型评估指标
             </h5>
             <div class="content">
-                <div class="metric-card compact">
+                <div
+                    class="metric-card first compact"
+                    v-if="route.name !== 'elec_example'"
+                >
                     <div class="metric-icon compact">
                         <i class="bi bi-bar-chart-line"></i>
                     </div>
@@ -50,12 +53,18 @@
                     </div>
                 </div>
 
-                <div class="metric-card compact">
+                <div class="metric-card second compact">
                     <div class="metric-icon compact">
                         <i class="bi bi-calendar-day"></i>
                     </div>
                     <div class="metric-content compact">
-                        <div class="metric-label compact">单日误差</div>
+                        <div class="metric-label compact">
+                            {{
+                                route.name == "elec_example"
+                                    ? "预测误差"
+                                    : "单日误差"
+                            }}
+                        </div>
                         <div class="metric-value compact">
                             <text>{{ dailyMetrics.E_RMSE }}</text>
                             <text class="unit">%</text>
@@ -69,8 +78,11 @@
 
 <script setup>
 import { useElecStore } from "@/store/elec";
+import { useRoute } from "vue-router";
 import { computed } from "vue";
 const forecastStore = useElecStore();
+
+const route = useRoute();
 
 const record = computed(() => forecastStore.compare_baseinfo || {});
 const merge_range = computed(
@@ -298,13 +310,13 @@ const dailyMetrics = computed(
                 }
             }
         }
-        .metric-card:nth-child(1) {
+        .metric-card.first {
             .metric-icon {
                 background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
             }
         }
 
-        .metric-card:nth-child(2) {
+        .metric-card.second {
             .metric-icon {
                 background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
             }

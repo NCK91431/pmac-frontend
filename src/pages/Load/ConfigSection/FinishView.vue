@@ -79,7 +79,7 @@
                             <i class="bi bi-bar-chart-line"></i>
                         </div>
                         <div class="metric-content compact">
-                            <div class="metric-label compact">总体误差</div>
+                            <div class="metric-label compact">预测误差</div>
                             <div class="metric-value compact">
                                 <text>{{ modelMetrics.WMAPE }}</text>
                                 <text class="unit">%</text>
