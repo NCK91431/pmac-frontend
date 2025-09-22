@@ -240,7 +240,7 @@ const fetchRecordDetail = async () => {
             data: {
                 id: -1,
                 mode: "S",
-                customer_type: "mall",
+                customer_type: "hospital",
                 pv_config: "no",
                 location: ["广东省", "珠海市", "香洲区"],
                 forecast_range: "4days",
