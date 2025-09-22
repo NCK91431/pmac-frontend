@@ -33,8 +33,17 @@
                         <div class="preview-label">
                             <i class="bi bi-clipboard-data"></i> 模型评估
                         </div>
-                        <div class="wrap">
-                            <MetricInfo :metrics="filtered_modelMetrics" />
+                        <div class="metric-card compact">
+                            <div class="metric-icon compact">
+                                <i class="bi bi-bar-chart-line"></i>
+                            </div>
+                            <div class="metric-content compact">
+                                <div class="metric-label compact">总体误差</div>
+                                <div class="metric-value compact">
+                                    <text>{{ modelMetrics.WMAPE }}</text>
+                                    <text class="unit">%</text>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -96,7 +105,6 @@ import { computed } from "vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
-import MetricInfo from "../HistorySection/group/MetricInfo.vue";
 import { useElecStore } from "@/store/elec"; // 修改为新的Store
 const forecastStore = useElecStore();
 const result = computed(() => forecastStore.responseData.algorithm_result);
@@ -104,18 +112,6 @@ const modelMetrics = computed(() => {
     return result.value && result.value.modelMetrics
         ? result.value.modelMetrics
         : null;
-});
-const filtered_modelMetrics = computed(() => {
-    if (result.value && result.value.modelMetrics) {
-        const modelMetrics = result.value.modelMetrics;
-        return {
-            MAE: modelMetrics.MAE, //平均绝对误差
-            RMSE: modelMetrics.RMSE, //均方根误差
-            E_RMSE: modelMetrics.E_RMSE, //相对均方根误差
-        };
-    } else {
-        return {};
-    }
 });
 const props = defineProps({
     record: {
@@ -286,14 +282,61 @@ async function downloadUploadExcel() {
             gap: 6px;
             font-size: 0.9rem;
         }
-
+        // 模型评估指标
         &.metric {
             flex-direction: column;
-            .wrap {
-                width: 100%;
+
+            .metric-card {
                 display: flex;
-                justify-content: space-between;
-                gap: 10px;
+                align-items: center;
+                margin-top: 12px;
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+                position: relative;
+                padding: 8px 25px;
+                .metric-icon {
+                    width: 36px;
+                    height: 36px;
+                    margin-right: 12px;
+                    border-radius: 50%;
+                    background: linear-gradient(
+                        135deg,
+                        #ffc107 0%,
+                        #e0a800 100%
+                    );
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    i {
+                        font-size: 1.1rem;
+                        color: white;
+                    }
+                }
+
+                .metric-content {
+                    flex: 1;
+                    .metric-label {
+                        font-size: 0.8rem;
+                        color: #6c757d;
+                        margin-bottom: 4px;
+                    }
+
+                    .metric-value {
+                        font-size: 1.1rem;
+                        font-weight: 700;
+                        color: #2c3e50;
+                        display: flex;
+                        gap: 15px;
+                        align-items: center;
+                        .unit {
+                            font-size: 0.8rem;
+                            color: #6c757d;
+                        }
+                    }
+                }
             }
         }
     }

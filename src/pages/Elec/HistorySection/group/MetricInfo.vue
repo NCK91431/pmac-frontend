@@ -1,22 +1,31 @@
+<!-- 旧版模型评估指标 -->
 <template>
-    <div
-        class="metric-card compact"
-        v-for="(value, key) in metrics"
-        :key="'daily-' + key"
-    >
-        <div class="metric-icon compact">
-            <i class="bi" :class="getMetricIcon(key)"></i>
-        </div>
-        <div class="metric-content compact">
-            <div class="metric-label compact">
-                {{ getMetricLabel(key) }}
+    <div class="metrics-section">
+        <div class="metrics-title">总体误差</div>
+        <div class="metrics-grid compact">
+            <div
+                class="metric-card compact"
+                v-for="(value, key) in metrics"
+                :key="'daily-' + key"
+            >
+                <div class="metric-icon compact">
+                    <i class="bi" :class="getMetricIcon(key)"></i>
+                </div>
+                <div class="metric-content compact">
+                    <div class="metric-label compact">
+                        {{ getMetricLabel(key) }}
+                    </div>
+                    <div class="metric-value compact">
+                        {{ value }}{{ getMetricUnit(key) }}
+                    </div>
+                </div>
+                <div class="metric-tooltip compact">
+                    <i
+                        class="bi bi-info-circle"
+                        :title="getMetricDescription(key)"
+                    ></i>
+                </div>
             </div>
-            <div class="metric-value compact">
-                {{ value }}{{ getMetricUnit(key) }}
-            </div>
-        </div>
-        <div class="metric-tooltip compact">
-            <i class="bi bi-info-circle" :title="getMetricDescription(key)"></i>
         </div>
     </div>
 </template>
@@ -64,8 +73,27 @@ const getMetricDescription = (key) => {
 </script>
 
 <style lang="scss" scoped>
+/* 旧版模型评估指标 */
+.metrics-section {
+    flex: 1;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+
+    .metrics-title {
+        font-weight: 600;
+        color: #2c3e50;
+        text-align: center;
+        font-size: 1rem;
+    }
+}
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
 .metric-card {
-    width: 100%;
     display: flex;
     align-items: center;
     margin-top: 12px;
@@ -75,15 +103,15 @@ const getMetricDescription = (key) => {
     transition: all 0.3s ease;
     position: relative;
     padding: 8px;
-    &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
+    // &:hover {
+    //     transform: translateY(-3px);
+    //     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    // }
 
     .metric-icon {
-        width: 30px;
-        height: 30px;
-        margin-right: 10px;
+        width: 36px;
+        height: 36px;
+        margin-right: 12px;
         border-radius: 50%;
         background: linear-gradient(135deg, #2c6fbb 0%, #1a4e8e 100%);
         display: flex;
@@ -91,7 +119,7 @@ const getMetricDescription = (key) => {
         justify-content: center;
         flex-shrink: 0;
         i {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: white;
         }
     }
@@ -155,6 +183,10 @@ const getMetricDescription = (key) => {
 }
 
 @media (max-width: 768px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
     .metric-card {
         padding: 16px;
     }
