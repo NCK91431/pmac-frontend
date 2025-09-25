@@ -69,7 +69,7 @@
                     </el-icon>
                 </el-text>
             </template>
-            <template v-if="stage == 2">
+            <template v-if="stage == 2 && user">
                 <button
                     class="btn-compare btn btn-primary px-4 py-2"
                     @click="goComparePage"
@@ -82,7 +82,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import ConfigForm from "./ConfigForm.vue";
 import FileUpload from "./FileUpload.vue";
 import FinishView from "./FinishView.vue";
@@ -92,6 +92,8 @@ import { useRouter } from "vue-router";
 import { InfoFilled, TopRight } from "@element-plus/icons-vue";
 import { useElecStore } from "@/store/elec"; // 修改为新的Store
 const router = useRouter();
+
+const user = inject("user"); //注入全局用户状态
 
 const forecastStore = useElecStore(); // 使用新的综合Store
 
