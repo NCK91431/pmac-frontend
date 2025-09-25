@@ -139,7 +139,7 @@
 
 <script setup>
 import { ref, computed, inject, onUnmounted } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
 import request from "@/utils/request";
 
@@ -234,7 +234,17 @@ const sendVerificationCode = async () => {
     } catch (error) {
         console.error("发送验证码失败:", error);
         if (error.response?.status === 404) {
-            errorMessage.value = "用户不存在，请先注册";
+            errorMessage.value =
+                error.response.data.error || "用户不存在，请先注册";
+            if (error.response.data.code == "USER_NOT_FOUND") {
+                ElMessageBox.alert("用户不存在，请先注册", "", {
+                    type: "warning",
+                    callback: () => {
+                        isRegister.value = true;
+                        errorMessage.value = "";
+                    },
+                });
+            }
         } else if (error.response?.status === 409) {
             errorMessage.value = "该手机号已注册，请直接登录";
         } else {
