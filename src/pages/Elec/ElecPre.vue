@@ -96,7 +96,12 @@ async function handleSubmit(formData, fileData) {
     const post_data = new FormData();
     post_data.append("pv_capacity", formData.pv_capacity);
     post_data.append("location", JSON.stringify(formData.location));
-    post_data.append("file", fileData);
+    // 判断是继续预测（上传日期）还是新建预测（上传文件）
+    if (forecastStore.isContinue) {
+        post_data.append("userPickDate", forecastStore.userPickDate); // 继续预测：上传选中的日期
+    } else {
+        post_data.append("file", fileData); // 新建预测：上传文件
+    }
     // 如果有用户ID
     if (user.value) {
         post_data.append("user_id", user.value.id);

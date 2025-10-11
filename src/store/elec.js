@@ -24,6 +24,8 @@ export const useElecStore = defineStore("elec", {
         compare_data: null, // 用于存储对比数据
         compare_baseinfo: null, // 用于存储对比的基本信息
         compare_merge: null, // 用于存储合并后的数据
+
+        userPickDate: null, // 用户选择的继续预测日期
     }),
 
     getters: {
@@ -36,10 +38,16 @@ export const useElecStore = defineStore("elec", {
         // 预测结果访问
         record: (state) => state.responseData,
         predictionData: (state) => state.responseData?.predictionData,
+
+        // 继续预测日期选择验证
+        hasUserPickDate: (state) => state.userPickDate !== null,
     },
 
     actions: {
         // 继续预测相关操作
+        setUserPickDate(date) {
+            this.userPickDate = date;
+        },
         setContinueData(data) {
             this.continueData = data;
             this.isContinue = true;
@@ -48,6 +56,7 @@ export const useElecStore = defineStore("elec", {
         clearContinueData() {
             this.continueData = null;
             this.isContinue = false;
+            this.userPickDate = null;
         },
         setActiveTab(tab) {
             if (tab === "upload" || tab === "history") {
@@ -76,6 +85,7 @@ export const useElecStore = defineStore("elec", {
                 previous_record_id: null,
             };
             this.uploadedFile = null;
+            this.userPickDate = null;
         },
 
         // 预测流程控制

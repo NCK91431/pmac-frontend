@@ -4,8 +4,7 @@
         <div v-if="isContinuePredict" class="alert alert-info mb-4">
             <i class="bi bi-info-circle me-2"></i>
             您正在基于历史记录
-            <strong>{{ uploadDateRange }}</strong> 进行继续预测。 请上传包含
-            <strong>{{ requiredStartDate }}</strong> 之后的数据。
+            <strong>{{ uploadDateRange }}</strong> 进行继续预测。
         </div>
         <h2 class="h5 mb-4 text">
             <i class="bi bi-graph-up me-2"></i>光伏发电预测配置
@@ -19,8 +18,10 @@
                     <ConfigForm />
                 </div>
                 <div class="col-md-6">
-                    <!-- 上传文件 -->
-                    <FileUpload />
+                    <!-- 新建预测显示上传文件 -->
+                    <FileUpload v-if="!isContinuePredict" />
+                    <!-- 继续预测显示日期选择 -->
+                    <DatePickup v-else />
                 </div>
             </template>
             <!-- stage == 1: 处理中状态：显示加载动画 -->
@@ -69,7 +70,7 @@
                     </el-icon>
                 </el-text>
             </template>
-            <template v-if="stage == 2 && user">
+            <template v-if="stage == 2 && user && !record.isContinuePredict">
                 <button
                     class="btn-compare btn btn-primary px-4 py-2"
                     @click="goComparePage"
@@ -85,6 +86,7 @@
 import { computed, inject } from "vue";
 import ConfigForm from "./ConfigForm.vue";
 import FileUpload from "./FileUpload.vue";
+import DatePickup from "./DatePickup.vue";
 import FinishView from "./FinishView.vue";
 import LoadingOverlay from "./LoadingOverlay.vue";
 import { addDays, format } from "date-fns";
@@ -102,9 +104,14 @@ const emit = defineEmits(["submit"]);
 const record = computed(() => forecastStore.responseData);
 const stage = computed(() => forecastStore.stage);
 
-const isFormValid = computed(
-    () => forecastStore.isValid && forecastStore.hasFile
-);
+// 表单验证：继续预测时，需要选择日期；新建预测时需要上传文件
+const isFormValid = computed(() => {
+    if (forecastStore.isContinue) {
+        return forecastStore.isValid && forecastStore.hasUserPickDate;
+    } else {
+        return forecastStore.isValid && forecastStore.hasFile;
+    }
+});
 
 const submitForm = () => {
     emit("submit", forecastStore.formData, forecastStore.uploadedFile);

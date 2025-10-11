@@ -73,6 +73,7 @@
             <div class="col-id">ID</div>
             <div class="col-date">创建时间</div>
             <div class="col-location">位置</div>
+            <div class="col-pv_capacity">装机容量</div>
             <div class="col-upload">上传日期范围</div>
             <div class="col-prediction">预测日期</div>
             <div class="col-actions">操作</div>
@@ -112,14 +113,24 @@
                         </template>
                         <template v-else>-</template>
                     </div>
-
+                    <!-- 装机容量列：仅根节点显示 -->
+                    <div class="col-pv_capacity">
+                        <template v-if="node.level == 1">
+                            {{ data.pv_capacity }} kWp
+                        </template>
+                        <template v-else>-</template>
+                    </div>
+                    <!-- 上传日期范围列：仅根节点显示 -->
                     <div class="col-upload">
-                        {{
-                            data.upload_date_range &&
-                            data.upload_date_range.length
-                                ? data.upload_date_range.join(" 至 ")
-                                : "未知"
-                        }}
+                        <template v-if="node.level == 1">
+                            {{
+                                data.upload_date_range &&
+                                data.upload_date_range.length
+                                    ? data.upload_date_range.join(" 至 ")
+                                    : "未知"
+                            }}
+                        </template>
+                        <template v-else>-</template>
                     </div>
                     <div class="col-prediction">
                         <el-tag type="success">
@@ -137,17 +148,19 @@
                                 @click.stop="deleteRecord(data)"
                             ></el-button>
                         </template>
-                        <!-- 所有节点都可以显示回测按钮 -->
-                        <el-button
-                            size="small"
-                            color="#626aef"
-                            plain
-                            @click.stop="goComparePage(data.id)"
-                            >回测分析
-                            <el-icon class="el-icon--right"
-                                ><TopRight
-                            /></el-icon>
-                        </el-button>
+                        <!-- 仅根节点显示回测分析按钮 -->
+                        <template v-if="node.level === 1">
+                            <el-button
+                                size="small"
+                                color="#626aef"
+                                plain
+                                @click.stop="goComparePage(data.id)"
+                                >回测分析
+                                <el-icon class="el-icon--right">
+                                    <TopRight />
+                                </el-icon>
+                            </el-button>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -331,6 +344,10 @@ function goComparePage(recordId) {
         flex: 0 0 180px;
     }
 
+    .col-pv_capacity {
+        flex: 0 0 120px;
+    }
+
     .col-type {
         flex: 0 0 100px;
     }
@@ -395,6 +412,10 @@ function goComparePage(recordId) {
 
     .col-location {
         flex: 0 0 180px;
+    }
+
+    .col-pv_capacity {
+        flex: 0 0 120px;
     }
 
     .col-type {

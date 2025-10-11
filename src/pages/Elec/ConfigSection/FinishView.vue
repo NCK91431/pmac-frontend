@@ -50,7 +50,7 @@
             </div>
         </div>
         <!-- 文件信息卡片 -->
-        <div class="col-md-6">
+        <div class="col-md-6" v-if="!isContinuePredict">
             <div class="file-card">
                 <!-- 文件统计信息 -->
                 <div class="stats-title">
@@ -108,6 +108,9 @@ import { saveAs } from "file-saver";
 import { useElecStore } from "@/store/elec"; // 修改为新的Store
 const forecastStore = useElecStore();
 const result = computed(() => forecastStore.responseData.algorithm_result);
+const isContinuePredict = computed(
+    () => forecastStore.responseData.isContinuePredict
+);
 const modelMetrics = computed(() => {
     return result.value && result.value.modelMetrics
         ? result.value.modelMetrics

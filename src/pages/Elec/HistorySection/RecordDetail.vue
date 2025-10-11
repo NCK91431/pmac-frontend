@@ -6,13 +6,15 @@
                     <h5>
                         <i class="bi bi-bookmark-check"></i>光伏发电预测结果
                     </h5>
-                    <button
-                        class="continue-btn btn btn-primary"
-                        @click="continueForecast"
-                    >
-                        <i class="bi bi-lightning-charge me-2"></i>
-                        继续预测
-                    </button>
+                    <template v-if="!record.previous_record_id">
+                        <button
+                            class="continue-btn btn btn-primary"
+                            @click="continueForecast"
+                        >
+                            <i class="bi bi-lightning-charge me-2"></i>
+                            继续预测
+                        </button>
+                    </template>
                 </div>
                 <div class="card-body">
                     <div class="base-info">
@@ -348,10 +350,8 @@ const continueForecast = () => {
 
     // 预填表单
     forecastStore.updateFormData({
-        customer_type: record.value.customer_type,
-        pv_config: record.value.pv_config,
+        pv_capacity: record.value.pv_capacity,
         location: record.value.location,
-        forecast_range: record.value.forecast_range,
         previous_record_id: record.value.id,
     });
 
