@@ -50,7 +50,7 @@
                             </div>
                             <div>
                                 <strong>邮箱</strong>
-                                <p>market@pmac.com.cn</p>
+                                <p>marketing@pmac.com.cn</p>
                             </div>
                         </div>
                         <div class="contact-item">
@@ -103,7 +103,7 @@
             <div class="copyright">
                 <div>
                     © 2025
-                    珠海派诺科技股份有限公司&nbsp;&nbsp;股票代码&nbsp;831175
+                    珠海派诺科技股份有限公司&nbsp;&nbsp;股票代码&nbsp;920375
                 </div>
             </div>
         </div>
