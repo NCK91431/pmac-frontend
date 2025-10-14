@@ -2,7 +2,7 @@
     <div class="card-body">
         <!-- 左侧 -->
         <div class="info-grid">
-            <div class="info-item">
+            <div class="info-item" v-if="route.name !== 'elec_example'">
                 <div class="label"><i class="bi bi-clock"></i> 创建时间:</div>
                 <div class="value">
                     {{ formatDate(record.created_at) }}
@@ -14,7 +14,7 @@
                     {{ record.pv_capacity ? record.pv_capacity : 0 }}kW
                 </div>
             </div>
-            <div class="info-item">
+            <div class="info-item" v-if="route.name !== 'elec_example'">
                 <div class="label">
                     <i class="bi bi-calendar4-week"></i> 数据范围:
                 </div>

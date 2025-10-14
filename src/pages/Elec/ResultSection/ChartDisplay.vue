@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import { ref, onMounted, watch, onBeforeUnmount, nextTick } from "vue";
 import * as echarts from "echarts";
 import ResultTable from "./ResultTable.vue";
 
@@ -42,21 +42,39 @@ const initChart = () => {
     if (!chartEl.value) return;
 
     chartInstance = echarts.init(chartEl.value);
+    const option = getOption();
+    chartInstance.setOption(option);
+};
 
-    const option = {
+watch(
+    () => props.predictionData,
+    (newVal) => {
+        if (chartInstance && newVal && newVal.length > 0) {
+            // 使用 nextTick 确保 DOM 已更新
+            nextTick(() => {
+                const option = getOption();
+                chartInstance.setOption(option, true); // true 表示不合并配置
+            });
+        }
+    },
+    { deep: true, immediate: true }
+);
+
+// 提取 option 生成逻辑到单独函数
+const getOption = () => {
+    return {
         tooltip: {
             trigger: "axis",
             formatter: function (params) {
                 const time = params[0].axisValue;
                 const value = params[0].data;
-                console.log(params);
                 return `
-				 <div style="display: flex; align-items: center; margin: 5px 0;">
+                 <div style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #91CC75; margin-right: 8px;"></span>
                     <span style="margin-right: 15px;">${time}:</span>
                     <span style="font-weight: bold; color: #91CC75;">${value} kW</span>
                 </div>
-				`;
+                `;
             },
         },
         legend: {
@@ -70,7 +88,6 @@ const initChart = () => {
             top: "10%",
             containLabel: true,
         },
-
         xAxis: {
             type: "category",
             boundaryGap: false,
@@ -113,9 +130,7 @@ const initChart = () => {
                     color: "#e4e7ed",
                 },
             },
-            // 添加 max 配置，固定纵坐标最大值为装机容量
             max: props.capacity > 0 ? props.capacity : null,
-            // 添加 interval 配置，控制刻度间隔
             interval: props.capacity > 0 ? Math.ceil(props.capacity / 5) : null,
         },
         series: [
@@ -129,7 +144,6 @@ const initChart = () => {
                     color: "#5470C6",
                     shadowColor: "rgba(84, 112, 198, 0.15)",
                     shadowBlur: 8,
-                    color: "#5470c6",
                 },
                 symbol: "circle",
                 symbolSize: 8,
@@ -142,21 +156,10 @@ const initChart = () => {
             },
         ],
     };
-
-    chartInstance.setOption(option);
 };
 
-watch(
-    () => props.date,
-    () => {
-        if (chartInstance) {
-            chartInstance.dispose();
-            initChart();
-        }
-    }
-);
-
 onMounted(() => {
+    console.log("mounted", props);
     initChart();
     window.addEventListener("resize", handleResize);
 });

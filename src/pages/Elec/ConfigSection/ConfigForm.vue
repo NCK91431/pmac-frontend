@@ -64,13 +64,17 @@ const form = computed({
 
 const locationOptions = ref([]);
 
+const SURPPORT_PROVINCES = ["44", "61"]; // 仅支持广东省和陕西省
+
 // 获取省市区数据
 onMounted(async () => {
     try {
         const response = await request.get("/api/locationtree");
         if (response.data.code === 200) {
             const list = response.data.data;
-            locationOptions.value = list.filter((item) => item.value == "44"); //暂时只支持广东省
+            locationOptions.value = list.filter((item) =>
+                SURPPORT_PROVINCES.includes(item.value)
+            ); //暂时只支持广东省
         }
     } catch (error) {
         console.error("获取省市区数据失败:", error);

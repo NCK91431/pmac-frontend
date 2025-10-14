@@ -1,8 +1,9 @@
 <template>
     <section class="intro-section">
         <div class="section-title">
-            <h2>为什么选择我们的源网荷储智策平台？</h2>
-            <p>精准预测，智能分析，助力企业能源管理降本增效</p>
+            <h2>百闻不如一试</h2>
+            <p>无需注册也可以使用</p>
+            <p>注册用户可保留所有创建模型，使用更方便</p>
         </div>
 
         <div class="swiper-container-wrapper">
@@ -96,10 +97,10 @@ const features = ref([
         description: "科学规划储能容量，实现投资回报最大化",
         image: "https://pmac.leyi.host/downloads/features/storage.jpg",
         items: [
-            "综合考虑<span class='highlight'>天气、电价、负荷特性</span>等多维度因素",
-            "系统效率模拟精度高达<span class='highlight'>95%</span>",
-            "投资回收期分析误差小于<span class='highlight'>6个月</span>",
-            "全生命周期成本优化，节省<span class='highlight'>15%-30%</span>投资",
+            "综合考虑<span class='bold'>电价与需量</span>，平均可缩减峰值需量<span class='highlight'>10%–30%</span>",
+            "<span class='highlight'>1000+</span>场景模型生成",
+            "全国范围多尺度光伏数据支撑",
+            "支持<span class='bold'>期望成本</span>与<span class='bold'>风险分析</span>",
         ],
     },
 ]);

@@ -70,12 +70,19 @@
                     </el-icon>
                 </el-text>
             </template>
-            <template v-if="stage == 2 && user && !record.isContinuePredict">
+            <template v-if="stage == 2 && user">
                 <button
+                    v-if="!record.isContinuePredict"
                     class="btn-compare btn btn-primary px-4 py-2"
                     @click="goComparePage"
                 >
                     回测分析<i class="bi bi-arrow-up-right-circle"></i>
+                </button>
+                <button
+                    class="btn-continue-predict btn btn-primary px-4 py-2"
+                    @click="continueForecast"
+                >
+                    继续预测<i class="bi bi-arrow-up-right-circle"></i>
                 </button>
             </template>
         </div>
@@ -93,6 +100,9 @@ import { addDays, format } from "date-fns";
 import { useRouter } from "vue-router";
 import { InfoFilled, TopRight } from "@element-plus/icons-vue";
 import { useElecStore } from "@/store/elec"; // 修改为新的Store
+import request from "@/utils/request";
+import { ElMessage, ElMessageBox } from "element-plus";
+
 const router = useRouter();
 
 const user = inject("user"); //注入全局用户状态
@@ -102,6 +112,8 @@ const forecastStore = useElecStore(); // 使用新的综合Store
 const emit = defineEmits(["submit"]);
 
 const record = computed(() => forecastStore.responseData);
+const isContinue = computed(() => forecastStore.responseData.isContinuePredict);
+const responseData = computed(() => forecastStore.responseData);
 const stage = computed(() => forecastStore.stage);
 
 // 表单验证：继续预测时，需要选择日期；新建预测时需要上传文件
@@ -145,6 +157,61 @@ function goComparePage() {
     if (!recordId) return;
     router.push({ name: "ElecCompare", params: { recordId } });
 }
+
+/* ----------------------------------- 点击继续预测按钮 ------------------------------------------------- */
+async function getRecordDetailById(id) {
+    const response = await request.get(`/api/elec_history/${id}`);
+    return response.data;
+}
+async function continueForecast() {
+    const id = await getContinueId();
+    if (!id) {
+        ElMessage.error("记录ID不存在，无法获取详情");
+        return;
+    }
+    // 获取记录详情
+    const record = await getRecordDetailById(id);
+    if (!record) {
+        ElMessage.error("获取记录详情失败");
+        return;
+    }
+
+    const date_range = record.upload_info.date_range;
+
+    // 便于计算一些属性
+    const [start, end] = date_range;
+    forecastStore.setContinueData({
+        end_date: date_range[1],
+        upload_date_range: date_range,
+        upload_date_range_format_text: `${start} 至 ${end}`,
+    });
+
+    // 预填表单
+    forecastStore.updateFormData({
+        pv_capacity: record.pv_capacity,
+        location: record.location,
+        previous_record_id: record.id,
+    });
+
+    forecastStore.removeFile(); //清空文件
+
+    forecastStore.resetStage(); // 重置stage
+}
+
+// 判断继续预测功能传入哪个id
+async function getContinueId() {
+    const isContinuePredict = isContinue.value;
+    console.log("isContinuePredict", isContinuePredict);
+    if (!isContinuePredict) {
+        console.log(responseData.value.recordId);
+        return responseData.value.recordId;
+    }
+    if (isContinuePredict) {
+        const cur_id = responseData.value.recordId;
+        const detail = await getRecordDetailById(cur_id);
+        return detail.previous_record_id;
+    }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -160,7 +227,7 @@ function goComparePage() {
     margin-left: 50%;
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding-left: 12px;
     .btn-submit {
         &:hover {
@@ -181,6 +248,28 @@ function goComparePage() {
         &:active {
             transform: translateY(-1px);
             box-shadow: 0 2px 10px rgba(98, 106, 239, 0.4);
+        }
+        i {
+            margin-left: 8px;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        &:hover i {
+            transform: translateY(3px);
+        }
+    }
+    .btn-continue-predict {
+        background: linear-gradient(135deg, #2ecc71 0%, #1abc9c 100%);
+        border: none;
+        justify-self: flex-end;
+        margin-right: 24px;
+        &:hover {
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.6);
+            transform: translateY(-4px);
+        }
+        &:active {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 10px rgba(46, 204, 113, 0.4);
         }
         i {
             margin-left: 8px;

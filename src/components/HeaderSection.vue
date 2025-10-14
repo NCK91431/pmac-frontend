@@ -2,13 +2,19 @@
     <div class="header-container" ref="headerRef">
         <div class="header-content">
             <div class="logo-section">
-                <i class="fas fa-bolt"></i>
                 <img
-                    src="https://i.postimg.cc/7ZfS8FNx/pilot-logo.png"
-                    alt=""
+                    class="company-logo"
+                    src="https://pmac.leyi.host/downloads/pmac/pilot-logo.png"
+                    alt="公司Logo"
                 />
-                <div>
-                    <h1 class="pmac-title">智慧洞见 毫厘尽显</h1>
+                <div class="platform-title">
+                    <img
+                        class="platform-logo"
+                        src="https://pmac.leyi.host/downloads/pmac/test-logo.png"
+                        alt="平台Logo"
+                    />
+                    <div class="pmac-title">星火平台</div>
+                    <div class="pmac-subtitle">智慧洞见 毫厘尽显</div>
                 </div>
             </div>
             <el-menu
@@ -30,7 +36,7 @@
                 >
             </el-menu>
             <!-- 电力交易专家 -->
-            <div class="chatbot" @click="openChatbotWindow">
+            <div class="chatbot" @click="openChatbotWindow" v-if="false">
                 <div class="chatbot-icon">
                     <img
                         src="https://pmac.leyi.host/downloads/pmac/rengongzhineng.png"
@@ -273,25 +279,35 @@ onUnmounted(() => {
             margin-left: 10%;
             display: flex;
             align-items: center;
-            img {
-                margin-right: 10px;
+            .platform-title {
+                display: flex;
+                gap: 8px;
+                align-items: flex-end;
+                .pmac-title {
+                    font-size: 1.8rem;
+                    font-weight: 600;
+                    margin: 0;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3),
+                        0 0 10px rgba(255, 255, 255, 0.2);
+                }
+                .pmac-subtitle {
+                    font-size: 1.3rem;
+                    opacity: 0.85;
+                    background: linear-gradient(135deg, #8ba3f4, #ff72ae);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    color: transparent;
+                    font-weight: 500;
+                }
             }
-
-            i {
-                font-size: 2.5rem;
+            img.company-logo {
+                width: 70px;
+                height: auto;
                 margin-right: 15px;
-                color: #ffd04b;
             }
-
-            h1 {
-                font-size: 1.8rem;
-                margin: 0;
-            }
-
-            p {
-                margin: 5px 0 0;
-                opacity: 0.85;
-                font-size: 0.95rem;
+            img.platform-logo {
+                width: 40px;
+                height: auto;
             }
         }
     }

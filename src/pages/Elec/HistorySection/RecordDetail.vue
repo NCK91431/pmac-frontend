@@ -6,7 +6,7 @@
                     <h5>
                         <i class="bi bi-bookmark-check"></i>光伏发电预测结果
                     </h5>
-                    <template v-if="!record.previous_record_id">
+                    <template v-if="record.previous_record_id == null">
                         <button
                             class="continue-btn btn btn-primary"
                             @click="continueForecast"
@@ -78,6 +78,7 @@
                     </div>
                     <div class="options">
                         <el-button
+                            v-if="record.previous_record_id == null"
                             type="success"
                             plain
                             @click="downloadUploadExcel"
@@ -172,6 +173,18 @@ async function getRecordDetailById() {
     }
     const response = await request.get(`/api/elec_history/${id}`);
     record.value = response.data;
+    const info = response.data;
+    const isContinueRecord = info.previous_record_id !== null;
+    console.log("isContinueRecord", isContinueRecord);
+    if (isContinueRecord) {
+        const previouse_response = await request.get(
+            `/api/elec_history/${info.previous_record_id}`
+        );
+        const previous_record = previouse_response.data;
+        console.log("previous_record", previous_record);
+        record.value.upload_info.date_range =
+            previous_record.upload_info.date_range;
+    }
 }
 onMounted(() => {
     getRecordDetailById();
@@ -390,7 +403,7 @@ const continueForecast = () => {
     }
     .base-info {
         display: grid;
-        grid-template-columns: 1fr 1.5fr 1.6fr 1.2fr;
+        grid-template-columns: 1.3fr 1.5fr 1.6fr 1.2fr;
         gap: 10px;
 
         padding-bottom: 16px;

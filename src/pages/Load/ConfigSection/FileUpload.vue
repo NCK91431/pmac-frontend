@@ -14,10 +14,21 @@
                     <h4>拖放Excel文件到此处</h4>
                     <p class="text-muted">
                         请上传至少
-                        {{ isContinue ? 1 : 90 }}
-                        天的 24 小时负荷数据Excel文件<br />
+                        {{ isContinue ? 1 : 180 }}
+                        {{
+                            isContinue
+                                ? "天的 24 小时负荷数据Excel文件"
+                                : "天的 24 小时负荷数据Excel文件。"
+                        }}
+                        <br v-if="!isContinue" />
+                        {{
+                            isContinue
+                                ? ""
+                                : "建议用至少一年的数据，可获得更好的预测准确度。"
+                        }}
+                        <br />
                     </p>
-                    <p class="text-muted">或</p>
+                    <p></p>
                     <el-button type="primary" size="medium">
                         <i class="fas fa-file-upload"></i> 选择文件
                     </el-button>

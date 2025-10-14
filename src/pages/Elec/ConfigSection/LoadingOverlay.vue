@@ -8,7 +8,7 @@
             <span class="visually-hidden">Loading...</span>
         </div>
         <div class="mt-4">
-            <h3 class="mb-3">模型训练中...</h3>
+            <h3 class="mb-3">{{ isContinue ? "预测中" : "模型训练中..." }}</h3>
             <p class="text-muted">预测任务已提交，后台正在处理中</p>
             <!-- 添加进度条 -->
             <el-progress :percentage="progress" :stroke-width="15" striped />
@@ -21,7 +21,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+
+import { useElecStore } from "@/store/elec";
+const forecastStore = useElecStore();
+
+const isContinue = computed(() => forecastStore.isContinue);
 
 const progress = ref(0);
 let intervalId = null;

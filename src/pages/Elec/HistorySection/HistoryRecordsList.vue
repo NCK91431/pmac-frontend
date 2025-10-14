@@ -161,6 +161,18 @@
                                 </el-icon>
                             </el-button>
                         </template>
+                        <template v-if="node.level === 1">
+                            <el-button
+                                size="small"
+                                color="#e6a23c"
+                                plain
+                                @click.stop="continueForecast(data.id)"
+                                >继续预测
+                                <el-icon class="el-icon--right">
+                                    <TopRight />
+                                </el-icon>
+                            </el-button>
+                        </template>
                     </div>
                 </div>
             </template>
@@ -292,6 +304,48 @@ async function deleteRecord(record) {
 // 跳转到负荷对比页面
 function goComparePage(recordId) {
     router.push({ name: "ElecCompare", params: { recordId } });
+}
+
+/* --------------------------- 继续预测 -------------------------- */
+
+async function getRecordDetailById(id) {
+    const response = await request.get(`/api/elec_history/${id}`);
+    return response.data;
+}
+
+async function continueForecast(id) {
+    // 如果用户正处在预测进行状态中不可使用
+    if (forecastStore.stage == 1) {
+        ElMessage.error("您有预测正在进行中，请待预测完成后再使用此功能");
+        return;
+    }
+    // 获取记录详情
+    const record = await getRecordDetailById(id);
+    if (!record) {
+        ElMessage.error("记录ID不存在，无法获取详情");
+        return;
+    }
+
+    const date_range = record.upload_info.date_range;
+
+    // 便于计算一些属性
+    const [start, end] = date_range;
+    forecastStore.setContinueData({
+        end_date: date_range[1],
+        upload_date_range: date_range,
+        upload_date_range_format_text: `${start} 至 ${end}`,
+    });
+
+    // 预填表单
+    forecastStore.updateFormData({
+        pv_capacity: record.pv_capacity,
+        location: record.location,
+        previous_record_id: record.id,
+    });
+
+    forecastStore.removeFile(); //清空文件
+
+    forecastStore.resetStage(); // 重置stage
 }
 </script>
 
@@ -464,7 +518,7 @@ function goComparePage(recordId) {
     }
 
     .col-actions {
-        flex: 0 0 150px;
+        flex: 0 0 250px;
         display: flex;
         gap: 8px;
     }

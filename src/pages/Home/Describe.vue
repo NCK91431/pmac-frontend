@@ -10,108 +10,111 @@
             </div>
         </div>
 
-        <!-- 功能卡片区域 - 修改为2+3布局 -->
-        <div class="features-grid">
-            <!-- 第一行 - 两个卡片 -->
-            <div class="row g-4 justify-content-center">
-                <div
-                    v-for="(feature, index) in features.slice(0, 2)"
-                    :key="index"
-                    class="col-md-6 col-lg-5"
-                >
-                    <div
-                        class="feature-card"
-                        @mouseover="hoverIndex = feature.title"
-                        @mouseleave="hoverIndex = -1"
-                    >
-                        <div
-                            class="card-icon"
-                            :class="{
-                                'icon-hover': hoverIndex === feature.title,
-                            }"
-                        >
-                            <component :is="feature.icon" class="icon" />
+        <!-- 功能模块区域 - 左右交替布局 -->
+        <div class="features-modules">
+            <!-- 负荷预测模块 - 奇数行：左图右文 -->
+            <div class="feature-module" ref="loadModule">
+                <div class="module-card">
+                    <div class="module-container">
+                        <div class="image-side">
+                            <div class="image-wrapper">
+                                <img
+                                    src="https://pmac.leyi.host/downloads/pmac/describe/load.png"
+                                    alt="负荷预测"
+                                    class="feature-image"
+                                />
+                                <div class="image-overlay"></div>
+                            </div>
                         </div>
-                        <h3 class="card-title">{{ feature.title }}</h3>
-                        <p class="card-desc">{{ feature.description }}</p>
-                        <!-- <div class="card-stats">
-                            <div class="stat-item">
-                                <span class="stat-value">{{
-                                    feature.stats[0]
-                                }}</span>
-                                <span class="stat-label">{{
-                                    feature.statLabels[0]
-                                }}</span>
+                        <div class="content-side">
+                            <div class="content-wrapper">
+                                <h2 class="module-title">负荷预测（日前）</h2>
+                                <p class="module-description">
+                                    提供D-4预测D+1和D-1预测D+1两种日前预测方式。采用群体特征聚类分析与差异化建模融合的预测范式，通过动态感知技术实现用户群体的精准分类建模。创新性构建新能源耦合解析模块，通过自有光伏发电-负荷解耦技术实现净负荷特征空间重构。针对不同行业负荷特性差异，设计自适应特征选择引擎，融合多周期时空关联算子与动态残差补偿机制，构建抗扰动能力的预测拓扑架构。
+                                </p>
+                                <div class="module-tip">
+                                    <div class="tip-icon">
+                                        <el-icon><InfoFilled /></el-icon>
+                                    </div>
+                                    <div class="tip-content">
+                                        <p class="tip-text">
+                                            自动滚动的96点负荷预测需要一定的硬件基础支持。请联系我们进行咨询。
+                                        </p>
+                                        <p class="contact-info">
+                                            联系电话：15919159383（微信同号）
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-value">{{
-                                    feature.stats[1]
-                                }}</span>
-                                <span class="stat-label">{{
-                                    feature.statLabels[1]
-                                }}</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">{{
-                                    feature.stats[2]
-                                }}</span>
-                                <span class="stat-label">{{
-                                    feature.statLabels[2]
-                                }}</span>
-                            </div>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 第二行 - 三个卡片 -->
-            <div class="row g-4 justify-content-center mt-4">
-                <div
-                    v-for="(feature, index) in features.slice(2)"
-                    :key="index + 2"
-                    class="col-md-6 col-lg-4"
-                >
-                    <div
-                        class="feature-card"
-                        @mouseover="hoverIndex = feature.title"
-                        @mouseleave="hoverIndex = -1"
-                    >
-                        <div
-                            class="card-icon"
-                            :class="{
-                                'icon-hover': hoverIndex === feature.title,
-                            }"
-                        >
-                            <component :is="feature.icon" class="icon" />
+            <!-- 光伏发电预测模块 - 偶数行：右图左文 -->
+            <div class="feature-module" ref="pvModule">
+                <div class="module-card">
+                    <div class="module-container">
+                        <div class="content-side">
+                            <div class="content-wrapper">
+                                <h2 class="module-title">
+                                    光伏发电预测（日前）
+                                </h2>
+                                <p class="module-description">
+                                    提供未来多日的96点预测。采用融合多个数值气象源的先进预测框架，通过对气象数值预报特征与发电模式的深度挖掘，实现对不同天气类型的精准聚类与动态识别。针对每一类特定天气工况，采用Model Stacking技术，融合多个异构预测器的优势，在特征空间与模型层面进行双重优化，有效捕捉光伏出力在不同气象条件下的复杂非线性规律。
+                                </p>
+                                <div class="module-tip">
+                                    <div class="tip-icon">
+                                        <el-icon><InfoFilled /></el-icon>
+                                    </div>
+                                    <div class="tip-content">
+                                        <p class="tip-text">
+                                            自动滚动的96点光伏发电预测需要一定的硬件基础支持。请联系我们进行咨询。
+                                        </p>
+                                        <p class="contact-info">
+                                            联系电话：15919159383（微信同号）
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <h3 class="card-title">{{ feature.title }}</h3>
-                        <p class="card-desc">{{ feature.description }}</p>
-                        <!-- <div class="card-stats">
-                            <div class="stat-item">
-                                <span class="stat-value">{{
-                                    feature.stats[0]
-                                }}</span>
-                                <span class="stat-label">{{
-                                    feature.statLabels[0]
-                                }}</span>
+                        <div class="image-side">
+                            <div class="image-wrapper">
+                                <img
+                                    src="https://pmac.leyi.host/downloads/pmac/describe/pv.png"
+                                    alt="光伏发电预测"
+                                    class="feature-image"
+                                />
+                                <div class="image-overlay"></div>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-value">{{
-                                    feature.stats[1]
-                                }}</span>
-                                <span class="stat-label">{{
-                                    feature.statLabels[1]
-                                }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 光储定容模块 - 奇数行：左图右文 -->
+            <div class="feature-module" ref="storageModule">
+                <div class="module-card">
+                    <div class="module-container">
+                        <div class="image-side">
+                            <div class="image-wrapper">
+                                <img
+                                    src="https://pmac.leyi.host/downloads/pmac/describe/light.png"
+                                    alt="光储定容"
+                                    class="feature-image"
+                                />
+                                <div class="image-overlay"></div>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-value">{{
-                                    feature.stats[2]
-                                }}</span>
-                                <span class="stat-label">{{
-                                    feature.statLabels[2]
-                                }}</span>
+                        </div>
+                        <div class="content-side">
+                            <div class="content-wrapper">
+                                <h2 class="module-title">光储定容</h2>
+                                <p class="module-description">
+                                    以工程-经济耦合优化为核心，把日内功率调度与长期投资口径同时纳入混合整数线性规划（MILP）框架，通过多时级能量平衡、SOC限制与充放电互斥等物理约束保证运行可行性，并将需量电费、分时电价与电池退化成本等并入运行费用。
+                                    采用分式优化求最优规模与运行策略。模型输出兼顾工程可实施性与财务可行性，为技术决策与投融资评审提供量化依据。
+                                </p>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -151,85 +154,58 @@
                 </div>
             </div>
         </div>
-
-        <!-- 客户证言 -->
-        <div class="testimonial-section">
-            <h2 class="section-title">客户证言</h2>
-            <div class="testimonial">
-                <div class="quote-icon">"</div>
-                <p class="quote">
-                    使用派诺智慧能源工具后，我们的能源分配效率显著提升，预测精度达到行业领先水平，每年节省大量能源成本。
-                </p>
-                <div class="client-info">
-                    <div class="client-avatar"></div>
-                    <div>
-                        <p class="client-name">张华</p>
-                        <p class="client-position">某大型制造企业能源总监</p>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import {
-    TrendCharts,
-    Sunny,
-    Setting,
-    Money,
-    Warning,
     DataAnalysis,
     Cpu,
     Cloudy,
     Lock,
+    InfoFilled,
 } from "@element-plus/icons-vue";
 
-const hoverIndex = ref("");
+// 滚动动画相关
+const loadModule = ref(null);
+const pvModule = ref(null);
+const storageModule = ref(null);
 
-const features = ref([
-    {
-        title: "负荷预测",
-        description:
-            "深挖历史数据规律，精准预测 D+1 24 小时逐时负荷，为售电公司撬动利润空间，助力微电网用户高效调度与科学管理",
-        icon: TrendCharts,
-        stats: ["行业领先", "高效分配", "广泛适用"],
-        statLabels: ["预测精度", "能源优化", "应用范围"],
-    },
-    {
-        title: "光伏发电预测",
-        description:
-            "动态工况精准识别，通过改进 Transformer 架构，对未来24小时发电功率进行准确预测，为优化调度注入灵活动能",
-        icon: Sunny,
-        stats: ["精准可靠", "提升效率", "多云适应"],
-        statLabels: ["预测质量", "效能提升", "环境适应"],
-    },
-    {
-        title: "光储定容",
-        description:
-            "全天调度仿真与全生命周期成本评估，给出稳健的光伏与储能装机建议，辅助投决与尽调",
-        icon: Setting,
-        stats: ["优化设计", "长期收益", "稳定可靠"],
-        statLabels: ["系统设计", "经济效益", "可靠性"],
-    },
-    {
-        title: `慧储™套利模拟`,
-        description:
-            "提供全景化场景比对，量化评估储能项目投资效能，助力实现储能投资回报可衡量性与可预见性",
-        icon: Money,
-        stats: ["策略多样", "回报显著", "灵活配置"],
-        statLabels: ["套利策略", "投资回报", "配置方案"],
-    },
-    {
-        title: "设备健康预警",
-        description:
-            "实时监测设备运行状态，精准预警故障风险，延长设备生命周期，有效降低维护成本",
-        icon: Warning,
-        stats: ["实时监测", "风险预判", "延长寿命"],
-        statLabels: ["监控能力", "风险预警", "设备寿命"],
-    },
-]);
+let observers = [];
+
+const setupScrollAnimation = () => {
+    const options = {
+        threshold: 0.3,
+        rootMargin: "0px 0px -50px 0px",
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("animate-in");
+            }
+        });
+    }, options);
+
+    // 观察所有模块
+    [loadModule.value, pvModule.value, storageModule.value].forEach(
+        (module) => {
+            if (module) {
+                observer.observe(module);
+                observers.push(observer);
+            }
+        }
+    );
+};
+
+onMounted(() => {
+    setupScrollAnimation();
+});
+
+onUnmounted(() => {
+    observers.forEach((observer) => observer.disconnect());
+});
 </script>
 
 <style lang="scss" scoped>
@@ -243,7 +219,7 @@ const features = ref([
 
 .intro-section {
     max-width: 1000px;
-    margin: 0 auto 4rem;
+    margin: 0 auto 6rem;
     text-align: center;
 
     .intro-text {
@@ -273,117 +249,221 @@ const features = ref([
     }
 }
 
-.section-title {
-    text-align: center;
-    margin-bottom: 3rem;
+.features-modules {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.feature-module {
+    margin-bottom: 4rem;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    &.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    &:last-child {
+        margin-bottom: 4rem;
+    }
+}
+
+.module-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s ease;
+
+    &:hover {
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        transform: translateY(-5px);
+    }
+}
+
+.module-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+
+    &.reverse {
+        direction: rtl;
+
+        > * {
+            direction: ltr;
+        }
+    }
+}
+
+.image-side {
+    position: relative;
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.15);
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    .module-card:hover & {
+        transform: scale(1.02);
+        box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.2);
+    }
+}
+
+.image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+}
+
+.feature-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.6s ease;
+
+    .module-card:hover & {
+        transform: scale(1.08);
+    }
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(58, 143, 254, 0.1) 0%,
+        rgba(0, 198, 255, 0.1) 100%
+    );
+    opacity: 0;
+    transition: all 0.4s ease;
+
+    .module-card:hover & {
+        opacity: 1;
+    }
+}
+
+.content-side {
+    padding: 1rem;
+}
+
+.content-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.module-title {
+    font-size: 2rem;
     font-weight: 700;
     color: #1a3a5f;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #3a8ffe 0%, #00c6ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     position: relative;
 
     &::after {
         content: "";
-        display: block;
-        width: 80px;
-        height: 4px;
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 3px;
         background: linear-gradient(90deg, #3a8ffe, #00c6ff);
-        margin: 0.5rem auto 0;
         border-radius: 2px;
     }
 }
 
-.features-grid {
-    max-width: 1200px;
-    margin: 0 auto;
-
-    .row {
-        transition: all 0.3s ease;
-    }
+.module-description {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #4a6582;
+    margin-bottom: 2rem;
+    text-align: justify;
 }
 
-.feature-card {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    height: 100%;
-    box-shadow: 0 10px 30px rgba(0, 82, 204, 0.08);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-    border: 1px solid rgba(58, 143, 254, 0.1);
+.module-tip {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
+    border-left: 4px solid #3a8ffe;
+    padding: 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(58, 143, 254, 0.1);
 
     &:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 35px rgba(0, 82, 204, 0.15);
-        border-color: rgba(58, 143, 254, 0.3);
-    }
-
-    .card-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        background: linear-gradient(135deg, #e6f0ff 0%, #d0e3ff 100%);
-        transition: all 0.3s ease;
-
-        &.icon-hover {
-            background: linear-gradient(135deg, #3a8ffe 0%, #00c6ff 100%);
-        }
-
-        .icon {
-            width: 40px;
-            height: 40px;
-            color: #3a8ffe;
-            transition: all 0.3s ease;
-        }
-
-        &.icon-hover .icon {
-            color: white;
-        }
-    }
-
-    .card-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #1a3a5f;
-        text-align: center;
-        margin-bottom: 1rem;
-    }
-
-    .card-desc {
-        color: #4a6582;
-        line-height: 1.7;
-        margin-bottom: 0;
-        min-height: 100px;
-    }
-
-    .card-stats {
-        display: flex;
-        justify-content: space-around;
-        border-top: 1px solid rgba(58, 143, 254, 0.1);
-        padding-top: 1.5rem;
-
-        .stat-item {
-            text-align: center;
-
-            .stat-value {
-                display: block;
-                font-size: 1.4rem;
-                font-weight: 700;
-                color: #3a8ffe;
-            }
-
-            .stat-label {
-                font-size: 0.85rem;
-                color: #7a92b0;
-            }
-        }
+        transform: translateX(5px);
+        box-shadow: 0 8px 25px rgba(58, 143, 254, 0.15);
     }
 }
 
+.tip-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3a8ffe 0%, #00c6ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+
+    i {
+        font-size: 1.2rem;
+    }
+}
+
+.tip-content {
+    flex: 1;
+}
+
+.tip-text {
+    color: #2c5282;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.contact-info {
+    color: #2b6cb0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* 技术优势部分样式保持不变 */
 .tech-section {
     max-width: 1200px;
     margin: 6rem auto;
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 3rem;
+        font-weight: 700;
+        color: #1a3a5f;
+        position: relative;
+
+        &::after {
+            content: "";
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #3a8ffe, #00c6ff);
+            margin: 0.5rem auto 0;
+            border-radius: 2px;
+        }
+    }
 
     .tech-grid {
         display: grid;
@@ -432,99 +512,33 @@ const features = ref([
     }
 }
 
-.testimonial-section {
-    max-width: 800px;
-    margin: 6rem auto;
-
-    .testimonial {
-        background: white;
-        border-radius: 16px;
-        padding: 3rem;
-        position: relative;
-        box-shadow: 0 10px 30px rgba(0, 82, 204, 0.08);
-
-        .quote-icon {
-            position: absolute;
-            top: 1.5rem;
-            left: 2rem;
-            font-size: 5rem;
-            color: #e6f0ff;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .quote {
-            font-size: 1.25rem;
-            line-height: 1.8;
-            color: #4a6582;
-            position: relative;
-            z-index: 1;
-            font-style: italic;
-        }
-
-        .client-info {
-            display: flex;
-            align-items: center;
-            margin-top: 2rem;
-
-            .client-avatar {
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #3a8ffe 0%, #00c6ff 100%);
-                margin-right: 1rem;
-            }
-
-            .client-name {
-                font-weight: 700;
-                margin: 0;
-                color: #1a3a5f;
-            }
-
-            .client-position {
-                color: #7a92b0;
-                margin: 0;
-            }
-        }
-    }
-}
-
-.cta-section {
-    margin: 4rem 0;
-
-    .cta-button {
-        background: linear-gradient(90deg, #3a8ffe, #00c6ff);
-        border: none;
-        padding: 1rem 3rem;
-        font-size: 1.25rem;
-        font-weight: 600;
-        border-radius: 50px;
-        transition: all 0.3s ease;
-        box-shadow: 0 10px 20px rgba(58, 143, 254, 0.3);
-
-        &:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px rgba(58, 143, 254, 0.4);
-        }
-    }
-
-    .cta-note {
-        color: #7a92b0;
-        margin-top: 1rem;
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .module-container {
+        gap: 2.5rem;
     }
 }
 
 @media (max-width: 992px) {
-    .intro-section {
-        padding: 0 1rem;
+    .module-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+
+        &.reverse {
+            direction: ltr;
+        }
     }
 
-    .feature-card {
-        padding: 1.5rem;
+    .image-side {
+        min-height: 280px;
+    }
 
-        .card-desc {
-            min-height: auto;
-        }
+    .content-wrapper {
+        max-width: 100%;
+    }
+
+    .module-card {
+        padding: 2rem;
     }
 }
 
@@ -541,10 +555,44 @@ const features = ref([
         .lead {
             font-size: 1rem;
         }
+
+        .intro-text .title::after {
+            width: 300px;
+        }
     }
 
-    .testimonial {
-        padding: 2rem 1.5rem !important;
+    .module-title {
+        font-size: 1.7rem;
     }
+
+    .module-description {
+        font-size: 1rem;
+    }
+
+    .module-tip {
+        flex-direction: column;
+        text-align: center;
+
+        &:hover {
+            transform: translateY(-3px);
+        }
+    }
+
+    .module-card {
+        padding: 1.5rem;
+    }
+}
+
+/* 滚动动画延迟 */
+.feature-module:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.feature-module:nth-child(2) {
+    transition-delay: 0.2s;
+}
+
+.feature-module:nth-child(3) {
+    transition-delay: 0.3s;
 }
 </style>

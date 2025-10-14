@@ -70,8 +70,10 @@
     <!-- 顶部导航区 -->
     <section class="top-section">
         <div class="section-title">
-            <h2>源网荷储智策平台</h2>
-            <p>一站式能源管理平台，助力企业高效用能</p>
+            <h2>点亮资产，预见收益</h2>
+            <p>
+                为电力市场参与者及能源资产持有者打造的在线决策引擎<br />将复杂的能源数据转化为清晰的预测和洞见，助您精准决策、提升收益
+            </p>
         </div>
         <div class="nav-cards">
             <div class="nav-card">
@@ -79,7 +81,9 @@
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <h3>负荷预测</h3>
-                <p>提供精准的负荷预测分析，帮助优化能源分配</p>
+                <p>
+                    <text>提供精准的日前负荷预测，助力日前交易申报</text>
+                </p>
                 <el-button type="primary" @click="gotoPage('load')"
                     >进入页面</el-button
                 >
@@ -90,7 +94,9 @@
                     <i class="fas fa-sun"></i>
                 </div>
                 <h3>光伏发电预测</h3>
-                <p>基于气象数据的太阳能发电量预测与分析</p>
+                <p>
+                    <text> 自适应模型选择，提供高精度的光伏发电预测 </text>
+                </p>
                 <el-button type="success" @click="gotoPage('elec')"
                     >进入页面</el-button
                 >
@@ -102,7 +108,7 @@
                 </div>
                 <h3>光储定容</h3>
                 <p>光伏储能系统容量优化设计与经济性分析</p>
-                <el-button type="warning" @click="gotoPage('light')"
+                <el-button type="warning" @click="showComingSoon"
                     >进入页面</el-button
                 >
             </div>
@@ -111,7 +117,11 @@
                     <i class="fas fa-coins"></i>
                 </div>
                 <h3>慧储&trade;套利模拟</h3>
-                <p>量化分析峰谷套利策略收益，助力储能投资回报最大化</p>
+                <p>
+                    <text>
+                        基于负荷预测和电价，动态生成最优充放策略，最大化IRR
+                    </text>
+                </p>
                 <el-button type="danger" @click="showComingSoon"
                     >进入页面</el-button
                 >
@@ -121,7 +131,7 @@
                     <i class="fas fa-shield-alt"></i>
                 </div>
                 <h3>资产健康哨兵</h3>
-                <p>精准预警故障风险，延长设备生命周期</p>
+                <p>为储能电芯提供健康度评估及早期预警，保障长期收益</p>
                 <el-button type="info" @click="showComingSoon"
                     >进入页面</el-button
                 >
@@ -579,10 +589,6 @@ const showComingSoon = () => {
             }
         }
     }
-}
-
-/*功能介绍宣传样式 */
-.intro-containner {
 }
 
 /* 响应式设计 */
