@@ -3,37 +3,6 @@
         class="file-upload card border-0 shadow-sm p-3 h-100 d-flex flex-column align-items-center justify-content-center"
     >
         <template v-if="!file">
-            <el-upload
-                class="upload-area"
-                drag
-                action=""
-                :auto-upload="false"
-                :on-change="handleFileChange"
-            >
-                <div class="upload-content">
-                    <h4>拖放Excel文件到此处</h4>
-                    <p class="text-muted">
-                        请上传至少
-                        {{ isContinue ? 1 : 180 }}
-                        {{
-                            isContinue
-                                ? "天的 24 小时负荷数据Excel文件"
-                                : "天的 24 小时负荷数据Excel文件。"
-                        }}
-                        <br v-if="!isContinue" />
-                        {{
-                            isContinue
-                                ? ""
-                                : "建议用至少一年的数据，可获得更好的预测准确度。"
-                        }}
-                        <br />
-                    </p>
-                    <p></p>
-                    <el-button type="primary" size="medium">
-                        <i class="fas fa-file-upload"></i> 选择文件
-                    </el-button>
-                </div>
-            </el-upload>
             <div class="file-tip">
                 <div class="file-details">
                     <div class="line">
@@ -54,6 +23,37 @@
                     >
                 </div>
             </div>
+            <el-upload
+                class="upload-area"
+                drag
+                action=""
+                :auto-upload="false"
+                :on-change="handleFileChange"
+            >
+                <div class="upload-content">
+                    <h4>拖放Excel文件到此处</h4>
+                    <p class="text-muted">
+                        请上传至少
+                        {{ isContinue ? 1 : mode == "T" ? 180 : 90 }}
+                        {{
+                            isContinue
+                                ? "天的 24 小时负荷数据Excel文件"
+                                : "天的 24 小时负荷数据Excel文件。"
+                        }}
+                        <br v-if="!isContinue" />
+                        {{
+                            isContinue
+                                ? ""
+                                : "建议用至少一年的数据，可获得更好的预测准确度。"
+                        }}
+                        <br />
+                    </p>
+                    <p></p>
+                    <el-button type="primary" size="medium">
+                        <i class="fas fa-file-upload"></i> 选择文件
+                    </el-button>
+                </div>
+            </el-upload>
         </template>
         <!-- 文件信息卡片 -->
         <template v-else>
@@ -126,7 +126,7 @@ import request from "@/utils/request";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const forecastStore = useLoadForecastStore(); // 使用新的综合Store
-
+const mode = computed(() => forecastStore.mode); // 预测模式
 const file = computed(() => forecastStore.uploadedFile); // 直接从新Store获取文件
 const isContinue = computed(() => forecastStore.isContinue); // 判断是否处于继续预测状态
 
@@ -141,6 +141,7 @@ async function handleFileChange(uploadFile) {
             const formData = new FormData();
             formData.append("file", uploadFile.raw);
             formData.append("isContinue", isContinue.value ? "1" : "0");
+            formData.append("mode", mode.value);
 
             const response = await request.post("/api/fileinfo", formData, {
                 headers: {
@@ -260,7 +261,7 @@ function formatFileSize(bytes) {
 }
 
 .file-tip {
-    margin-top: 25px;
+    margin-bottom: 25px;
     background-color: #f0f7ff;
     border-radius: 8px;
     padding: 15px;

@@ -1,37 +1,47 @@
 <template>
     <main class="container my-4 flex-grow-1">
         <!-- 预测模式 -->
-        <div v-if="activeTab == 'upload'" class="mode mb-4">
-            <span class="text">
-                <i class="bi bi-info-circle me-2"></i>
-                <span v-if="mode == 'T'">
-                    您正在进行的是 <strong>总负荷预测</strong>
+        <div v-if="activeTab == 'upload'" class="mode mb-3">
+            <!-- 模式 -->
+            <div class="wrap">
+                <span class="text">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span v-if="mode == 'T'">
+                        您正在进行的是 <strong>总负荷预测</strong>
+                    </span>
+                    <span v-if="mode == 'S'">
+                        您正在进行的是 <strong>分项负荷预测</strong>
+                    </span>
                 </span>
-                <span v-if="mode == 'S'">
-                    您正在进行的是 <strong>分项负荷预测</strong>
-                </span>
-            </span>
-            <span
-                v-if="stage == 0 && !isContinue"
-                class="action"
-                @click="switchMode"
-            >
-                切换到
-                <strong v-if="mode == 'T'">分项负荷预测</strong>
-                <strong v-else>总负荷预测</strong>
-                <i class="bi bi-arrow-left-right"></i>
-            </span>
-            <template v-if="stage == 2">
-                <button
-                    class="btn-add-new btn btn-primary px-4 py-2"
-                    @click="onNewPrediction"
+                <span
+                    v-if="stage == 0 && !isContinue"
+                    class="action"
+                    @click="switchMode"
                 >
-                    新建预测<i class="bi bi-plus-circle"></i>
-                </button>
-            </template>
+                    切换到
+                    <strong v-if="mode == 'T'">分项负荷预测</strong>
+                    <strong v-else>总负荷预测</strong>
+                    <i class="bi bi-arrow-left-right"></i>
+                </span>
+                <template v-if="stage == 2">
+                    <button
+                        class="btn-add-new btn btn-primary px-4 py-2"
+                        @click="onNewPrediction"
+                    >
+                        新建预测<i class="bi bi-plus-circle"></i>
+                    </button>
+                </template>
+            </div>
+            <!-- 文字说明 -->
+            <Instructions
+                class="mb-2"
+                v-if="activeTab == 'upload' && mode == 'T'"
+                @switchMode="switchMode"
+            />
         </div>
+
         <!-- 预测表单 -->
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow-sm mb-3">
             <div class="card-header bg-white">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
@@ -72,6 +82,9 @@
         <ResultSection v-if="activeTab == 'upload' && stage == 2" />
 
         <RecordDetail v-if="activeTab == 'history' && activeHistoryRecordId" />
+
+        <!-- 提示组件 -->
+        <Prompt v-if="activeTab == 'upload'" />
     </main>
 </template>
 
@@ -79,6 +92,8 @@
 import { ref, inject, computed } from "vue";
 import request from "@/utils/request";
 import ConfigSection from "./ConfigSection/ConfigSection.vue";
+import Prompt from "./ConfigSection/Prompt.vue";
+import Instructions from "./ConfigSection/components/Instructions.vue";
 import HistoryRecordsList from "./HistorySection/HistoryRecordsList.vue";
 import ResultSection from "./ResultSection/ResultSection.vue";
 import RecordDetail from "./HistorySection/RecordDetail.vue";
@@ -280,8 +295,7 @@ function onClickHistoryTab() {
 }
 .mode {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
     padding: 1rem 1.5rem;
     background: #f0f7ff;
     border: 1px solid #dee2e6;
@@ -289,6 +303,11 @@ function onClickHistoryTab() {
     margin-bottom: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border-left: 4px solid #2c6fbb;
+    .wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
     .text {
         color: #495057;
         font-size: 1.1rem;
@@ -304,7 +323,7 @@ function onClickHistoryTab() {
     }
 
     .action {
-        color: #6c757d;
+        color: #409eff;
         cursor: pointer;
         transition: all 0.3s ease;
         font-size: 0.9rem;

@@ -98,12 +98,19 @@
             >
                 <el-option
                     label="D-4 -> D+1 【注：4天前用电量 → 预测未来一天分时负荷】"
-                    value="4days"
+                    value="D-4"
+                />
+                <el-option
+                    label="D-3 -> D+1 【注：3天前用电量 → 预测未来一天分时负荷】"
+                    value="D-3"
+                />
+                <el-option
+                    label="D-2 -> D+1 【注：2天前用电量 → 预测未来一天分时负荷】"
+                    value="D-2"
                 />
                 <el-option
                     label="D-1 -> D+1 【注：1天前用电量 → 预测未来一天分时负荷】"
-                    value="1day"
-                    disabled
+                    value="D-1"
                 />
             </el-select>
         </div>
