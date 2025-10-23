@@ -78,11 +78,7 @@
                 </div>
                 <div class="value">
                     <span class="badge-custom forecast-badge">
-                        {{
-                            record.forecast_range == "4days"
-                                ? "D-4→D+1"
-                                : "D-1→D+1"
-                        }}
+                        {{ `${record.forecast_range} → D+1` }}
                     </span>
                 </div>
             </div>

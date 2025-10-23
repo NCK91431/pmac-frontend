@@ -135,11 +135,7 @@
                                 class="range-badge"
                                 :class="'range-' + data.forecast_range"
                             >
-                                {{
-                                    data.forecast_range === "4days"
-                                        ? "D-4 → D+1"
-                                        : "D-1 → D+1"
-                                }}
+                                {{ `${data.forecast_range} → D+1` }}
                             </span>
                         </template>
                         <template v-else>-</template>
@@ -490,11 +486,19 @@ function goComparePage(recordId) {
             font-size: 12px;
             font-weight: 600;
         }
-        .range-4days {
+        .range-D-4 {
             background-color: #e6f7ff;
             color: #1890ff;
         }
-        .range-1day {
+        .range-D-3 {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+        .range-D-2 {
+            background-color: #fff0f6;
+            color: #eb2f96;
+        }
+        .range-D-1 {
             background-color: rgba(46, 204, 113, 0.1);
             color: #2ecc71;
         }

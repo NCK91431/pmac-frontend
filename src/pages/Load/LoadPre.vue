@@ -35,7 +35,7 @@
             <!-- 文字说明 -->
             <Instructions
                 class="mb-2"
-                v-if="activeTab == 'upload' && mode == 'T'"
+                v-if="activeTab == 'upload' && stage == 0 && mode == 'T'"
                 @switchMode="switchMode"
             />
         </div>
@@ -84,7 +84,7 @@
         <RecordDetail v-if="activeTab == 'history' && activeHistoryRecordId" />
 
         <!-- 提示组件 -->
-        <Prompt v-if="activeTab == 'upload'" />
+        <Prompt v-if="activeTab == 'upload' && stage == 0" />
     </main>
 </template>
 

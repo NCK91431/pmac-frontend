@@ -9,7 +9,7 @@
             <div class="explanation-item mb-3">
                 <i class="bi bi-1-circle-fill"></i>
                 <span class="item-text ms-2">
-                    总负荷数据需连续、完整，并且最近的180天内客户无新增或减少（让模型精准捕捉客户群体的真实用电规律，进而输出可靠的预测结果）。
+                    总负荷数据需连续完整。剔除已经停止代理的客户负荷数据，让模型精准捕捉当前客户群体的真实用电规律。
                 </span>
             </div>
             <div class="explanation-item">
