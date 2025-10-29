@@ -39,12 +39,17 @@
             </div>
         </div>
 
+        <!-- 当前测算结果 -->
         <ResultSection
             v-if="activeTab == 'upload' && stage == 2"
             :record="record"
         />
 
-        <RecordDetail v-if="activeTab == 'history' && activeHistoryRecordId" />
+        <!-- 历史记录详情 -->
+        <template v-if="activeTab == 'history' && activeHistoryRecordId">
+            <ConfigDisplay />
+            <RecordDetail />
+        </template>
     </main>
 </template>
 
@@ -55,6 +60,7 @@ import ConfigSection from "./ConfigSection/ConfigSection.vue";
 import HistoryRecordsList from "./HistorySection/HistoryRecordsList.vue";
 import ResultSection from "./ResultSection/ResultSection.vue";
 import RecordDetail from "./HistorySection/RecordDetail.vue";
+import ConfigDisplay from "./HistorySection/ConfigDisplay.vue";
 import moment from "moment";
 import { ElMessage, ElNotification, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
@@ -67,7 +73,6 @@ const activeHistoryRecordId = computed(
 ); //用户选中的某条负荷预测记录
 
 const activeTab = computed(() => forecastStore.activeTab); // 从 store 获取标签状态
-const isContinue = computed(() => forecastStore.isContinue);
 
 const record = computed(() => forecastStore.responseData); //后端返回的完整数据；
 const stage = computed(() => forecastStore.stage); // 0:初始状态 1:处理中 2:处理完成
@@ -82,16 +87,23 @@ function switchTab(tabName) {
 /* ---------------- 执行模型预测过程中 -----------------*/
 const processingTasks = ref([]); //任务队列
 
-async function handleSubmit(formData, fileData) {
+async function handleSubmit(formData, loadFile, priceFile) {
     forecastStore.setStageOne(); // 设置为处理中状态 stage = 1
     const post_data = new FormData();
-    post_data.append("storage_cost", formData.storage_cost);
-    post_data.append("pv_cost", formData.pv_cost);
-    post_data.append("file", fileData);
+
+    // 添加所有表单数据
+    Object.keys(formData).forEach((key) => {
+        post_data.append(key, formData[key]);
+    });
+    // 添加两个文件
+    post_data.append("load_file", loadFile);
+    post_data.append("price_file", priceFile);
+
     // 如果有用户ID
     if (user.value) {
         post_data.append("user_id", user.value.id);
     }
+
     const now_moment = moment(new Date()).format("YYYY-MM-DD HH:mm");
     processingTasks.value.push(now_moment);
     try {
@@ -101,16 +113,15 @@ async function handleSubmit(formData, fileData) {
                 "Content-Type": "multipart/form-data",
             },
         });
+        forecastStore.setStageTwo(); // 确保状态为完成 stage = 2
+        forecastStore.setCompleted(res.data); // 设置为完成状态 stage = 2
         if (res.data.success) {
             ElNotification({
                 type: "success",
-                title: "预测完成",
-                message: "预测任务已完成，您可以查看结果",
+                title: "光储定容测算完成",
+                message: "测算任务已完成，您可以查看结果",
             });
-            forecastStore.setCompleted(res.data); // 设置为完成状态 stage = 2
-            forecastStore.clearContinueData(); // 确保清除状态、清除继续预测数据
         }
-        // 处理响应
     } catch (error) {
         forecastStore.setStageZero(); // 出错时重置状态 stage = 0
         if (error.response?.status === 400 || error.response?.status === 500) {
@@ -162,10 +173,6 @@ function onClickHistoryTab() {
                 forecastStore.setActiveTab("upload");
             });
     } else {
-        if (activeTab.value == "upload" && isContinue.value) {
-            forecastStore.resetForm();
-            forecastStore.clearContinueData();
-        }
         // 用户已登录或切换到上传标签，直接切换
         forecastStore.setActiveTab("history");
     }

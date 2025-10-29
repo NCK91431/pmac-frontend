@@ -1,4 +1,25 @@
 <template>
+    <!-- 典型案例卡片 -->
+    <div
+        v-if="resultData.case_data"
+        class="result-section card border-0 shadow-sm mt-4"
+    >
+        <div
+            class="card-header bg-white d-flex justify-content-between align-items-center"
+        >
+            <h3 class="h5 mb-0 text-success">
+                <i class="bi bi-lightning-charge me-2"></i>典型案例
+            </h3>
+            <el-button type="primary" @click="downloadResultExcel">
+                <i class="bi bi-download me-1"></i>下载测算结果
+            </el-button>
+        </div>
+
+        <div class="card-body">
+            <Case :caseData="resultData.case_data" />
+        </div>
+    </div>
+    <!-- 优化配置方案卡片 -->
     <div class="result-section card border-0 shadow-sm mt-4">
         <div
             class="card-header bg-white d-flex justify-content-between align-items-center"
@@ -108,6 +129,13 @@
                             {{ calculateROI() }}<span class="unit">%</span>
                         </div>
                     </div>
+                    <div class="roi-item">
+                        <div class="roi-label">最大需量变化趋势</div>
+                        <div class="roi-value" :class="getPeakDemandClass()">
+                            <i :class="getPeakDemandIcon()" class="me-2"></i>
+                            {{ getPeakDemandText() }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -119,7 +147,8 @@ import { ref, computed, onMounted, watch } from "vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
-import { useLightStore } from "@/store/light"; // 使用新的综合Store
+import { useLightStore } from "@/store/light";
+import Case from "../ResultSection/Case.vue";
 const forecastStore = useLightStore();
 const activeHistoryRecordId = computed(
     () => forecastStore.activeHistoryRecordId
@@ -132,6 +161,7 @@ const resultData = ref({
     annual_savings: 0,
     daily_operation_cost: 0,
     investment_cost: 0,
+    case_data: null,
 });
 async function getRecord() {
     const id = activeHistoryRecordId.value;
@@ -151,6 +181,8 @@ async function getRecord() {
                 daily_operation_cost:
                     Number(response.data.daily_operation_cost) || 0,
                 investment_cost: Number(response.data.investment_cost) || 0,
+                daily_peak: Number(response.data.daily_peak) || 0,
+                case_data: response.data.case_data,
             };
         } else {
             ElMessage.error("查询记录失败");
@@ -202,20 +234,95 @@ function calculatePaybackPeriod() {
 }
 
 // 计算年化投资回报率
+
 function calculateROI() {
     if (
         !resultData.value.investment_cost ||
         resultData.value.investment_cost <= 0
     )
         return "N/A";
-    return (
-        (
-            resultData.value.annual_savings / resultData.value.investment_cost
-        ).toFixed(2) *
-            100 +
-        " "
-    );
+
+    const ratio =
+        resultData.value.annual_savings / resultData.value.investment_cost;
+    const percentage = ratio * 100;
+
+    const formatter = new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    return formatter.format(percentage) + " ";
 }
+/* -------------------- 最大需量变化趋势 -------------------- */
+// 获取最大需量变化趋势的样式类
+function getPeakDemandClass() {
+    const value = resultData.value.daily_peak;
+    if (Math.abs(value) < 3) {
+        return "peak-stable";
+    } else if (value > 0) {
+        return "peak-increase";
+    } else {
+        return "peak-decrease";
+    }
+}
+
+// 获取最大需量变化趋势的图标
+function getPeakDemandIcon() {
+    const value = resultData.value.daily_peak;
+    if (Math.abs(value) < 3) {
+        return "bi bi-dash-circle";
+    } else if (value > 0) {
+        return "bi bi-arrow-up-circle";
+    } else {
+        return "bi bi-arrow-down-circle";
+    }
+}
+
+// 获取最大需量变化趋势的文本
+function getPeakDemandText() {
+    const value = resultData.value.daily_peak;
+    if (Math.abs(value) < 3) {
+        return "维持原有水平";
+    } else if (value > 0) {
+        return `增加 ${Math.abs(value).toFixed(2)}%`;
+    } else {
+        return `降低 ${Math.abs(value).toFixed(2)}%`;
+    }
+}
+
+// 下载结果Excel
+const downloadResultExcel = async () => {
+    const id = activeHistoryRecordId.value;
+    if (!id) {
+        ElMessage.error("查询记录失败");
+        return;
+    }
+    try {
+        const response = await request.get(
+            `/api/light_history/${id}/result-excel`,
+            {
+                responseType: "blob",
+            }
+        );
+
+        // 创建下载链接
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `光储定容结果_${id}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        ElMessage.success("下载成功");
+    } catch (error) {
+        console.error("下载失败:", error);
+        ElMessage.error(
+            "下载失败: " + (error.response?.data?.message || error.message)
+        );
+    }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -459,6 +566,21 @@ function calculateROI() {
                 font-size: 14px;
                 font-weight: normal;
                 color: #6c757d;
+            }
+            &.peak-increase {
+                color: #e74c3c;
+                font-weight: 600;
+            }
+            &.peak-decrease {
+                color: #27ae60;
+                font-weight: 600;
+            }
+            &.peak-stable {
+                color: #434444;
+                font-weight: 500;
+            }
+            i {
+                font-size: 18px;
             }
         }
     }

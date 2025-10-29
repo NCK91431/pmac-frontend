@@ -1,4 +1,22 @@
 <template>
+    <!-- 典型案例卡片 -->
+    <div class="result-section card border-0 shadow-sm mt-4">
+        <div
+            class="card-header bg-white d-flex justify-content-between align-items-center"
+        >
+            <h3 class="h5 mb-0 text-success">
+                <i class="bi bi-lightning-charge me-2"></i>典型案例
+            </h3>
+            <el-button type="primary" @click="downloadResultExcel">
+                <i class="bi bi-download me-1"></i>下载测算结果
+            </el-button>
+        </div>
+
+        <div class="card-body">
+            <Case :caseData="caseData" />
+        </div>
+    </div>
+    <!-- 优化配置方案卡片 -->
     <div class="result-section card border-0 shadow-sm mt-4">
         <div
             class="card-header bg-white d-flex justify-content-between align-items-center"
@@ -106,6 +124,13 @@
                             {{ calculateROI() }}<span class="unit">%</span>
                         </div>
                     </div>
+                    <div class="roi-item">
+                        <div class="roi-label">最大需量变化趋势</div>
+                        <div class="roi-value" :class="getPeakDemandClass()">
+                            <i :class="getPeakDemandIcon()" class="me-2"></i>
+                            {{ getPeakDemandText() }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -113,13 +138,31 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, inject } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import Case from "./Case.vue";
+import request from "@/utils/request";
+import { useRouter } from "vue-router";
+const user = inject("user"); //注入全局用户状态
+const router = useRouter();
 
 import { useLightStore } from "@/store/light";
 
 const forecastStore = useLightStore();
 
 const resultData = computed(() => forecastStore.responseData.resultData);
+const responseData = computed(() => forecastStore.responseData);
+
+const caseData = computed(() => {
+    return {
+        pv_data: resultData.value.pv_data,
+        load_data: resultData.value.load_data,
+        operating_status: resultData.value.operating_status,
+        pch_data: resultData.value.pch_data,
+        pdis_data: resultData.value.pdis_data,
+        load_days: resultData.value.load_days,
+    };
+});
 
 /*------------辅助函数------------*/
 // 格式化货币显示
@@ -143,20 +186,120 @@ function calculatePaybackPeriod() {
 }
 
 // 计算年化投资回报率
+
 function calculateROI() {
     if (
         !resultData.value.investment_cost ||
         resultData.value.investment_cost <= 0
     )
         return "N/A";
-    return (
-        (
-            resultData.value.annual_savings / resultData.value.investment_cost
-        ).toFixed(2) *
-            100 +
-        " "
-    );
+
+    const ratio =
+        resultData.value.annual_savings / resultData.value.investment_cost;
+    const percentage = ratio * 100;
+
+    const formatter = new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    return formatter.format(percentage) + " ";
 }
+/* -------------------- 最大需量变化趋势 -------------------- */
+// 获取最大需量变化趋势的样式类
+function getPeakDemandClass() {
+    const value = resultData.value.daily_peak;
+    if (Math.abs(value) < 3) {
+        return "peak-stable";
+    } else if (value > 0) {
+        return "peak-increase";
+    } else {
+        return "peak-decrease";
+    }
+}
+
+// 获取最大需量变化趋势的图标
+function getPeakDemandIcon() {
+    const value = resultData.value.daily_peak;
+    if (Math.abs(value) < 3) {
+        return "bi bi-dash-circle";
+    } else if (value > 0) {
+        return "bi bi-arrow-up-circle";
+    } else {
+        return "bi bi-arrow-down-circle";
+    }
+}
+
+// 获取最大需量变化趋势的文本
+function getPeakDemandText() {
+    const value = resultData.value.daily_peak;
+    if (Math.abs(value) < 3) {
+        return "维持原有水平";
+    } else if (value > 0) {
+        return `增加 ${Math.abs(value).toFixed(2)}%`;
+    } else {
+        return `降低 ${Math.abs(value).toFixed(2)}%`;
+    }
+}
+
+/* ------------------------------ 下载结果Excel ------------------------------ */
+const downloadResultExcel = async () => {
+    // 未登录用户:
+    if (!user.value) {
+        return ElMessageBox.confirm(
+            "查看历史记录需要登录账号，是否立即登录？",
+            "登录提示",
+            {
+                confirmButtonText: "去登录",
+                cancelButtonText: "取消",
+                type: "warning",
+                customClass: "login-prompt-box",
+                showClose: false,
+                closeOnClickModal: false,
+                closeOnPressEscape: false,
+            }
+        )
+            .then(() => {
+                // 用户点击确认，跳转到登录页面
+                router.push("/login");
+            })
+            .catch(() => {
+                // 用户取消，不执行任何操作
+                // 可以重置为上传标签
+            });
+    }
+    // 已登录用户:
+    const id = responseData.value.recordId;
+    if (!id) {
+        ElMessage.error("查询记录失败");
+        return;
+    }
+    try {
+        const response = await request.get(
+            `/api/light_history/${id}/result-excel`,
+            {
+                responseType: "blob",
+            }
+        );
+
+        // 创建下载链接
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `光储定容结果_${id}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        ElMessage.success("下载成功");
+    } catch (error) {
+        console.error("下载失败:", error);
+        ElMessage.error(
+            "下载失败: " + (error.response?.data?.message || error.message)
+        );
+    }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -400,6 +543,21 @@ function calculateROI() {
                 font-size: 14px;
                 font-weight: normal;
                 color: #6c757d;
+            }
+            &.peak-increase {
+                color: #e74c3c;
+                font-weight: 600;
+            }
+            &.peak-decrease {
+                color: #27ae60;
+                font-weight: 600;
+            }
+            &.peak-stable {
+                color: #434444;
+                font-weight: 500;
+            }
+            i {
+                font-size: 18px;
             }
         }
     }

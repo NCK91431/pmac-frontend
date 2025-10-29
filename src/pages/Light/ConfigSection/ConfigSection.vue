@@ -1,12 +1,5 @@
 <template>
     <div class="upload-section">
-        <!-- 新增继续预测提示 -->
-        <div v-if="isContinuePredict" class="alert alert-info mb-4">
-            <i class="bi bi-info-circle me-2"></i>
-            您正在基于历史记录
-            <strong>{{ uploadDateRange }}</strong> 进行继续预测。 请上传包含
-            <strong>{{ requiredStartDate }}</strong> 之后的数据。
-        </div>
         <h2 class="h5 mb-4 text">
             <i class="fas fa-solar-panel me-2"></i>光储定容
         </h2>
@@ -77,33 +70,16 @@ const isFormValid = computed(
 );
 
 const submitForm = () => {
-    emit("submit", forecastStore.formData, forecastStore.uploadedFile);
+    emit(
+        "submit",
+        forecastStore.formData,
+        forecastStore.uploadedLoadFile,
+        forecastStore.uploadedPriceFile
+    );
 };
 
 function emitNewPrediction() {
     emit("new-predictiton");
-}
-
-/* ----------------------------------- 继续预测 ------------------------------------------------- */
-const isContinuePredict = computed(() => forecastStore.isContinue);
-const uploadDateRange = computed(() => {
-    if (!forecastStore.continueData?.upload_date_range_format_text) return "";
-    return forecastStore.continueData.upload_date_range_format_text;
-});
-const requiredStartDate = computed(() => {
-    if (!forecastStore.continueData?.end_date) return "";
-    const endDate = new Date(forecastStore.continueData.end_date);
-    const nextDay = addDays(endDate, 1);
-    return format(nextDay, "yyyy-MM-dd");
-});
-
-/* ----------------------------------- 继续预测 ------------------------------------------------- */
-function createNewPrediction() {
-    forecastStore.resetForm(); // 使用Store的统一重置方法
-    forecastStore.clearContinueData(); // 清除继续预测数据
-}
-function continuePrediction() {
-    forecastStore.setActiveTab("history");
 }
 </script>
 

@@ -19,9 +19,10 @@
         <div class="table-header">
             <div class="col-id">ID</div>
             <div class="col-date">创建时间</div>
+            <div class="col-location">项目地点</div>
+            <div class="col-price">需量电价 (元/kW·月)</div>
             <div class="col-cost">储能成本 (元/Wh)</div>
             <div class="col-cost">光伏成本 (元/W)</div>
-            <div class="col-date">上传日期</div>
             <div class="col-actions">操作</div>
         </div>
 
@@ -42,16 +43,19 @@
                 <div class="col-date">
                     {{ formatDate(record.created_at) }}
                 </div>
-                <div class="col-cost">
-                    {{ record.storage_cost }}
+                <div class="col-location">
+                    {{ record.location }}
+                </div>
+                <div class="col-price">
+                    {{ formatFloat(record.demand_price) }}
                 </div>
                 <div class="col-cost">
-                    {{ record.pv_cost }}
+                    {{ formatFloat(record.storage_cost) }}
+                </div>
+                <div class="col-cost">
+                    {{ formatFloat(record.pv_cost) }}
                 </div>
 
-                <div class="col-date">
-                    {{ record.upload_date_range[0] }}
-                </div>
                 <div class="col-actions">
                     <el-button
                         size="small"
@@ -126,6 +130,18 @@ const filteredRecords = computed(() => {
         );
     });
 });
+
+function formatFloat(num) {
+    if (!num || num == 0) return "-";
+    if (typeof num !== "number") {
+        if (typeof num == "string") {
+            num = Number(num);
+        } else {
+            return "-";
+        }
+    }
+    return num.toFixed(2);
+}
 
 // 日期格式化
 function formatDate(dateString) {
@@ -227,7 +243,7 @@ async function deleteRecord(record) {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     max-height: 700px;
     overflow-y: auto;
-
+    overflow-x: hidden;
     .text {
         color: #2c6fbb;
         font-weight: 600;
@@ -237,7 +253,7 @@ async function deleteRecord(record) {
 /* 表头样式 */
 .table-header {
     display: grid;
-    grid-template-columns: 70px 150px 100px 120px 130px;
+    grid-template-columns: 70px 150px 160px 150px 150px 150px auto;
     align-items: center;
     width: 100%;
     padding: 12px 15px;
@@ -259,12 +275,11 @@ async function deleteRecord(record) {
     border-top: none;
     border-radius: 0 0 4px 4px;
     max-height: 300px;
-    overflow-x: scroll;
 }
 
 .record-item {
     display: grid;
-    grid-template-columns: 70px 150px 100px 100px 100px 100px 120px 120px 130px;
+    grid-template-columns: 70px 150px 160px 150px 150px 150px auto;
     align-items: center;
     padding: 12px 15px;
     border-bottom: 1px solid #eee;
@@ -333,7 +348,7 @@ async function deleteRecord(record) {
 @media (max-width: 1600px) {
     .table-header,
     .record-item {
-        grid-template-columns: 70px 150px 100px 100px 100px 100px 120px 120px 130px;
+        grid-template-columns: 70px 150px 160px 150px 150px 150px auto;
         width: 1300px;
         overflow-x: auto;
     }

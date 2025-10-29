@@ -2,22 +2,174 @@
     <div class="row">
         <!-- 配置信息卡片 -->
         <div class="col-md-6">
-            <div class="roi-analysis">
-                <h5 class="mb-3">
-                    <i class="bi bi-calculator me-2"></i>参数设置
-                </h5>
-                <div class="analysis-content">
-                    <div class="roi-item">
-                        <div class="roi-label">储能成本</div>
-                        <div class="roi-value">{{ storage_cost }} (元/Wh)</div>
+            <div class="config-display">
+                <!-- 基础配置 -->
+                <div class="config-section">
+                    <div class="section-header">
+                        <i class="bi bi-gear me-2"></i>
+                        <h6 class="section-title mb-0">基础配置</h6>
                     </div>
-                    <div class="roi-item">
-                        <div class="roi-label">光伏成本</div>
-                        <div class="roi-value">{{ pv_cost }} (元/W)</div>
+                    <div class="config-content">
+                        <div class="config-item">
+                            <span class="config-label">数据颗粒度</span>
+                            <span class="config-value">{{
+                                time_granularity
+                            }}</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">项目地点</span>
+                            <span class="config-value">{{ location }}</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">需量电价</span>
+                            <span class="config-value">
+                                {{ demand_price }} 元/kW·月
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 光伏配置 -->
+                <div class="config-section">
+                    <div class="section-header">
+                        <i class="bi bi-sun me-2"></i>
+                        <h6 class="section-title mb-0">光伏配置</h6>
+                    </div>
+                    <div class="config-content">
+                        <div class="config-item">
+                            <span class="config-label">光伏成本</span>
+                            <span class="config-value"
+                                >{{ pv_cost }} 元/Wp</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">折旧年限</span>
+                            <span class="config-value"
+                                >{{ pv_depreciation_years }} 年</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">装机上限</span>
+                            <span class="config-value"
+                                >{{ pv_max_capacity || "无限制" }} kWp</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">是否上网</span>
+                            <span class="config-value">{{
+                                pv_sell_grid ? "是" : "否"
+                            }}</span>
+                        </div>
+                        <div v-if="pv_sell_grid" class="config-item">
+                            <span class="config-label">上网电价</span>
+                            <span class="config-value"
+                                >{{ sell_price }} 元/kWh</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 储能配置 -->
+                <div class="config-section">
+                    <div class="section-header">
+                        <i class="bi bi-battery-charging me-2"></i>
+                        <h6 class="section-title mb-0">储能配置</h6>
+                    </div>
+                    <div class="config-content">
+                        <div class="config-item">
+                            <span class="config-label">储能成本</span>
+                            <span class="config-value"
+                                >{{ storage_cost }} 元/Wh</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">折旧年限</span>
+                            <span class="config-value"
+                                >{{ storage_depreciation_years }} 年</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">最大循环次数</span>
+                            <span class="config-value"
+                                >{{ storage_max_cycles }} 次</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">装机上限</span>
+                            <span class="config-value"
+                                >{{
+                                    storage_max_capacity || "无限制"
+                                }}
+                                kWh</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">功率容量配比</span>
+                            <span class="config-value"
+                                >{{ storage_power_capacity_ratio }} C</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 融资配置 -->
+                <div class="config-section">
+                    <div class="section-header">
+                        <i class="bi bi-cash-coin me-2"></i>
+                        <h6 class="section-title mb-0">融资配置</h6>
+                    </div>
+                    <div class="config-content">
+                        <div class="config-item">
+                            <span class="config-label">是否有贷款</span>
+                            <span class="config-value">{{
+                                has_loan ? "是" : "无"
+                            }}</span>
+                        </div>
+                        <div v-if="has_loan" class="config-item">
+                            <span class="config-label">贷款比例</span>
+                            <span class="config-value"
+                                >{{ (loan_amount * 100).toFixed(0) }}%</span
+                            >
+                        </div>
+                        <div v-if="has_loan" class="config-item">
+                            <span class="config-label">贷款年利率</span>
+                            <span class="config-value"
+                                >{{
+                                    (loan_annual_rate * 100).toFixed(2)
+                                }}%</span
+                            >
+                        </div>
+                        <div v-if="has_loan" class="config-item">
+                            <span class="config-label">贷款年限</span>
+                            <span class="config-value">{{ loan_term }} 年</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他配置 -->
+                <div class="config-section">
+                    <div class="section-header">
+                        <i class="bi bi-sliders me-2"></i>
+                        <h6 class="section-title mb-0">其他配置</h6>
+                    </div>
+                    <div class="config-content">
+                        <div class="config-item">
+                            <span class="config-label">贴现率</span>
+                            <span class="config-value"
+                                >{{ (discount_rate * 100).toFixed(2) }}%</span
+                            >
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">税率</span>
+                            <span class="config-value"
+                                >{{ (tax_rate * 100).toFixed(2) }}%</span
+                            >
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <!-- 文件信息卡片 -->
         <div class="col-md-6">
             <div class="file-card">
@@ -26,15 +178,44 @@
                     <i class="bi bi-bar-chart-line"></i> 文件数据统计
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-label">数据天数</span>
-                        <span class="stat-value">{{ excel_days }} 天</span>
+                    <!-- 负荷文件信息 -->
+                    <div class="file-type-section">
+                        <div class="file-type-title">
+                            <i class="bi bi-graph-up me-1"></i>负荷文件
+                        </div>
+                        <div class="file-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">数据天数</span>
+                                <span class="stat-value"
+                                    >{{ excel_days }} 天</span
+                                >
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">时间粒度</span>
+                                <span class="stat-value">
+                                    {{ excel_timeGranularity }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">时间粒度</span>
-                        <span class="stat-value">{{
-                            excel_timeGranularity
-                        }}</span>
+
+                    <!-- 电价文件信息 -->
+                    <div class="file-type-section">
+                        <div class="file-type-title">
+                            <i class="bi bi-currency-dollar me-1"></i>电价文件
+                        </div>
+                        <div class="file-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">数据天数</span>
+                                <span class="stat-value">1 天</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">时间粒度</span>
+                                <span class="stat-value">
+                                    {{ excel_timeGranularity }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">上传日期</span>
@@ -76,28 +257,68 @@ import { computed } from "vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
+
 const props = defineProps({
     record: {
-        // 用户提交成功后从后端返回的完整数据
         type: Object,
         required: true,
     },
 });
 
-// 计算属性
-const storage_cost = computed(() => {
-    if (!props.record.formData || !props.record.formData.storage_cost) {
-        return "未知";
-    }
-    return props.record.formData.storage_cost;
-});
-const pv_cost = computed(() => {
-    if (!props.record.formData || !props.record.formData.pv_cost) {
-        return "未知";
-    }
-    return props.record.formData.pv_cost;
+// 配置数据计算属性
+const formData = computed(() => props.record.formData || {});
+
+// 基础配置
+const time_granularity = computed(() => {
+    const value = formData.value.time_granularity;
+    return value === 24 ? "1小时粒度 (24个数据点)" : `${value} 数据点`;
 });
 
+const location = computed(() => {
+    const loc = formData.value.location;
+    if (Array.isArray(loc)) {
+        return loc.join(" / ");
+    }
+    return loc || "未设置";
+});
+
+const demand_price = computed(() => formData.value.demand_price || 0);
+
+// 光伏配置
+const pv_cost = computed(() => formData.value.pv_cost || 0);
+const pv_depreciation_years = computed(
+    () => formData.value.pv_depreciation_years || 0
+);
+const pv_max_capacity = computed(() => formData.value.pv_max_capacity);
+const pv_sell_grid = computed(() => formData.value.pv_sell_grid == "true");
+const sell_price = computed(() => formData.value.sell_price || 0);
+
+// 储能配置
+const storage_cost = computed(() => formData.value.storage_cost || 0);
+const storage_depreciation_years = computed(
+    () => formData.value.storage_depreciation_years || 0
+);
+const storage_max_cycles = computed(
+    () => formData.value.storage_max_cycles || 0
+);
+const storage_max_capacity = computed(
+    () => formData.value.storage_max_capacity
+);
+const storage_power_capacity_ratio = computed(
+    () => formData.value.storage_power_capacity_ratio || 0
+);
+
+// 融资配置
+const has_loan = computed(() => formData.value.has_loan == "true");
+const loan_amount = computed(() => formData.value.loan_amount || 0);
+const loan_annual_rate = computed(() => formData.value.loan_annual_rate || 0);
+const loan_term = computed(() => formData.value.loan_term || 0);
+
+// 其他配置
+const discount_rate = computed(() => formData.value.discount_rate || 0);
+const tax_rate = computed(() => formData.value.tax_rate || 0);
+
+// 文件信息计算属性（保持不变）
 const excel_days = computed(() => {
     if (
         !props.record.excelInfo ||
@@ -108,6 +329,7 @@ const excel_days = computed(() => {
     }
     return props.record.excelInfo.stats.days;
 });
+
 const excel_timeGranularity = computed(() => {
     if (
         !props.record.excelInfo ||
@@ -118,6 +340,7 @@ const excel_timeGranularity = computed(() => {
     }
     return props.record.excelInfo.stats.timeGranularity;
 });
+
 const excel_status = computed(() => {
     if (
         !props.record.excelInfo ||
@@ -128,12 +351,14 @@ const excel_status = computed(() => {
     }
     return props.record.excelInfo.stats.status;
 });
+
 const excel_fileName = computed(() => {
     if (!props.record.excelInfo || !props.record.excelInfo.name) {
         return "未命名文件";
     }
     return props.record.excelInfo.name;
 });
+
 const excel_size = computed(() => {
     if (!props.record.excelInfo || !props.record.excelInfo.size) {
         return 0;
@@ -151,6 +376,7 @@ const excel_date_range = computed(() => {
     }
     return props.record.excelInfo.dateRange[0];
 });
+
 const excel_uploadTime = computed(() => {
     if (!props.record.excelInfo || !props.record.excelInfo.uploadTime) {
         return new Date();
@@ -170,17 +396,15 @@ async function downloadUploadExcel() {
 
     try {
         ElMessage.success(`正在下载您上传的文件${fileName}`);
-        // 发送下载请求
         const response = await request.get(
             `/api/light_history/${recordId}/download`,
             {
                 responseType: "blob",
             }
         );
-        const blob = new Blob([response.data]); // 创建Blob对象并保存文件
+        const blob = new Blob([response.data]);
         saveAs(blob, fileName);
     } catch (error) {
-        // 处理错误响应（如后端返回JSON错误信息）
         if (error.response?.data?.type?.includes("application/json")) {
             const reader = new FileReader();
             reader.onload = () => {
@@ -200,120 +424,79 @@ async function downloadUploadExcel() {
 </script>
 
 <style lang="scss" scoped>
-/* 确保两列等高 */
-.row {
-    display: flex;
-    flex-wrap: nowrap;
-
-    .preview-card,
-    .file-card {
-        height: 100%;
-    }
-}
-
-/* 文件预览卡片 */
-.preview-card {
-    background: white;
+/* 配置显示区域样式 */
+.config-display {
+    background: #f8f9fa;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 18px;
-    flex: 1;
-    min-width: 280px;
+    padding: 20px;
+    height: 100%;
+    border-left: 4px solid #20c997;
+    overflow-y: auto;
+    max-height: 500px;
 
-    .preview-list {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    .preview-item {
-        display: flex;
-        padding: 10px 0;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        align-items: flex-start;
+    .config-section {
+        margin-bottom: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
 
         &:last-child {
-            border-bottom: none;
+            margin-bottom: 0;
         }
 
-        .preview-label {
-            width: 90px;
-            font-weight: 500;
-            color: #6c757d;
+        .section-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 12px 16px;
+            border-bottom: 1px solid #dee2e6;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.9rem;
+
+            .section-title {
+                margin: 0;
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: #495057;
+            }
+
+            i {
+                color: #2c6fbb;
+                font-size: 1rem;
+            }
         }
 
-        .preview-value {
-            flex: 1;
-            color: #2c3e50;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-        }
-    }
+        .config-content {
+            padding: 16px;
 
-    .status-badge {
-        font-weight: 500;
-        padding: 4px 12px;
-        border-radius: 18px;
-        font-size: 0.85rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
+            .config-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #f8f9fa;
 
-        i {
-            font-size: 0.9rem;
-            /* 缩小图标 */
-        }
+                &:last-child {
+                    border-bottom: none;
+                }
 
-        &.customer-type {
-            background-color: #e3f2fd;
-            color: #1a73e8;
-        }
+                .config-label {
+                    font-size: 0.85rem;
+                    color: #6c757d;
+                    font-weight: 500;
+                }
 
-        &.pv-yes {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        &.pv-no {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-
-        &.pv-unknown {
-            background-color: #fff8e1;
-            color: #f57f17;
-        }
-
-        &.forecast-range {
-            background-color: #f3e5f5;
-            color: #9c27b0;
-        }
-    }
-
-    .location-value {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    @media (max-width: 768px) {
-        .preview-item {
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .preview-label {
-            width: 100%;
+                .config-value {
+                    font-size: 0.9rem;
+                    color: #495057;
+                    font-weight: 600;
+                    text-align: right;
+                }
+            }
         }
     }
 }
 
+/* 文件卡片样式保持不变 */
 .file-card {
     background: white;
     border-radius: 10px;
@@ -338,10 +521,49 @@ async function downloadUploadExcel() {
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
     }
 
+    .file-type-section {
+        background-color: #f0f8ff;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #e1f0ff;
+    }
+
+    .file-type-title {
+        font-weight: 600;
+        color: #2c6fbb;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+
+    .file-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        .stat-value {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+    }
     .stat-item {
         display: flex;
         flex-direction: column;
@@ -370,7 +592,7 @@ async function downloadUploadExcel() {
     }
 }
 
-/* 文件信息卡片 */
+/* 文件信息卡片样式保持不变 */
 .file-info-card {
     background: white;
     border-radius: 10px;
@@ -383,7 +605,6 @@ async function downloadUploadExcel() {
     border: 1px solid #eaeaea;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 
-    /* 添加下载指示器 */
     .download-indicator {
         position: absolute;
         top: 8px;
@@ -436,7 +657,6 @@ async function downloadUploadExcel() {
         }
     }
 
-    /* 悬停效果优化 */
     &:hover {
         transform: translateY(-3px);
         box-shadow: 0 6px 16px rgba(52, 152, 219, 0.2);
@@ -458,47 +678,14 @@ async function downloadUploadExcel() {
         flex-wrap: wrap;
     }
 
-    .preview-card,
+    .config-display,
     .file-card {
         height: auto;
         margin-bottom: 15px;
     }
-}
-.roi-analysis {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 20px;
-    border-left: 4px solid #20c997;
-    height: 100%;
 
-    h5 {
-        color: #20c997;
-        font-weight: 600;
-    }
-
-    .analysis-content {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-    }
-
-    .roi-item {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-        .roi-label {
-            font-size: 14px;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-
-        .roi-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #495057;
-        }
+    .config-display {
+        max-height: none;
     }
 }
 </style>
