@@ -17,8 +17,29 @@
                     <div class="pmac-subtitle">智慧洞见 毫厘尽显</div>
                 </div>
             </div>
+
+            <!-- 移动端汉堡菜单 -->
+            <div
+                class="mobile-menu-toggle"
+                @click="toggleMobileMenu"
+                v-if="isMobile"
+            >
+                <i class="fas fa-bars"></i>
+            </div>
+
+            <!-- 移动端菜单遮罩 -->
+            <div
+                class="mobile-menu-overlay"
+                v-if="isMobile && mobileMenuOpen"
+                @click="closeMobileMenu"
+            ></div>
+
             <el-menu
                 class="menus"
+                :class="{
+                    'mobile-menu': isMobile,
+                    'menu-open': mobileMenuOpen,
+                }"
                 mode="horizontal"
                 background-color="transparent"
                 text-color="#fff"
@@ -27,14 +48,26 @@
                 default-active="home"
                 router
             >
-                <el-menu-item index="home" route="/home">首页</el-menu-item>
-                <el-menu-item index="describe" route="/describe"
+                <el-menu-item
+                    index="home"
+                    route="/home"
+                    @click="closeMobileMenu"
+                    >首页</el-menu-item
+                >
+                <el-menu-item
+                    index="describe"
+                    route="/describe"
+                    @click="closeMobileMenu"
                     >功能介绍</el-menu-item
                 >
-                <el-menu-item index="about_us" route="/about_us"
+                <el-menu-item
+                    index="about_us"
+                    route="/about_us"
+                    @click="closeMobileMenu"
                     >关于我们</el-menu-item
                 >
             </el-menu>
+
             <!-- 电力交易专家 -->
             <div class="chatbot" @click="openChatbotWindow" v-if="false">
                 <div class="chatbot-icon">
@@ -46,8 +79,9 @@
                 </div>
                 <span class="chatbot-text">电力交易专家</span>
             </div>
+
             <!-- 用户信息区域 -->
-            <div class="user-info">
+            <div class="user-info" :class="{ 'mobile-user-info': isMobile }">
                 <!-- 有用户 -->
                 <template v-if="isHaveUser">
                     <el-popover
@@ -201,6 +235,31 @@ const avatarURL = ref(
     "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
 );
 
+// 添加移动端状态和菜单控制
+const isMobile = ref(false);
+const mobileMenuOpen = ref(false);
+
+const checkIsMobile = () => {
+    isMobile.value = window.innerWidth <= 768;
+};
+
+const toggleMobileMenu = () => {
+    mobileMenuOpen.value = !mobileMenuOpen.value;
+    // 防止背景滚动
+    if (mobileMenuOpen.value) {
+        document.body.classList.add("menu-open");
+    } else {
+        document.body.classList.remove("menu-open");
+    }
+};
+
+const closeMobileMenu = () => {
+    if (isMobile.value) {
+        mobileMenuOpen.value = false;
+        document.body.classList.remove("menu-open");
+    }
+};
+
 function onLogout() {
     ElMessageBox.confirm("您确定要登出此账号吗?", "Warning", {
         title: "操作提示",
@@ -227,8 +286,10 @@ function onLogout() {
 }
 
 function gotoPage(page) {
+    closeMobileMenu();
     router.push({ name: page });
 }
+
 function openChatbotWindow() {
     // 在新标签页打开外部链接
     window.open("http://125.88.36.153/chat/xKNQVUj83HlEWtAh", "_blank");
@@ -246,13 +307,17 @@ const updateHeaderHeight = () => {
 };
 // 初始化时获取一次高度
 onMounted(() => {
+    checkIsMobile();
     updateHeaderHeight();
+    window.addEventListener("resize", checkIsMobile);
     window.addEventListener("resize", updateHeaderHeight); // 监听窗口大小变化，动态更新高度（适配响应式布局）
 });
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
+    window.removeEventListener("resize", checkIsMobile);
     window.removeEventListener("resize", updateHeaderHeight);
+    document.body.classList.remove("menu-open");
 });
 </script>
 
@@ -262,34 +327,60 @@ onUnmounted(() => {
     color: white;
     padding: 1.5rem 0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* 添加固定定位 */
-    position: fixed; /* 固定定位，相对于视口 */
-    top: 0; /* 距离顶部0 */
-    left: 0; /* 距离左侧0 */
-    right: 0; /* 距离右侧0，确保宽度占满屏幕 */
-    z-index: 1000; /* 设置层级，避免被其他元素覆盖（值需大于页面其他元素的z-index） */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+
+    @media (max-width: 768px) {
+        padding: 1rem 0;
+    }
 
     .header-content {
         margin: 0 auto;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: relative;
+
+        @media (max-width: 768px) {
+            flex-wrap: wrap;
+        }
 
         .logo-section {
             margin-left: 10%;
             display: flex;
             align-items: center;
+
+            @media (max-width: 768px) {
+                margin-left: 5%;
+                flex: 1;
+            }
+
             .platform-title {
                 display: flex;
                 gap: 8px;
                 align-items: flex-end;
+
+                @media (max-width: 768px) {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 2px;
+                }
+
                 .pmac-title {
                     font-size: 1.8rem;
                     font-weight: 600;
                     margin: 0;
                     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3),
                         0 0 10px rgba(255, 255, 255, 0.2);
+
+                    @media (max-width: 768px) {
+                        font-size: 1.4rem;
+                    }
                 }
+
                 .pmac-subtitle {
                     font-size: 1.3rem;
                     opacity: 0.85;
@@ -298,50 +389,185 @@ onUnmounted(() => {
                     background-clip: text;
                     color: transparent;
                     font-weight: 500;
+
+                    @media (max-width: 768px) {
+                        font-size: 1rem;
+                    }
                 }
             }
+
             img.company-logo {
                 width: 70px;
                 height: auto;
                 margin-right: 15px;
+
+                @media (max-width: 768px) {
+                    width: 50px;
+                    margin-right: 10px;
+                }
             }
+
             img.platform-logo {
                 width: 40px;
                 height: auto;
+
+                @media (max-width: 768px) {
+                    width: 30px;
+                }
             }
         }
-    }
-    .menus {
-        justify-content: flex-end;
-        margin-left: auto;
-    }
-    .el-menu {
-        border: none;
-    }
 
-    .el-menu--horizontal {
-        .el-menu-item {
-            height: 50px;
-            line-height: 50px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin: 0 10px;
-            border-radius: 4px;
-            transition: all 0.3s;
+        /* 移动端汉堡菜单 */
+        .mobile-menu-toggle {
+            display: none;
 
-            &:hover {
-                background-color: rgba(255, 255, 255, 0.15) !important;
+            @media (max-width: 768px) {
+                display: block;
+                font-size: 1.5rem;
+                padding: 8px 12px;
+                margin-right: 15px;
+                cursor: pointer;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+                transition: background 0.3s ease;
+                z-index: 1002;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
             }
+        }
 
-            &.is-active {
-                background-color: rgba(255, 208, 75, 0.2) !important;
+        /* 移动端菜单遮罩 */
+        .mobile-menu-overlay {
+            display: none;
+
+            @media (max-width: 768px) {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+        }
+
+        .menus {
+            justify-content: flex-end;
+            margin-left: auto;
+
+            @media (max-width: 768px) {
+                &.mobile-menu {
+                    position: fixed;
+                    top: 0;
+                    right: -300px;
+                    width: 280px;
+                    height: 100vh;
+                    background: linear-gradient(135deg, #2c6fbb, #34a4dc);
+                    flex-direction: column;
+                    display: flex;
+                    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
+                    border-left: 1px solid rgba(255, 255, 255, 0.1);
+                    transition: right 0.3s ease;
+                    z-index: 1000;
+                    padding-top: 60px;
+
+                    &.menu-open {
+                        right: 0;
+                    }
+
+                    .el-menu-item {
+                        width: 100%;
+                        margin: 0;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                        justify-content: flex-start;
+                        height: 60px;
+                        text-align: left;
+                        padding-left: 30px;
+                        font-size: 1.1rem;
+                        border-radius: 0;
+
+                        &:hover {
+                            background-color: rgba(
+                                255,
+                                255,
+                                255,
+                                0.15
+                            ) !important;
+                        }
+
+                        &.is-active {
+                            background-color: rgba(
+                                255,
+                                208,
+                                75,
+                                0.2
+                            ) !important;
+                            border-left: 4px solid #ffd04b;
+                        }
+                    }
+                }
+            }
+        }
+
+        .el-menu {
+            border: none;
+
+            @media (max-width: 768px) {
+                width: 100%;
+            }
+        }
+
+        .el-menu--horizontal {
+            .el-menu-item {
+                height: 50px;
+                line-height: 50px;
+                font-size: 1.1rem;
+                font-weight: 500;
+                margin: 0 10px;
+                border-radius: 4px;
+                transition: all 0.3s;
+
+                @media (max-width: 768px) {
+                    margin: 0;
+                    font-size: 1rem;
+                }
+
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.15) !important;
+                }
+
+                &.is-active {
+                    background-color: rgba(255, 208, 75, 0.2) !important;
+                }
             }
         }
     }
 }
+
 .user-info {
     margin-left: 20px;
     margin-right: 3%;
+
+    @media (max-width: 768px) {
+        margin-left: 10px;
+        margin-right: 15px;
+
+        &.mobile-user-info {
+            .user-company {
+                .company-name {
+                    display: none;
+                }
+
+                .el-icon-caret-bottom {
+                    display: none;
+                }
+            }
+        }
+    }
+
     .user-company {
         display: flex;
         align-items: center;
@@ -351,6 +577,10 @@ onUnmounted(() => {
         cursor: pointer;
         transition: all 0.3s ease;
 
+        @media (max-width: 768px) {
+            padding: 6px 10px;
+        }
+
         &:hover {
             background: rgba(255, 255, 255, 0.15);
         }
@@ -359,6 +589,11 @@ onUnmounted(() => {
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: #fff;
             font-size: 18px;
+
+            @media (max-width: 768px) {
+                width: 32px !important;
+                height: 32px !important;
+            }
         }
 
         .company-name {
@@ -369,6 +604,11 @@ onUnmounted(() => {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+
+            @media (max-width: 768px) {
+                max-width: 80px;
+                font-size: 0.9rem;
+            }
         }
 
         .el-icon-caret-bottom {
@@ -471,30 +711,7 @@ onUnmounted(() => {
         }
     }
 }
-@media (max-width: 768px) {
-    .logo-section {
-        h1 {
-            font-size: 20px;
-        }
 
-        p {
-            font-size: 12px;
-        }
-    }
-
-    .el-menu--horizontal {
-        overflow-x: auto;
-
-        &::-webkit-scrollbar {
-            display: none;
-        }
-
-        .el-menu-item {
-            height: 50px;
-            line-height: 50px;
-        }
-    }
-}
 .chatbot {
     display: flex;
     align-items: center;
@@ -507,6 +724,10 @@ onUnmounted(() => {
     border: 1px solid rgba(255, 255, 255, 0.15);
     position: relative;
     overflow: hidden;
+
+    @media (max-width: 768px) {
+        display: none; /* 移动端隐藏电力交易专家 */
+    }
 
     &:hover {
         background: rgba(255, 255, 255, 0.18);
@@ -596,6 +817,39 @@ onUnmounted(() => {
     100% {
         transform: scale(0.8);
         opacity: 0.7;
+    }
+}
+
+/* 移动端覆盖层，防止菜单打开时背景滚动 */
+@media (max-width: 768px) {
+    body.menu-open {
+        overflow: hidden;
+    }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .logo-section {
+        h1 {
+            font-size: 20px;
+        }
+
+        p {
+            font-size: 12px;
+        }
+    }
+
+    .el-menu--horizontal {
+        overflow-x: auto;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        .el-menu-item {
+            height: 50px;
+            line-height: 50px;
+        }
     }
 }
 </style>

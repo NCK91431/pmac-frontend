@@ -1,6 +1,6 @@
 <template>
-    <!-- 轮播图区域 -->
-    <section class="banner-section">
+    <!-- 轮播图区域- 手机端隐藏 -->
+    <section class="banner-section" v-if="!isMobile">
         <swiper
             :modules="modules"
             :pagination="{ clickable: true }"
@@ -108,7 +108,7 @@
                 </div>
                 <h3>光储定容</h3>
                 <p>光伏储能系统容量优化设计与经济性分析</p>
-                <el-button type="warning" @click="showComingSoon"
+                <el-button type="warning" @click="gotoPage('light')"
                     >进入页面</el-button
                 >
             </div>
@@ -140,7 +140,7 @@
     </section>
 
     <!-- 功能介绍宣传 -->
-    <div class="intro-containner">
+    <div class="intro-containner" v-if="!isMobile">
         <Intro />
     </div>
 
@@ -174,7 +174,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref, onMounted, inject, computed } from "vue";
+import { ref, onMounted, onUnmounted, inject, computed } from "vue";
 import { ElDialog } from "element-plus";
 // 导入Swiper相关组件和样式
 import { Swiper, SwiperSlide } from "swiper/vue";
@@ -189,12 +189,21 @@ const ElecStore = useElecStore();
 
 const router = useRouter();
 
+// 添加移动端检测
+const isMobile = ref(false);
+const checkIsMobile = () => {
+    isMobile.value = window.innerWidth <= 768;
+};
+
 /* --------------------------------- 广告轮播图 ------------------------------ */
 const modules = [Autoplay, Pagination];
 // 获取header高度
 const headerHeight = inject("headerHeight");
 // 计算轮播图高度
 const bannerHeight = computed(() => {
+    if (isMobile.value) {
+        return "0px"; // 移动端隐藏轮播图
+    }
     if (headerHeight && headerHeight.value) {
         return `calc((100vh - ${headerHeight.value}px) / 2)`;
     }
@@ -203,10 +212,17 @@ const bannerHeight = computed(() => {
 
 // 页面加载完成后更新轮播图高度
 onMounted(() => {
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
     // 确保Swiper正确初始化
     setTimeout(() => {
         window.dispatchEvent(new Event("resize"));
     }, 100);
+});
+
+// 组件卸载时移除事件监听
+onUnmounted(() => {
+    window.removeEventListener("resize", checkIsMobile);
 });
 
 /* --------------------------------- 导航到各个功能页面 ------------------------------ */
@@ -256,6 +272,10 @@ const showComingSoon = () => {
     position: relative;
     height: v-bind(bannerHeight);
     overflow: hidden;
+
+    @media (max-width: 768px) {
+        display: none; /* 移动端完全隐藏轮播图 */
+    }
 
     .banner-swiper {
         width: 100%;
@@ -440,15 +460,30 @@ const showComingSoon = () => {
 .top-section {
     padding: 40px 0;
 
+    @media (max-width: 768px) {
+        padding: 20px 0;
+        margin-top: 0; /* 移除轮播图后的顶部间距 */
+    }
+
     .section-title {
         text-align: center;
         margin-bottom: 40px;
+
+        @media (max-width: 768px) {
+            margin-bottom: 25px;
+            padding: 0 15px;
+        }
 
         h2 {
             color: #1d3b6c;
             font-size: 2.2rem;
             font-weight: 700;
             margin-bottom: 15px;
+
+            @media (max-width: 768px) {
+                font-size: 1.6rem;
+                margin-bottom: 10px;
+            }
         }
 
         p {
@@ -456,6 +491,11 @@ const showComingSoon = () => {
             font-size: 1.1rem;
             max-width: 600px;
             margin: 0 auto;
+
+            @media (max-width: 768px) {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
         }
     }
     .nav-cards {
@@ -465,6 +505,12 @@ const showComingSoon = () => {
         gap: 25px;
         max-width: 1400px;
         margin: 0 auto;
+
+        @media (max-width: 768px) {
+            gap: 15px;
+            padding: 0 10px;
+        }
+
         .nav-card {
             flex: 1;
             min-width: 220px;

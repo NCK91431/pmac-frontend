@@ -90,12 +90,14 @@
 
                 <div class="footer-column">
                     <h3>扫码关注</h3>
-                    <div class="contact-info">
+                    <div class="contact-info qr-code-section">
                         <el-image
                             style="width: 100px; height: 100px"
                             :src="QRcode"
                             :fit="fit"
+                            class="qr-code-image"
                         />
+                        <p class="qr-code-desc">扫码关注公众号</p>
                     </div>
                 </div>
             </div>
@@ -152,20 +154,46 @@ onUnmounted(() => {
     background: #2c3e50;
     color: #e2e8f0;
     padding: 35px 0 15px;
+
+    @media (max-width: 768px) {
+        padding: 25px 0 15px;
+    }
 }
 
 .footer-flexbox {
     display: flex;
     justify-content: space-around;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 25px;
+        padding: 0 15px;
+    }
 }
 
 .footer-column {
+    @media (max-width: 768px) {
+        max-width: 100%;
+        text-align: center;
+
+        &:not(:last-child) {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+        }
+    }
+
     h3 {
         font-size: 16px;
         margin-bottom: 1.5rem;
         color: white;
         position: relative;
         padding-bottom: 0.8rem;
+
+        @media (max-width: 768px) {
+            margin-bottom: 1rem;
+            font-size: 15px;
+            padding-bottom: 0.5rem;
+        }
 
         &::after {
             content: "";
@@ -176,6 +204,11 @@ onUnmounted(() => {
             height: 3px;
             background: #3b82f6;
             border-radius: 3px;
+
+            @media (max-width: 768px) {
+                left: 50%;
+                transform: translateX(-50%);
+            }
         }
     }
 }
@@ -184,15 +217,42 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 5px;
+
+    @media (max-width: 768px) {
+        gap: 8px;
+    }
+
+    &.qr-code-section {
+        align-items: center;
+        gap: 10px;
+    }
 }
 
 .contact-item {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+        gap: 0.8rem;
+        justify-content: center;
+        text-align: left;
+    }
+
     strong,
     p {
         font-size: 14px;
+        margin: 0;
+        line-height: 1.4;
+
+        @media (max-width: 768px) {
+            font-size: 13px;
+        }
+    }
+
+    p {
+        word-break: break-all;
     }
 }
 
@@ -206,36 +266,36 @@ onUnmounted(() => {
     justify-content: center;
     flex-shrink: 0;
 
+    @media (max-width: 768px) {
+        width: 35px;
+        height: 35px;
+    }
+
     .el-icon {
         color: #3b82f6;
         font-size: 1.2rem;
+
+        @media (max-width: 768px) {
+            font-size: 1rem;
+        }
     }
 }
 
-.subscribe-form {
-    display: flex;
-    margin-top: 1.5rem;
-
-    input {
-        flex: 1;
-        padding: 0.8rem 1rem;
-        border: none;
-        border-radius: 6px 0 0 6px;
-        font-size: 1rem;
+.qr-code-image {
+    @media (max-width: 768px) {
+        width: 80px !important;
+        height: 80px !important;
     }
+}
 
-    button {
-        background: #3b82f6;
-        color: white;
-        border: none;
-        padding: 0 1.5rem;
-        border-radius: 0 6px 6px 0;
-        cursor: pointer;
-        transition: background 0.3s;
+.qr-code-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 5px;
+    text-align: center;
 
-        &:hover {
-            background: #2563eb;
-        }
+    @media (max-width: 768px) {
+        font-size: 11px;
     }
 }
 
@@ -245,17 +305,98 @@ onUnmounted(() => {
     color: #94a3b8;
     font-size: 0.9rem;
     margin-top: 15px;
+    padding-top: 15px;
+
+    @media (max-width: 768px) {
+        font-size: 0.8rem;
+        padding: 15px 15px 0;
+        line-height: 1.4;
+    }
 }
 
-// @media (max-width: 768px) {
-//   .footer-flexbox {
-//     gap: 2rem;
-//   }
+/* 链接样式移动端适配 */
+:deep(.el-link) {
+    @media (max-width: 768px) {
+        font-size: 13px;
+    }
+}
 
-//   .footer-column {
-//     h3 {
-//       font-size: 1.3rem;
-//     }
-//   }
-// }
+/* 地址文本换行优化 */
+.contact-item:has(p:contains("广东省珠海市高新区科技创新海岸创新8路88号")) p {
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+/* 平板端适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .footer-flexbox {
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .footer-column {
+        flex: 0 0 calc(50% - 20px);
+        max-width: calc(50% - 20px);
+    }
+}
+
+/* 超小屏幕手机适配 */
+@media (max-width: 480px) {
+    .footer {
+        padding: 20px 0 10px;
+    }
+
+    .footer-flexbox {
+        gap: 20px;
+        padding: 0 10px;
+    }
+
+    .footer-column {
+        &:not(:last-child) {
+            padding-bottom: 15px;
+        }
+    }
+
+    .contact-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    .contact-icon {
+        margin-bottom: 5px;
+    }
+
+    .copyright {
+        margin-top: 10px;
+        padding-top: 10px;
+    }
+}
+
+/* 链接悬停效果增强 */
+:deep(.el-link) {
+    transition: color 0.3s ease;
+
+    &:hover {
+        color: #60a5fa !important;
+    }
+}
+
+/* 打印样式优化 */
+@media print {
+    .footer {
+        background: #f8f9fa !important;
+        color: #000 !important;
+        border-top: 2px solid #dee2e6;
+    }
+
+    .contact-icon {
+        background: #e9ecef !important;
+
+        .el-icon {
+            color: #6c757d !important;
+        }
+    }
+}
 </style>
