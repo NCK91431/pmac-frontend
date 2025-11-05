@@ -49,6 +49,7 @@
                         </div>
                         <small class="text-muted">
                             第一列为日期列，第二列开始为0:00-23:00的24小时负荷数据
+                            <br />负荷单位为兆瓦（MW）
                         </small>
                     </div>
                 </div>

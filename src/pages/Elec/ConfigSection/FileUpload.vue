@@ -144,6 +144,7 @@ async function handleFileChange(uploadFile) {
 
             if (response.data.success) {
                 excelInfo.value = response.data.excelInfo;
+                forecastStore.setExcelInfo(response.data.excelInfo);
             }
         } catch (error) {
             if (
@@ -254,7 +255,7 @@ function formatFileSize(bytes) {
 }
 
 .file-tip {
-    margin-top: 25px;
+    margin-top: 16px;
     background-color: #f0f7ff;
     border-radius: 8px;
     padding: 15px;

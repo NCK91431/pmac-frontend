@@ -92,6 +92,11 @@ const routeToBreadcrumb = {
         icon: "bi bi-bookmark-check",
         hasBackBtn: true,
     },
+    light_example: {
+        title: "光储定容-案例展示",
+        icon: "bi bi-bookmark-check",
+        hasBackBtn: true,
+    },
     login: { title: "登录", icon: "bi bi-box-arrow-in-right" },
     modifyuser: { title: "用户设置", icon: "bi bi-person-gear" },
     product_intro: {

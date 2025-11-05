@@ -60,12 +60,25 @@
                             />
                         </div>
                     </div>
-                    <div class="card-body">
+                    <!-- 有数据的状态 -->
+                    <div class="card-body" v-if="compareData.success">
                         <CompareChart
                             :actual-data="compareData.sourseData"
                             :prediction-data="compareData.predictionData"
                             :capacity="compare_baseinfo.pv_capacity"
+                            :unit="compare_baseinfo.unit"
                         />
+                    </div>
+                    <!-- 数据为空状态 -->
+                    <div
+                        class="card-body text-center py-5"
+                        v-if="!compareData.success"
+                    >
+                        <el-empty
+                            :image-size="200"
+                            description="所选日期无实际发电功率数据，请选择其他日期进行回测"
+                        >
+                        </el-empty>
                     </div>
                 </div>
 
@@ -290,7 +303,11 @@ const fetchCompareData = async (selectDate) => {
             }
         );
         if (response.data.success) {
-            forecastStore.setCompareData(response.data.result);
+            if (response.data.result) {
+                forecastStore.setCompareData(response.data.result);
+            } else {
+                forecastStore.setCompareData(null);
+            }
         } else {
             error.value = response.data.message || "获取回测数据失败";
             ElMessage.error(error.value);

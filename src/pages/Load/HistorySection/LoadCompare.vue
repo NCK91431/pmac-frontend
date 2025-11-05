@@ -89,6 +89,7 @@
                             :actual-data="compareData.sourseData"
                             :prediction-data="compareData.predictionData"
                             :similarDayLoad="compareData.similarDayLoad"
+                            :unit="forecastStore.compare_baseinfo.unit"
                         />
                     </div>
                 </div>

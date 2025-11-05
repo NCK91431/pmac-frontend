@@ -15,7 +15,7 @@
             <div class="explanation-item">
                 <i class="bi bi-2-circle-fill"></i>
                 <span class="item-text ms-2">
-                    180天内新增的客户，采用
+                    90天内新增的客户，采用
                     <el-text class="switch-text" @click="checkout">
                         分项负荷预测
                         <el-icon> <TopRight /> </el-icon>

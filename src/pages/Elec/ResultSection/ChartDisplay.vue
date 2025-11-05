@@ -5,6 +5,7 @@
     <ResultTable
         :predictionData="props.predictionData"
         :headerData="generateTimeSlots()"
+        :unit="props.unit"
     />
 </template>
 
@@ -20,6 +21,7 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    unit: String,
 });
 
 const chartEl = ref(null);
@@ -72,7 +74,9 @@ const getOption = () => {
                  <div style="display: flex; align-items: center; margin: 5px 0;">
                     <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #91CC75; margin-right: 8px;"></span>
                     <span style="margin-right: 15px;">${time}:</span>
-                    <span style="font-weight: bold; color: #91CC75;">${value} kW</span>
+                    <span style="font-weight: bold; color: #91CC75;">${value} ${
+                    props.unit == "MWp" ? "MW" : "kW"
+                }</span>
                 </div>
                 `;
             },
@@ -108,7 +112,7 @@ const getOption = () => {
         },
         yAxis: {
             type: "value",
-            name: "预测值 (kW)",
+            name: `预测值 (${props.unit == "MWp" ? "MW" : "kW"})`,
             nameLocation: "middle",
             nameGap: 40,
             nameTextStyle: {

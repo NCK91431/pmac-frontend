@@ -232,7 +232,7 @@ const fetchRecordDetail = async () => {
                 id: -1,
                 mode: "T",
                 location: ["广东省"],
-                forecast_range: "4days",
+                forecast_range: "D-4",
                 created_at: "2025-07-01",
             },
         };

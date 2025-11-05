@@ -90,12 +90,15 @@ function switchTab(tabName) {
 /* ---------------- 执行模型预测过程中 -----------------*/
 const processingTasks = ref([]); //任务队列
 
-async function handleSubmit(formData, fileData) {
-    console.log("form_data->", formData);
+async function handleSubmit() {
+    const formData = forecastStore.formData;
+    const fileData = forecastStore.uploadedFile;
+
     forecastStore.setStageOne(); // 设置为处理中状态 stage = 1
     const post_data = new FormData();
     post_data.append("pv_capacity", formData.pv_capacity);
     post_data.append("location", JSON.stringify(formData.location));
+    post_data.append("unit", formData.unit);
     // 判断是继续预测（上传日期）还是新建预测（上传文件）
     if (forecastStore.isContinue) {
         post_data.append("userPickDate", forecastStore.userPickDate); // 继续预测：上传选中的日期
@@ -131,6 +134,7 @@ async function handleSubmit(formData, fileData) {
         // 处理响应
     } catch (error) {
         forecastStore.setStageZero(); // 出错时重置状态 stage = 0
+        forecastStore.removeFile();
         if (error.response?.status === 400 || error.response?.status === 500) {
             console.log(error.response);
             ElMessageBox.alert(

@@ -6,6 +6,7 @@
         :loads="props.loads"
         :headerData="x_data"
         :similarDayLoad="props.similarDayLoad"
+        :unit="unit"
     />
 </template>
 
@@ -21,6 +22,7 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    unit: String,
 });
 
 const chartEl = ref(null);
@@ -36,7 +38,34 @@ const initChart = () => {
     const option = {
         tooltip: {
             trigger: "axis",
-            formatter: "{b}: {c} MW",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            borderColor: "#e4e7ed",
+            borderWidth: 1,
+            textStyle: {
+                color: "#606266",
+                fontSize: 12,
+            },
+            formatter: function (params) {
+                let result = `<div style="font-weight: 600; margin-bottom: 8px; color: #303133;">${params[0].axisValue}</div>`;
+                params.forEach((item) => {
+                    const color = item.color;
+                    const value =
+                        item.value !== null && item.value !== undefined
+                            ? `${item.value} ${props.unit}`
+                            : "暂无数据";
+
+                    result += `
+                        <div style="display: flex; align-items: center; margin: 6px 0;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${color}; margin-right: 8px;"></span>
+                            <span style="flex: 1; color: #606266;">${item.seriesName}:</span>
+                            <span style="font-weight: 600; color: #303133; margin-left: 8px;">${value}</span>
+                        </div>
+                    `;
+                });
+                return result;
+            },
+            extraCssText:
+                "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border-radius: 6px; padding: 12px;",
         },
         legend: {
             data: ["预测负荷", "同类型日负荷"],
@@ -63,7 +92,7 @@ const initChart = () => {
         },
         yAxis: {
             type: "value",
-            name: "负荷值 (MW)",
+            name: `负荷值 (${props.unit})`,
             nameLocation: "middle",
             nameGap: 40,
             axisLine: {

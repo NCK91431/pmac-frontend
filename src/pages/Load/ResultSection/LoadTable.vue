@@ -12,7 +12,7 @@
                 :key="time"
                 :prop="time"
                 :label="time"
-                width="70"
+                width="72"
             />
         </el-table>
     </div>
@@ -26,12 +26,13 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    unit: String,
 });
 
 function getTableData() {
     // 预测负荷
     let row = {
-        title: "负荷值",
+        title: `负荷值 (${props.unit})`,
     };
     const data = props.loads;
     props.headerData.forEach((time, idx) => {

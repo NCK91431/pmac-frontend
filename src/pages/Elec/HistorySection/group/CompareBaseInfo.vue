@@ -11,7 +11,8 @@
             <div class="info-item">
                 <div class="label"><i class="bi bi-box-seam"></i> 容量:</div>
                 <div class="value">
-                    {{ record.pv_capacity ? record.pv_capacity : 0 }}kW
+                    {{ record.pv_capacity ? record.pv_capacity : 0 }}
+                    {{ record.unit }}
                 </div>
             </div>
             <div class="info-item" v-if="route.name !== 'elec_example'">

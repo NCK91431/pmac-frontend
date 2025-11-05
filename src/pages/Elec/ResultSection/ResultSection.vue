@@ -27,6 +27,7 @@
                 :predictionData="getPredictionDataForDate()"
                 :date="result_date"
                 :capacity="formData.pv_capacity"
+                :unit="formData.unit"
             />
         </div>
     </div>

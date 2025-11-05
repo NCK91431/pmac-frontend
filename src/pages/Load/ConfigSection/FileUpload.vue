@@ -3,26 +3,6 @@
         class="file-upload card border-0 shadow-sm p-3 h-100 d-flex flex-column align-items-center justify-content-center"
     >
         <template v-if="!file">
-            <div class="file-tip">
-                <div class="file-details">
-                    <div class="line">
-                        <h6>格式要求</h6>
-                        <el-link
-                            type="primary"
-                            href="https://pmac.leyi.host/downloads/loadforecasr_template.xlsx"
-                            download
-                        >
-                            <el-icon class="el-icon--right">
-                                <Download />
-                            </el-icon>
-                            下载模版
-                        </el-link>
-                    </div>
-                    <small class="text-muted"
-                        >列名为0:00-23:00, 行为YYYY-MM-DD格式的日期</small
-                    >
-                </div>
-            </div>
             <el-upload
                 class="upload-area"
                 drag
@@ -54,10 +34,61 @@
                     </el-button>
                 </div>
             </el-upload>
+            <div class="file-tip">
+                <div class="file-details">
+                    <div class="line">
+                        <h6>格式要求</h6>
+                        <el-link
+                            type="primary"
+                            href="https://pmac.leyi.host/downloads/loadforecast_template.xlsx"
+                            download
+                        >
+                            <el-icon class="el-icon--right">
+                                <Download />
+                            </el-icon>
+                            下载模版
+                        </el-link>
+                    </div>
+                    <small class="text-muted"
+                        >列名为0:00-23:00, 行为YYYY-MM-DD格式的日期</small
+                    >
+                </div>
+            </div>
         </template>
         <!-- 文件信息卡片 -->
         <template v-else>
             <template v-if="excelInfo">
+                <!-- 峰值负荷警告提示 Start -->
+                <template v-if="mode == 'T'">
+                    <div
+                        v-if="excelInfo.maxLoad && excelInfo.maxLoad.val < 10"
+                        class="peak-load-warning"
+                    >
+                        <div class="warning-content">
+                            <div class="warning-icon">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                            </div>
+                            <div class="warning-text">
+                                <span
+                                    >检测到您上传的分时负荷峰值
+                                    {{ excelInfo.maxLoad.val }}MW 小于10MW,<br />若提供的是</span
+                                >
+                                <span class="highlight-user">单个用户</span>
+                                <span>
+                                    的历史负荷数据，建议切换至
+                                    <el-text
+                                        class="switch-text"
+                                        @click="switchMode"
+                                    >
+                                        分项负荷预测
+                                        <el-icon><TopRight /></el-icon>
+                                    </el-text>
+                                    模式。</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </template>
                 <!-- 检验结果 -->
                 <div class="stats-grid">
                     <div class="stat-item">
@@ -119,7 +150,7 @@
 </template>
 
 <script setup>
-import { Download } from "@element-plus/icons-vue";
+import { Download, TopRight } from "@element-plus/icons-vue";
 import { ref, computed } from "vue";
 import { useLoadForecastStore } from "@/store/load"; // 修改为新的Store
 import request from "@/utils/request";
@@ -151,6 +182,7 @@ async function handleFileChange(uploadFile) {
 
             if (response.data.success) {
                 excelInfo.value = response.data.excelInfo;
+                forecastStore.setExcelInfo(response.data.excelInfo);
             }
         } catch (error) {
             if (
@@ -191,6 +223,10 @@ function formatFileSize(bytes) {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+/* ---------------- 切换模式 -----------------*/
+function switchMode() {
+    forecastStore.switchMode();
 }
 </script>
 
@@ -261,7 +297,7 @@ function formatFileSize(bytes) {
 }
 
 .file-tip {
-    margin-bottom: 25px;
+    margin-top: 16px;
     background-color: #f0f7ff;
     border-radius: 8px;
     padding: 15px;
@@ -367,6 +403,74 @@ function formatFileSize(bytes) {
     width: 100%;
     display: flex;
     justify-content: end;
+}
+// 峰值负荷警告样式
+.peak-load-warning {
+    background: linear-gradient(135deg, #fff8e6, #fffbeb);
+    border: 1px solid #ffd666;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(255, 182, 29, 0.1);
+    animation: fadeInUp 0.5s ease;
+
+    .warning-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        .warning-icon {
+            color: #ff9900;
+            font-size: 1.3rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .warning-text {
+            color: #8a6d3b;
+            font-size: 0.9rem;
+            line-height: 1.9;
+
+            .highlight-user {
+                color: #e74c3c;
+                font-weight: 700;
+                background: linear-gradient(135deg, #ffece8, #ffdbd6);
+                padding: 2px 6px;
+                border-radius: 4px;
+                margin: 0 2px;
+                border: 1px solid #ffcdc2;
+                text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+            }
+
+            .switch-text {
+                color: #8a6d3b;
+                cursor: pointer;
+                text-decoration: underline;
+                font-weight: bolder;
+                padding: 0 2px;
+            }
+        }
+    }
+
+    &:hover {
+        border-color: #ff9900;
+        box-shadow: 0 4px 12px rgba(255, 153, 0, 0.15);
+        transform: translateY(-1px);
+        transition: all 0.3s ease;
+    }
+}
+
+// 淡入动画
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 .stats-grid {
     display: grid;

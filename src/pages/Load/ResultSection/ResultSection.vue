@@ -55,6 +55,7 @@
                     :date="prediction_result.date"
                     :loads="prediction_result.predictionData"
                     :similarDayLoad="prediction_result.similarDayLoad"
+                    :unit="unit"
                 />
             </div>
         </div>
@@ -117,6 +118,7 @@ import { useLoadForecastStore } from "@/store/load";
 const forecastStore = useLoadForecastStore();
 
 const record = computed(() => forecastStore.responseData); //后端返回的完整数据；
+const unit = computed(() => forecastStore.responseData.formData.unit);
 //后端返回的预测结果数据
 const prediction_result = computed(() => forecastStore.responseData.result);
 

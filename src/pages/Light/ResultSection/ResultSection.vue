@@ -1,21 +1,4 @@
 <template>
-    <!-- 典型案例卡片 -->
-    <div class="result-section card border-0 shadow-sm mt-4">
-        <div
-            class="card-header bg-white d-flex justify-content-between align-items-center"
-        >
-            <h3 class="h5 mb-0 text-success">
-                <i class="bi bi-lightning-charge me-2"></i>典型案例
-            </h3>
-            <el-button type="primary" @click="downloadResultExcel">
-                <i class="bi bi-download me-1"></i>下载测算结果
-            </el-button>
-        </div>
-
-        <div class="card-body">
-            <Case :caseData="caseData" />
-        </div>
-    </div>
     <!-- 优化配置方案卡片 -->
     <div class="result-section card border-0 shadow-sm mt-4">
         <div
@@ -27,6 +10,14 @@
         </div>
 
         <div class="card-body">
+            <!-- 提示语 -->
+            <div class="tip-container mb-4" :class="tipType">
+                <div class="tip-content">
+                    <i class="tip-icon" :class="tipIcon"></i>
+                    <div class="tip-text" v-html="tipMessage"></div>
+                </div>
+            </div>
+
             <!-- 预测结果卡片展示 -->
             <div class="results-grid">
                 <!-- 光伏容量 -->
@@ -38,7 +29,7 @@
                         <div class="card-label">光伏容量</div>
                         <div class="card-value">
                             {{ resultData.PV_cap_kw.toFixed(2) }}
-                            <span class="unit">kW</span>
+                            <span class="unit">kWp</span>
                         </div>
                     </div>
                 </div>
@@ -99,7 +90,7 @@
             </div>
 
             <!-- 投资回报分析 -->
-            <div class="roi-analysis mt-5">
+            <div class="roi-analysis mt-4">
                 <h5 class="mb-3">
                     <i class="bi bi-calculator me-2"></i>投资回报分析
                 </h5>
@@ -135,6 +126,23 @@
             </div>
         </div>
     </div>
+    <!-- 典型案例卡片 -->
+    <div class="result-section card border-0 shadow-sm mt-4">
+        <div
+            class="card-header bg-white d-flex justify-content-between align-items-center"
+        >
+            <h3 class="h5 mb-0 text-success">
+                <i class="bi bi-lightning-charge me-2"></i>典型案例
+            </h3>
+            <el-button type="primary" @click="downloadResultExcel">
+                <i class="bi bi-download me-1"></i>下载测算结果
+            </el-button>
+        </div>
+
+        <div class="card-body">
+            <Case :caseData="caseData" />
+        </div>
+    </div>
 </template>
 
 <script setup>
@@ -162,6 +170,27 @@ const caseData = computed(() => {
         pdis_data: resultData.value.pdis_data,
         load_days: resultData.value.load_days,
     };
+});
+
+/* ---------- 计算提示语类型和内容 ----------------- */
+const tipType = computed(() => {
+    const days = caseData.value.load_days || 0;
+    return days >= 270 ? "success-tip" : "warning-tip";
+});
+
+const tipIcon = computed(() => {
+    return tipType.value === "success-tip"
+        ? "bi-check-circle-fill"
+        : "bi-info-circle-fill";
+});
+
+const tipMessage = computed(() => {
+    const days = caseData.value.load_days || 0;
+    if (days >= 270) {
+        return `智能多场景优化已完成！基于您提供的 <strong>${days}</strong> 天负荷结合当地天气数据，系统进行 <b>1000+</b> 随机场景生成，确保配置方案在各种情况下都能保持优异性能。`;
+    } else {
+        return `基于您提供的${days}日负荷数据，我们已为您优化出最佳光储配置方案。建议上传全年负荷数据，系统将自动分析不同季节和天气条件下的运行场景，以获得更精准的优化结果。`;
+    }
 });
 
 /*------------辅助函数------------*/
@@ -323,7 +352,6 @@ const downloadResultExcel = async () => {
     display: grid;
     grid-template-columns: 1fr 1.8fr 1fr;
     gap: 20px;
-    margin-bottom: 30px;
 }
 
 .result-card {
@@ -378,6 +406,66 @@ const downloadResultExcel = async () => {
         }
     }
 }
+
+/* 提示语框 */
+.tip-container {
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+    border: 1px solid;
+    transition: all 0.3s ease;
+
+    &.success-tip {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+        border-color: #91d5ff;
+
+        .tip-icon {
+            color: #1890ff;
+        }
+    }
+
+    &.warning-tip {
+        background: linear-gradient(135deg, #fff7e6 0%, #fff2e8 100%);
+        border-color: #ffd591;
+
+        .tip-icon {
+            color: #fa8c16;
+        }
+    }
+    .tip-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        .tip-icon {
+            font-size: 20px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .tip-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            font-weight: 500;
+        }
+    }
+}
+// 响应式设计
+@media (max-width: 768px) {
+    .chart-container {
+        padding: 12px;
+    }
+
+    .tip-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .tip-icon {
+        margin-top: 0;
+    }
+}
+
 /* 储能系统卡片专属样式 */
 .storage-system-card {
     background: linear-gradient(
@@ -511,7 +599,7 @@ const downloadResultExcel = async () => {
     border-radius: 10px;
     padding: 20px;
     border-left: 4px solid #20c997;
-
+    margin-bottom: 16px;
     h5 {
         color: #20c997;
         font-weight: 600;

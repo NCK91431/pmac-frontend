@@ -4,16 +4,6 @@
         <div class="chart-container">
             <div ref="chartRef" class="chart" style="height: 400px"></div>
         </div>
-
-        <!-- 提示语 -->
-        <div class="tip-container" :class="tipType">
-            <div class="tip-content">
-                <i class="tip-icon" :class="tipIcon"></i>
-                <div class="tip-text">
-                    {{ tipMessage }}
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -30,27 +20,6 @@ const props = defineProps({
 
 const chartRef = ref(null);
 let chartInstance = null;
-
-// 计算提示语类型和内容
-const tipType = computed(() => {
-    const days = props.caseData?.load_days || 0;
-    return days >= 270 ? "success-tip" : "warning-tip";
-});
-
-const tipIcon = computed(() => {
-    return tipType.value === "success-tip"
-        ? "bi-check-circle-fill"
-        : "bi-info-circle-fill";
-});
-
-const tipMessage = computed(() => {
-    const days = props.caseData?.load_days || 0;
-    if (days >= 270) {
-        return `智能多场景优化已完成！基于您提供的${days}天负荷结合当地天气数据，系统进行1000+随机场景生成，确保配置方案在各种情况下都能保持优异性能。`;
-    } else {
-        return `基于您提供的${days}日负荷数据，我们已为您优化出最佳光储配置方案。建议上传全年负荷数据，系统将自动分析不同季节和天气条件下的运行场景，以获得更精准的优化结果。`;
-    }
-});
 
 // 处理数据，确保所有数组都是24个点
 const processChartData = (data) => {
@@ -109,9 +78,12 @@ const initChart = () => {
     const chartData = processChartData(props.caseData);
     const yAxisRange = calculateYAxisRange(props.caseData);
 
+    // 定义颜色数组，与系列顺序对应
+    const colorList = ["#FFB74D", "#64B5F6", "#4CAF50", "#9575CD", "#F48FB1"];
+
     const option = {
         title: {
-            text: "光储系统运行场景示例",
+            text: "建成后的运行场景示例",
             left: "center",
             textStyle: {
                 fontSize: 16,
@@ -147,9 +119,13 @@ const initChart = () => {
                         displayValue = Math.abs(value).toFixed(2);
                     }
 
+                    // 获取对应的颜色
+                    const dotColor =
+                        colorList[param.componentIndex] || param.color;
+
                     result += `
                         <div style="display: flex; align-items: center; margin: 2px 0;">
-                            <span style="display: inline-block; width: 10px; height: 10px; background: ${param.color}; border-radius: 50%; margin-right: 8px;"></span>
+                            <span style="display: inline-block; width: 10px; height: 10px; background: ${dotColor}; border-radius: 50%; margin-right: 8px;"></span>
                             <span style="flex: 1;">${param.seriesName}:</span>
                             <span style="font-weight: bold; margin-left: 10px;">${displayValue} kW</span>
                         </div>
@@ -368,67 +344,5 @@ onUnmounted(() => {
 
 .chart {
     width: 100%;
-}
-
-.tip-container {
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 16px;
-    border: 1px solid;
-    transition: all 0.3s ease;
-
-    &.success-tip {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
-        border-color: #91d5ff;
-
-        .tip-icon {
-            color: #1890ff;
-        }
-    }
-
-    &.warning-tip {
-        background: linear-gradient(135deg, #fff7e6 0%, #fff2e8 100%);
-        border-color: #ffd591;
-
-        .tip-icon {
-            color: #fa8c16;
-        }
-    }
-}
-
-.tip-content {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.tip-icon {
-    font-size: 20px;
-    margin-top: 2px;
-    flex-shrink: 0;
-}
-
-.tip-text {
-    font-size: 14px;
-    line-height: 1.6;
-    color: #333;
-    font-weight: 500;
-}
-
-// 响应式设计
-@media (max-width: 768px) {
-    .chart-container {
-        padding: 12px;
-    }
-
-    .tip-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 8px;
-    }
-
-    .tip-icon {
-        margin-top: 0;
-    }
 }
 </style>

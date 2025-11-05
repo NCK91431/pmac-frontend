@@ -12,7 +12,8 @@
                         <div class="preview-value">
                             <span class="status-badge">
                                 <i class="bi"></i>
-                                {{ pv_capacity }}（kWp）
+                                {{ pv_capacity
+                                }}{{ `（${forecastStore.formData.unit}）` }}
                             </span>
                         </div>
                     </div>

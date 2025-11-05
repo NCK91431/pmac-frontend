@@ -183,6 +183,7 @@
                         :loads="result.predictionData"
                         :date="result.date"
                         :similarDayLoad="result.similarDayLoad"
+                        :unit="record.unit"
                     />
                     <div
                         v-if="

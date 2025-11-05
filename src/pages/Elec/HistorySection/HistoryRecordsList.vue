@@ -116,7 +116,7 @@
                     <!-- 装机容量列：仅根节点显示 -->
                     <div class="col-pv_capacity">
                         <template v-if="node.level == 1">
-                            {{ data.pv_capacity }} kWp
+                            {{ data.pv_capacity }} {{ data.unit }}
                         </template>
                         <template v-else>-</template>
                     </div>

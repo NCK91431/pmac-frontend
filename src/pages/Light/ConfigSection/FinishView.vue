@@ -109,6 +109,10 @@
                                 >{{ storage_power_capacity_ratio }} C</span
                             >
                         </div>
+                        <div class="config-item">
+                            <span class="config-label">储能系统转换效率</span>
+                            <span class="config-value">{{ CE_ess }} %</span>
+                        </div>
                     </div>
                 </div>
 
@@ -307,6 +311,7 @@ const storage_max_capacity = computed(
 const storage_power_capacity_ratio = computed(
     () => formData.value.storage_power_capacity_ratio || 0
 );
+const CE_ess = computed(() => formData.value.CE_ess || 0);
 
 // 融资配置
 const has_loan = computed(() => formData.value.has_loan == "true");

@@ -1,222 +1,230 @@
 <template>
-    <!-- 优化配置方案卡片 -->
-    <div class="result-section card border-0 shadow-sm mt-4">
-        <div
-            class="card-header bg-white d-flex justify-content-between align-items-center"
-        >
-            <h3 class="h5 mb-0 text-success">
-                <i class="bi bi-lightning-charge me-2"></i>优化配置方案
-            </h3>
-        </div>
-
-        <div class="card-body">
-            <!-- 提示语 -->
-            <div class="tip-container mb-4" :class="tipType">
-                <div class="tip-content">
-                    <i class="tip-icon" :class="tipIcon"></i>
-                    <div class="tip-text" v-html="tipMessage"></div>
-                </div>
+    <div class="example-container">
+        <Banner />
+        <ExampleConfig />
+        <!-- 优化配置方案卡片 -->
+        <div class="result-section card border-0 shadow-sm mt-4">
+            <div
+                class="card-header bg-white d-flex justify-content-between align-items-center"
+            >
+                <h3 class="h5 mb-0 text-success">
+                    <i class="bi bi-lightning-charge me-2"></i>优化配置方案
+                </h3>
             </div>
-            <!-- 预测结果卡片展示 -->
-            <div class="results-grid">
-                <!-- 光伏容量 -->
-                <div class="result-card pv-system-card">
-                    <div class="card-icon bg-primary">
-                        <i class="bi bi-sun"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-label">光伏容量</div>
-                        <div class="card-value">
-                            {{ formatNumber(resultData.PV_cap_kw) }}
-                            <span class="unit">kWp</span>
-                        </div>
+
+            <div class="card-body">
+                <!-- 提示语 -->
+                <div class="tip-container mb-4" :class="tipType">
+                    <div class="tip-content">
+                        <i class="tip-icon" :class="tipIcon"></i>
+                        <div class="tip-text" v-html="tipMessage"></div>
                     </div>
                 </div>
-
-                <!-- 储能系统（合并储能容量和最大功率） -->
-                <div class="result-card storage-system-card">
-                    <div class="card-icon bg-success">
-                        <i class="bi bi-battery-charging"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-label">储能系统</div>
-                        <div class="storage-details">
-                            <div class="storage-item">
-                                <div class="storage-icon">
-                                    <i class="bi bi-database"></i>
-                                </div>
-                                <div>
-                                    <div class="storage-label">储能容量</div>
-                                    <div class="storage-value">
-                                        {{
-                                            formatNumber(resultData.ESS_cap_kwh)
-                                        }}
-                                        <span class="unit">kWh</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="storage-item">
-                                <div class="storage-icon">
-                                    <i class="bi bi-lightning"></i>
-                                </div>
-                                <div>
-                                    <div class="storage-label">最大功率</div>
-                                    <div class="storage-value">
-                                        {{
-                                            formatNumber(
-                                                resultData.P_max_charge_kw
-                                            )
-                                        }}
-                                        <span class="unit">kW</span>
-                                    </div>
-                                </div>
+                <!-- 预测结果卡片展示 -->
+                <div class="results-grid">
+                    <!-- 光伏容量 -->
+                    <div class="result-card pv-system-card">
+                        <div class="card-icon bg-primary">
+                            <i class="bi bi-sun"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-label">光伏容量</div>
+                            <div class="card-value">
+                                {{ formatNumber(resultData.PV_cap_kw) }}
+                                <span class="unit">kWp</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- 储能系统（合并储能容量和最大功率） -->
+                    <div class="result-card storage-system-card">
+                        <div class="card-icon bg-success">
+                            <i class="bi bi-battery-charging"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-label">储能系统</div>
+                            <div class="storage-details">
+                                <div class="storage-item">
+                                    <div class="storage-icon">
+                                        <i class="bi bi-database"></i>
+                                    </div>
+                                    <div>
+                                        <div class="storage-label">
+                                            储能容量
+                                        </div>
+                                        <div class="storage-value">
+                                            {{
+                                                formatNumber(
+                                                    resultData.ESS_cap_kwh
+                                                )
+                                            }}
+                                            <span class="unit">kWh</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="storage-item">
+                                    <div class="storage-icon">
+                                        <i class="bi bi-lightning"></i>
+                                    </div>
+                                    <div>
+                                        <div class="storage-label">
+                                            最大功率
+                                        </div>
+                                        <div class="storage-value">
+                                            {{
+                                                formatNumber(
+                                                    resultData.P_max_charge_kw
+                                                )
+                                            }}
+                                            <span class="unit">kW</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 投资成本 -->
+                    <div class="result-card investment-card">
+                        <div class="card-icon bg-warning">
+                            <i class="bi bi-cash-coin"></i>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-label">总投资成本</div>
+                            <div class="card-value">
+                                {{ formatCurrency(resultData.investment_cost) }}
+                                <span class="unit">元</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 投资成本 -->
-                <div class="result-card investment-card">
-                    <div class="card-icon bg-warning">
-                        <i class="bi bi-cash-coin"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-label">总投资成本</div>
-                        <div class="card-value">
-                            {{ formatCurrency(resultData.investment_cost) }}
-                            <span class="unit">元</span>
+                <!-- 投资回报分析 -->
+                <div class="roi-analysis mt-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-calculator me-2"></i>投资回报分析
+                    </h5>
+                    <div class="analysis-content">
+                        <div class="roi-item">
+                            <div class="roi-label">年节省费用</div>
+                            <div class="roi-value">
+                                {{ formatCurrency(resultData.annual_savings) }}
+                                <span class="unit">元/年</span>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 投资回报分析 -->
-            <div class="roi-analysis mt-4">
-                <h5 class="mb-3">
-                    <i class="bi bi-calculator me-2"></i>投资回报分析
-                </h5>
-                <div class="analysis-content">
-                    <div class="roi-item">
-                        <div class="roi-label">年节省费用</div>
-                        <div class="roi-value">
-                            {{ formatCurrency(resultData.annual_savings) }}
-                            <span class="unit">元/年</span>
+                        <div class="roi-item">
+                            <div class="roi-label">投资回收期</div>
+                            <div class="roi-value">
+                                {{ calculatePaybackPeriod() }}
+                                <span class="unit">年</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="roi-item">
-                        <div class="roi-label">投资回收期</div>
-                        <div class="roi-value">
-                            {{ calculatePaybackPeriod() }}
-                            <span class="unit">年</span>
+                        <div class="roi-item">
+                            <div class="roi-label">年化投资回报率</div>
+                            <div class="roi-value">
+                                {{ calculateROI() }}<span class="unit">%</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="roi-item">
-                        <div class="roi-label">年化投资回报率</div>
-                        <div class="roi-value">
-                            {{ calculateROI() }}<span class="unit">%</span>
-                        </div>
-                    </div>
-                    <div class="roi-item">
-                        <div class="roi-label">最大需量变化趋势</div>
-                        <div class="roi-value" :class="getPeakDemandClass()">
-                            <i :class="getPeakDemandIcon()" class="me-2"></i>
-                            {{ getPeakDemandText() }}
+                        <div class="roi-item">
+                            <div class="roi-label">最大需量变化趋势</div>
+                            <div
+                                class="roi-value"
+                                :class="getPeakDemandClass()"
+                            >
+                                <i
+                                    :class="getPeakDemandIcon()"
+                                    class="me-2"
+                                ></i>
+                                {{ getPeakDemandText() }}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <!-- 典型案例卡片 -->
-    <div
-        v-if="resultData.case_data"
-        class="result-section card border-0 shadow-sm mt-4"
-    >
+        <!-- 典型案例卡片 -->
         <div
-            class="card-header bg-white d-flex justify-content-between align-items-center"
+            v-if="resultData.case_data"
+            class="result-section card border-0 shadow-sm mt-4"
         >
-            <h3 class="h5 mb-0 text-success">
-                <i class="bi bi-lightning-charge me-2"></i>典型案例
-            </h3>
-            <el-button type="primary" @click="downloadResultExcel">
-                <i class="bi bi-download me-1"></i>下载测算结果
-            </el-button>
-        </div>
+            <div
+                class="card-header bg-white d-flex justify-content-between align-items-center"
+            >
+                <h3 class="h5 mb-0 text-success">
+                    <i class="bi bi-lightning-charge me-2"></i>典型案例
+                </h3>
+                <el-button type="primary">
+                    <el-link
+                        style="color: #fff"
+                        :underline="false"
+                        href="https://pmac.leyi.host/downloads/光储定容_测算结果案例.xlsx"
+                        download
+                        ><i class="bi bi-download me-1"></i
+                        >下载测算结果</el-link
+                    >
+                </el-button>
+            </div>
 
-        <div class="card-body">
-            <Case :caseData="resultData.case_data" />
+            <div class="card-body">
+                <Case :caseData="resultData.case_data" />
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-import { ElMessage } from "element-plus";
-import request from "@/utils/request";
-import { saveAs } from "file-saver";
-import { useLightStore } from "@/store/light";
+import { ref, computed } from "vue";
+import Banner from "./group/Banner.vue";
+import ExampleConfig from "./group/ExampleConfig.vue";
 import Case from "../ResultSection/Case.vue";
-const forecastStore = useLightStore();
-const activeHistoryRecordId = computed(
-    () => forecastStore.activeHistoryRecordId
-);
 
 const resultData = ref({
-    PV_cap_kw: 0,
-    ESS_cap_kwh: 0,
-    P_max_charge_kw: 0,
-    annual_savings: 0,
-    daily_operation_cost: 0,
-    investment_cost: 0,
-    case_data: null,
-});
-const load_days = ref(0);
-
-async function getRecord() {
-    const id = activeHistoryRecordId.value;
-    if (!id) {
-        ElMessage.error("查询记录失败");
-        return;
-    }
-    try {
-        const response = await request.get(`/api/light_history/${id}`);
-        if (response.data.success) {
-            resultData.value = {
-                id: response.data.id,
-                ESS_cap_kwh: Number(response.data.ESS_cap_kwh) || 0,
-                PV_cap_kw: Number(response.data.PV_cap_kw) || 0,
-                P_max_charge_kw: Number(response.data.P_max_charge_kw) || 0,
-                annual_savings: Number(response.data.annual_savings) || 0,
-                daily_operation_cost:
-                    Number(response.data.daily_operation_cost) || 0,
-                investment_cost: Number(response.data.investment_cost) || 0,
-                daily_peak: Number(response.data.daily_peak) || 0,
-                case_data: response.data.case_data,
-            };
-            load_days.value = response.data.case_data.load_days;
-        } else {
-            ElMessage.error("查询记录失败");
-        }
-    } catch (error) {
-        if (error !== "cancel") {
-            console.error("获取记录详情失败:", error);
-            ElMessage.error(`获取详情失败: ${error.message}`);
-        }
-    }
-}
-
-onMounted(() => {
-    getRecord();
-});
-watch(activeHistoryRecordId, (newId) => {
-    if (newId) {
-        getRecord();
-    }
+    ROI: 0.21953270512744857,
+    PV_cap_kw: 698.3512970655331,
+    ESS_cap_kwh: 537.1933054350253,
+    P_max_charge_kw: 268.59665271751265,
+    daily_operation_cost: 7589.564337540181,
+    annual_savings: 527879.4034481389,
+    investment_cost: 2404559.2803162592,
+    daily_peak: -33.168954077292156,
+    case_data: {
+        pv_data: [
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.69, 60.63, 156.08, 215.18, 274.32,
+            319.56, 339.66, 358.51, 331.2, 291.41, 219.9, 129.77, 36.2, 1.59,
+            0.0, 0.0, 0.0, 0.0,
+        ],
+        pv_data_used: [
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.69, 60.63, 156.08, 215.18, 274.32,
+            319.56, 339.66, 358.51, 331.2, 291.41, 219.9, 129.77, 36.2, 1.59,
+            0.0, 0.0, 0.0, 0.0,
+        ],
+        load_data: [
+            175.11, 151.7, 137.73, 128.88, 135.02, 120.24, 192.73, 247.78,
+            364.62, 462.89, 476.96, 504.11, 527.4, 504.39, 468.13, 459.51,
+            485.58, 526.67, 532.42, 474.76, 386.81, 295.6, 247.5, 198.61,
+        ],
+        pdis_data: [
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 202.64, 184.55,
+            0.0, 0.0, 0.0, 0.0, 0.0, 257.76, 109.41, 86.36, 0.0, 0.0, 0.0, 0.0,
+        ],
+        pch_data: [
+            0.0, 0.0, 13.43, 257.93, 244.03, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            199.07, 240.93, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        ],
+        operating_status: [
+            175.11, 151.7, 151.16, 386.81, 379.05, 120.24, 191.04, 187.15,
+            208.54, 247.71, 0.0, 0.0, 386.81, 386.81, 136.93, 168.1, 265.68,
+            139.14, 386.81, 386.81, 386.81, 295.6, 247.5, 198.61,
+        ],
+        load_days: 366,
+    },
+    success: true,
+    demand_change_ratio: -0.33168954077292157,
 });
 
 /* ---------- 计算提示语类型和内容 ----------------- */
 const tipType = computed(() => {
-    const days = load_days.value || 0;
+    const days = resultData.value.case_data.load_days || 0;
     return days >= 270 ? "success-tip" : "warning-tip";
 });
 
@@ -227,7 +235,7 @@ const tipIcon = computed(() => {
 });
 
 const tipMessage = computed(() => {
-    const days = load_days.value || 0;
+    const days = resultData.value.case_data.load_days || 0;
     if (days >= 270) {
         return `智能多场景优化已完成！基于您提供的 <strong>${days}</strong> 天负荷结合当地天气数据，系统进行 <b>1000+</b> 随机场景生成，确保配置方案在各种情况下都能保持优异性能。`;
     } else {
@@ -321,43 +329,14 @@ function getPeakDemandText() {
         return `降低 ${Math.abs(value).toFixed(2)}%`;
     }
 }
-
-// 下载结果Excel
-const downloadResultExcel = async () => {
-    const id = activeHistoryRecordId.value;
-    if (!id) {
-        ElMessage.error("查询记录失败");
-        return;
-    }
-    try {
-        const response = await request.get(
-            `/api/light_history/${id}/result-excel`,
-            {
-                responseType: "blob",
-            }
-        );
-
-        // 创建下载链接
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `光储定容结果_${id}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-
-        ElMessage.success("下载成功");
-    } catch (error) {
-        console.error("下载失败:", error);
-        ElMessage.error(
-            "下载失败: " + (error.response?.data?.message || error.message)
-        );
-    }
-};
 </script>
 
 <style lang="scss" scoped>
+.example-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 .result-section {
     .card-header {
         padding: 16px 20px;

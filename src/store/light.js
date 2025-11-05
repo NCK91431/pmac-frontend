@@ -27,6 +27,7 @@ export const useLightStore = defineStore("light", {
             storage_max_cycles: 8000, // 储能最大循环次数
             storage_max_capacity: 9999, // 储能最大容量
             storage_power_capacity_ratio: 0.5, // 储能功率容量比
+            CE_ess: 88, // 储能系统转换效率
 
             /* 经济参数 */
             discount_rate: 0.08, // 折现率

@@ -126,7 +126,7 @@ const isFormValid = computed(() => {
 });
 
 const submitForm = () => {
-    emit("submit", forecastStore.formData, forecastStore.uploadedFile);
+    emit("submit");
 };
 
 /* ----------------------------------- 继续预测 ------------------------------------------------- */
@@ -227,7 +227,7 @@ async function getContinueId() {
     margin-left: 50%;
     display: flex;
     align-items: flex-end;
-    justify-content: flex-end;
+    justify-content: space-between;
     padding-left: 12px;
     .btn-submit {
         &:hover {

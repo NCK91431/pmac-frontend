@@ -62,9 +62,8 @@
                                 <i class="bi bi-box-seam"></i> 装机容量:
                             </div>
                             <div class="value">
-                                {{
-                                    record.pv_capacity ? record.pv_capacity : 0
-                                }}（kWp）
+                                {{ record.pv_capacity ? record.pv_capacity : 0
+                                }}{{ `（${record.unit}）` }}
                             </div>
                         </div>
                         <div class="info-item">
@@ -98,6 +97,7 @@
                         :predictionData="getPredictionDataForDate()"
                         :date="getSampleDate(record)"
                         :capacity="record.pv_capacity"
+                        :unit="record.unit"
                     />
                 </div>
             </div>

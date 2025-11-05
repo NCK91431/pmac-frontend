@@ -7,10 +7,13 @@
             <strong>{{ uploadDateRange }}</strong> 进行继续预测。 请上传包含
             <strong>{{ requiredStartDate }}</strong> 之后的数据。
         </div>
-        <h2 class="h5 mb-4 text">
-            <i class="bi bi-graph-up me-2"></i>负荷预测配置
+        <h2 class="h5 mb-4 text" v-if="stage !== -1">
+            <i class="bi bi-graph-up me-2"></i
+            >{{ mode == "T" ? "总负荷预测配置" : "分项负荷预测配置" }}
         </h2>
-
+        <template v-if="stage == -1">
+            <ChooseMode />
+        </template>
         <div class="row">
             <!-- stage == 0: 初始状态：显示配置表单 -->
             <template v-if="stage == 0">
@@ -85,6 +88,7 @@
 import { computed, inject } from "vue";
 import ConfigForm from "./ConfigForm.vue";
 import FileUpload from "./FileUpload.vue";
+import ChooseMode from "./ChooseMode.vue";
 import FinishView from "./FinishView.vue";
 import LoadingOverlay from "./LoadingOverlay.vue";
 import { addDays, format } from "date-fns";
@@ -101,6 +105,7 @@ const emit = defineEmits(["submit"]);
 
 const record = computed(() => forecastStore.responseData);
 const stage = computed(() => forecastStore.stage);
+const mode = computed(() => forecastStore.mode);
 
 const isFormValid = computed(
     () => forecastStore.isValid && forecastStore.hasFile

@@ -12,8 +12,10 @@ export const useElecStore = defineStore("elec", {
             pv_capacity: 0,
             location: [],
             previous_record_id: null,
+            unit: "kWp", // 或"MWp"
         },
         uploadedFile: null,
+        excelInfo: null,
 
         // 来自 loadpreStageStore.js
         stage: 0, // 0:初始状态 1:处理中 2:处理完成
@@ -63,7 +65,12 @@ export const useElecStore = defineStore("elec", {
                 this.activeTab = tab;
             }
         },
-
+        setExcelInfo(excelInfo) {
+            this.excelInfo = excelInfo;
+        },
+        setUnit(unit) {
+            this.formData.unit = unit;
+        },
         // 表单操作
         updateFormData(newData) {
             Object.assign(this.formData, newData);
@@ -73,6 +80,7 @@ export const useElecStore = defineStore("elec", {
         },
         removeFile() {
             this.uploadedFile = null;
+            this.excelInfo = null;
         },
         resetFileOnly() {
             this.uploadedFile = null;
@@ -98,6 +106,7 @@ export const useElecStore = defineStore("elec", {
         setCompleted(responseData) {
             this.stage = 2;
             this.responseData = responseData;
+            this.excelInfo = null;
         },
         resetStage() {
             this.stage = 0;

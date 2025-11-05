@@ -1,7 +1,7 @@
 <template>
     <main class="container my-4 flex-grow-1">
         <!-- 预测模式 -->
-        <div v-if="activeTab == 'upload'" class="mode mb-3">
+        <div v-if="activeTab == 'upload' && stage !== -1" class="mode mb-3">
             <!-- 模式 -->
             <div class="wrap">
                 <span class="text">
@@ -15,7 +15,7 @@
                 </span>
                 <span
                     v-if="stage == 0 && !isContinue"
-                    class="action"
+                    class="btn-mode-switch"
                     @click="switchMode"
                 >
                     切换到
@@ -138,6 +138,7 @@ async function handleSubmit(formData, fileData) {
         post_data.append("pv_config", formData.pv_config);
         post_data.append("pv_capacity", formData.pv_capacity);
     }
+    post_data.append("unit", formData.unit);
     post_data.append("location", JSON.stringify(formData.location));
     post_data.append("forecast_range", formData.forecast_range);
     post_data.append("file", fileData);
@@ -322,16 +323,23 @@ function onClickHistoryTab() {
         }
     }
 
-    .action {
-        color: #409eff;
+    .btn-mode-switch {
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-
-        &:hover {
-            color: #2c6fbb;
-            transform: translateX(4px);
-        }
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
 
         strong {
             font-weight: 600;
@@ -339,8 +347,49 @@ function onClickHistoryTab() {
             padding-right: 12px;
         }
 
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: left 0.5s ease;
+        }
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: #fff;
+            &::before {
+                left: 100%;
+            }
+
+            i {
+                transform: rotate(180deg);
+            }
+        }
+
+        &:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        strong {
+            color: white;
+            font-weight: 700;
+        }
+
         i {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            transition: transform 0.4s ease;
             vertical-align: middle;
         }
     }

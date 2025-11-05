@@ -2,12 +2,12 @@
     <div class="banner-container">
         <div class="feature-banner">
             <div class="banner-content">
-                <h2>精准的负荷预测</h2>
-                <p>基于国际获奖算法模型，提供业界领先的预测精度</p>
+                <h2>光储定容测算</h2>
+                <p>基于负荷特性与电价曲线，为您推荐最优的光伏储能配置方案</p>
             </div>
 
             <div class="button-container">
-                <button class="start-button" @click="gotoLoadPrediction">
+                <button class="start-button" @click="gotoLightPrediction">
                     立即体验 <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
@@ -26,21 +26,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-
-import { useLoadForecastStore } from "@/store/load";
-const forecastStore = useLoadForecastStore();
-const stage = computed(() => forecastStore.stage);
-const formData = computed(() => forecastStore.formData);
 
 const router = useRouter();
 
-const gotoLoadPrediction = () => {
-    if (stage.value == 0) {
-        forecastStore.setStageChooseMode();
-    }
-    router.push({ name: "loadpre" });
+const gotoLightPrediction = () => {
+    router.push({ name: "light" });
 };
 
 // 添加文字动画效果
@@ -137,6 +129,7 @@ onMounted(() => {
     z-index: 2;
     letter-spacing: 1px;
     text-transform: uppercase;
+    cursor: pointer;
 }
 
 .start-button:hover {

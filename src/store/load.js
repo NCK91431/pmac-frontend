@@ -16,11 +16,13 @@ export const useLoadForecastStore = defineStore("loadForecast", {
             location: [],
             forecast_range: "",
             previous_record_id: null,
+            unit: "MW", // 或 "kW"
         },
         uploadedFile: null,
+        excelInfo: null,
 
         // 来自 loadpreStageStore.js
-        stage: 0, // 0:初始状态 1:处理中 2:处理完成
+        stage: -1, // -1:选择模式 0:初始状态 1:处理中 2:处理完成
         responseData: null,
         activeHistoryRecordId: null,
 
@@ -44,6 +46,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
                 );
             } else {
                 return (
+                    state.formData.location &&
                     state.formData.location.length === 1 &&
                     state.formData.forecast_range
                 );
@@ -73,8 +76,19 @@ export const useLoadForecastStore = defineStore("loadForecast", {
             if (tab === "upload" || tab === "history") {
                 this.activeTab = tab;
             }
-        },
 
+            if (tab == "upload") {
+                if (this.stage <= 0) {
+                    this.stage = -1;
+                }
+            }
+        },
+        setExcelInfo(excelInfo) {
+            this.excelInfo = excelInfo;
+        },
+        setUnit(unit) {
+            this.formData.unit = unit;
+        },
         // 表单操作
         updateFormData(newData) {
             Object.assign(this.formData, newData);
@@ -84,6 +98,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
         removeFile() {
             this.uploadedFile = null;
+            this.excelInfo = null;
         },
         resetFileOnly() {
             this.uploadedFile = null;
@@ -102,6 +117,9 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
 
         // 预测流程控制
+        setStageChooseMode() {
+            this.stage = -1;
+        },
         setStageZero() {
             this.stage = 0;
         },
@@ -111,6 +129,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         setCompleted(responseData) {
             this.stage = 2;
             this.responseData = responseData;
+            this.excelInfo = null;
         },
         resetStage() {
             this.stage = 0;

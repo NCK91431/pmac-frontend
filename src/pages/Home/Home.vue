@@ -64,6 +64,33 @@
                     </div>
                 </div>
             </swiper-slide>
+            <swiper-slide>
+                <img
+                    src="https://pmac.leyi.host/downloads/banner/light.png"
+                    alt="光伏发电预测"
+                />
+                <div class="slide-content">
+                    <div class="wrap">
+                        <div class="left">
+                            <div class="title-container">
+                                <h1>光储定容</h1>
+                            </div>
+                            <ul>
+                                <li>基于负荷与电价曲线的智能容量优化</li>
+                                <li>综合考虑投资成本与运营收益的多目标优化</li>
+                                <li>支持多种储能技术路线与经济性对比</li>
+                                <li>已为工商业园区提供最优光储配置方案</li>
+                            </ul>
+                        </div>
+                        <button
+                            class="experience-btn"
+                            @click.stop="gotoPage('light')"
+                        >
+                            立即体验 <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </swiper-slide>
         </swiper>
     </section>
 
@@ -184,8 +211,10 @@ import "swiper/css";
 import "swiper/css/pagination";
 import { useLoadForecastStore } from "@/store/load";
 import { useElecStore } from "@/store/elec";
+import { useLightStore } from "@/store/light";
 const LoadStore = useLoadForecastStore();
 const ElecStore = useElecStore();
+const LightStore = useLightStore();
 
 const router = useRouter();
 
@@ -232,7 +261,7 @@ const gotoPage = (page) => {
             router.push("/");
             break;
         case "load":
-            if (LoadStore.stage == 0) {
+            if (LoadStore.stage <= 0) {
                 router.push("/load_example");
             } else {
                 router.push("/loadpre");
@@ -246,7 +275,11 @@ const gotoPage = (page) => {
             }
             break;
         case "light":
-            router.push("/light");
+            if (LightStore.stage == 0) {
+                router.push("/light_example");
+            } else {
+                router.push("/light");
+            }
             break;
         case "chuneng":
             router.push("/chunengpre");

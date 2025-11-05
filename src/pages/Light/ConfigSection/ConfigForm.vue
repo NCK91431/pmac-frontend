@@ -294,6 +294,30 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold optional"
+                                >储能系统转换效率</label
+                            >
+                            <div class="input-with-default">
+                                <select
+                                    v-model="form.CE_ess"
+                                    class="form-select"
+                                >
+                                    <option
+                                        v-for="num in [
+                                            82, 83, 84, 85, 86, 87, 88, 89, 90,
+                                            91, 92,
+                                        ]"
+                                        :key="num"
+                                        :value="num"
+                                    >
+                                        {{ `${num} %` }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

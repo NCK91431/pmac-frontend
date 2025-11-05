@@ -73,6 +73,11 @@ const router = createRouter({
             name: "load_example",
             component: () => import("@/pages/Load/HistorySection/Example.vue"),
         },
+        {
+            path: "/light_example",
+            name: "light_example",
+            component: () => import("@/pages/Light/HistorySection/Example.vue"),
+        },
     ],
 });
 

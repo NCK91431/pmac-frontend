@@ -46,11 +46,11 @@
                         <!-- 公众号 -->
                         <div class="contact-item">
                             <div class="contact-icon">
-                                <el-icon><Message /></el-icon>
+                                <el-icon><Service /></el-icon>
                             </div>
                             <div>
-                                <strong>邮箱</strong>
-                                <p>marketing@pmac.com.cn</p>
+                                <strong>技术支持</strong>
+                                <p>17722020058</p>
                             </div>
                         </div>
                         <div class="contact-item">
@@ -68,7 +68,7 @@
                     <h3>派诺科技园</h3>
                     <div class="contact-item">
                         <div class="contact-icon">
-                            <el-icon><Service /></el-icon>
+                            <el-icon><i class="bi bi-telephone"></i></el-icon>
                         </div>
                         <div>
                             <strong>客服电话</strong>

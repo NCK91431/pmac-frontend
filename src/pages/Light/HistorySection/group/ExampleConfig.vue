@@ -4,8 +4,14 @@
             class="card-header bg-white d-flex justify-content-between align-items-center"
         >
             <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>配置参数</h5>
-            <el-button type="primary" @click="downloadRecordFile">
-                <i class="bi bi-download me-1"></i>下载原始数据
+            <el-button type="primary">
+                <el-link
+                    style="color: #fff"
+                    :underline="false"
+                    href="https://pmac.leyi.host/downloads/光储定容_负荷模版(1年).xlsx"
+                    download
+                    ><i class="bi bi-download me-1"></i>下载原始数据</el-link
+                >
             </el-button>
         </div>
         <div class="card-body">
@@ -182,43 +188,45 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed } from "vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
-import { saveAs } from "file-saver";
 
 import { useLightStore } from "@/store/light";
 const forecastStore = useLightStore();
 const recordId = computed(() => forecastStore.activeHistoryRecordId);
-const config = ref({});
-onMounted(() => {
-    getRecord();
+const config = ref({
+    /* 基本参数 */
+    time_granularity: 24, // 默认24小时粒度
+    location: ["广东省", "珠海市", "香洲区"],
+    demand_price: 36.1, // 需量电价
+
+    /* 光伏 */
+    pv_cost: 3, // 光伏成本
+    pv_depreciation_years: 20, // 光伏折旧年限
+    pv_max_capacity: 9999, // 光伏最大装机容量
+    pv_sell_grid: false, // 是否光伏上网
+    sell_price: 0.45, // 光伏上网电价
+    max_sell_ratio: 50, // 最大上网比例
+
+    /* 储能 */
+    storage_cost: 0.75, // 储能成本
+    storage_depreciation_years: 7, // 储能折旧年限
+    storage_max_cycles: 8000, // 储能最大循环次数
+    storage_max_capacity: 9999, // 储能最大容量
+    storage_power_capacity_ratio: 0.5, // 储能功率容量比
+    CE_ess: 88, // 储能系统转换效率
+
+    /* 经济参数 */
+    discount_rate: 0.08, // 折现率
+    tax_rate: 0.1, // 所得税率
+
+    /* 贷款 */
+    has_loan: false, // 是否贷款
+    loan_amount: 0, //	贷款金额
+    loan_annual_rate: 0.05, // 贷款年利率
+    loan_term: 8, // 贷款期限
 });
-watch(recordId, (newId) => {
-    if (newId) {
-        getRecord();
-    }
-});
-async function getRecord() {
-    const id = recordId.value;
-    if (!id) {
-        ElMessage.error("查询记录失败");
-        return;
-    }
-    try {
-        const response = await request.get(`/api/light_history/${id}`);
-        if (response.data.success) {
-            config.value = response.data.config;
-        } else {
-            ElMessage.error("查询记录失败");
-        }
-    } catch (error) {
-        if (error !== "cancel") {
-            console.error("获取记录详情失败:", error);
-            ElMessage.error(`获取详情失败: ${error.message}`);
-        }
-    }
-}
 
 // 基础配置
 const time_granularity = computed(() => {
