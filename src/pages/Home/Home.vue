@@ -159,7 +159,7 @@
                 </div>
                 <h3>资产健康哨兵</h3>
                 <p>为储能电芯提供健康度评估及早期预警，保障长期收益</p>
-                <el-button type="info" @click="showComingSoon"
+                <el-button type="info" @click="gotoPage('health')"
                     >进入页面</el-button
                 >
             </div>
@@ -170,6 +170,21 @@
     <div class="intro-containner" v-if="!isMobile">
         <Intro />
     </div>
+
+    <!-- 中间产品展示区 -->
+    <section class="product-section">
+        <div class="header">
+            <h1>{{ headerTitle }}</h1>
+            <p>{{ headerSubtitle }}</p>
+        </div>
+        <div class="product-grid">
+            <ProductCard
+                v-for="(product, index) in products"
+                :key="index"
+                :product="product"
+            />
+        </div>
+    </section>
 
     <!-- 待开发功能:可爱的提示弹窗 -->
     <el-dialog
@@ -207,6 +222,7 @@ import { ElDialog } from "element-plus";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay, Pagination } from "swiper/modules";
 import Intro from "./Intro.vue";
+import ProductCard from "./ProductCard.vue";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useLoadForecastStore } from "@/store/load";
@@ -284,6 +300,9 @@ const gotoPage = (page) => {
         case "chuneng":
             router.push("/chunengpre");
             break;
+        case "health":
+            router.push("/health");
+            break;
         default:
             router.push("/");
             break;
@@ -291,6 +310,119 @@ const gotoPage = (page) => {
 };
 
 const comingSoonVisible = ref(false); // 控制弹窗显示
+
+const headerTitle = ref("工业物联网产品解决方案");
+const headerSubtitle = ref(
+    "高效、稳定、安全的工业通信与数据采集设备，助力企业数字化转型"
+);
+const products = ref([
+    {
+        title: "PMAC3101 4G工业通信网关",
+        subtitle: "TASO102 4G红外抄表仪",
+        imgURL: "https://pmac.leyi.host/downloads/product_01.png",
+        description:
+            "快速将传统RS485设备接入云端，节省布线成本，支持边缘计算，为算法提供稳定可靠的实时数据传输通道。",
+        features: [
+            {
+                title: "高速4G通信",
+                content: "上行5Mbps/下行10Mbps，替代2G DTU",
+            },
+            {
+                title: "协议转换",
+                content: "Modbus RTU/TCP互转，支持云平台对接",
+            },
+            {
+                title: "多设备接入",
+                content: "2路RS485，最多32台仪表，通信距离1.2km",
+            },
+            { title: "智能管理", content: "一键扫描、远程配置、心跳包机制" },
+        ],
+        scenario: "工业能耗监测、智能建筑远程数据采集、变电站监控",
+        detailDescription:
+            "无需求或现有电费，3分钟完成安装，立即实现远程抄表与数据上传，大幅降低人工成本，适配老旧设备升级需求。",
+        detailFeatures: [
+            { title: "非接触抄表", content: "红外通信0-3米，90°角度，免接表" },
+            { title: "双模式通信", content: "4G版（内置8年流量）/RS485版" },
+            { title: "易安装", content: "3M贴装，9-12V DC供电，即插即用" },
+            { title: "多协议支持", content: "DL/T645、Modbus RTU、MQTT" },
+        ],
+        detailScenario: "住宅/商业楼宇电费改造、工业防爆场景仪表采集",
+        pathName: "Gateway",
+    },
+    {
+        title: "PMAC124 4G红外抄表仪",
+        subtitle: "EMC-200系列",
+        imgURL: "https://pmac.leyi.host/downloads/product_03.png",
+        description:
+            "无需改造现有电表，3分钟完成安装，立即实现远程抄表与数据上传。",
+        features: [
+            {
+                title: "非接触抄表",
+                content: "红外通信 0-3 米，90° 角度，免接线",
+            },
+            {
+                title: "通信方式",
+                content: "4G（内置 8 年流量）",
+            },
+            {
+                title: "易安装",
+                content: "3M 胶贴装，9-12V DC 供电，即插即用",
+            },
+            {
+                title: "多协议支持",
+                content: "DL/T645、Modbus RTU、MQTT",
+            },
+        ],
+        scenario: "工业现场仪表数据采集、住宅/商业楼宇电表改造",
+        detailDescription:
+            "提供可视化配置界面，无需编程即可实现设备接入、协议转换和数据转发，大幅缩短项目部署周期。",
+        detailFeatures: [
+            { title: "安全防护", content: "内置防火墙，支持VPN安全接入" },
+            { title: "工业级设计", content: "-40℃~75℃宽温运行，IP40防护" },
+            { title: "容器支持", content: "支持Docker容器，灵活部署应用" },
+            { title: "远程维护", content: "支持SSH远程管理，Web配置界面" },
+        ],
+        detailScenario: "电力SCADA系统、油气管道监控、水处理自动化",
+        pathName: "EMC200",
+    },
+    {
+        title: "PMGC-2000微网控制器",
+        subtitle: "图例",
+        imgURL: "https://pmac.leyi.host/downloads/product_02.png",
+        description:
+            "集微网协调控制、数据采集与转发、策略管理于一体，维持微网功率与频率稳定，提升清洁能源利用效率。",
+        features: [
+            {
+                title: "协调控制",
+                content: "分布式智能调频调压，光储荷协调",
+            },
+            {
+                title: "数据采集",
+                content: "16 路 RS485，并行采集提高效率",
+            },
+            {
+                title: "数据转发与上传",
+                content: "云平台上传，支持多主机连接",
+            },
+            {
+                title: "策略管理",
+                content: "计划充放电、需求侧响应，虚拟电厂搭建等",
+            },
+        ],
+        scenario: "工商业、企业园区微网管理，源网荷储一体化协调",
+        detailDescription:
+            "支持多种计费模式，实时监控用电情况，提供用电分析报表，帮助用户优化用电策略，降低能源成本。",
+        detailFeatures: [
+            { title: "多费率设置", content: "支持尖、峰、平、谷四费率" },
+            { title: "告警功能", content: "余额不足、超功率、开箱等告警" },
+            { title: "数据存储", content: "掉电数据保护，存储12个月历史数据" },
+            { title: "远程升级", content: "支持OTA远程固件升级" },
+        ],
+        detailScenario: "商业综合体、工业园区、学校宿舍用电管理",
+        pathName: "Meter",
+    },
+]);
+
 // 显示开发中提示
 const showComingSoon = () => {
     comingSoonVisible.value = true;
@@ -740,6 +872,66 @@ const showComingSoon = () => {
         max-width: 100%;
         width: 100%;
         margin-bottom: 15px;
+    }
+}
+
+/* 中间产品区样式 */
+.product-section {
+    background-color: white;
+    padding: 50px 0;
+    border-radius: 8p x;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    .header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+
+        h1 {
+            color: #1d3b6c;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+
+            &::after {
+                content: "";
+                position: absolute;
+                bottom: -10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 80px;
+                height: 4px;
+                background: #2a5ba9;
+                border-radius: 2px;
+            }
+        }
+
+        p {
+            color: #666;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 1.5rem auto 0;
+            line-height: 1.6;
+        }
+    }
+
+    .el-divider {
+        background-color: rgba(#1d3b6c, 0.2);
+        margin: 1.5rem 0 2.5rem;
+    }
+    .product-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 2rem;
+    }
+}
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: 1fr !important;
+        gap: 25px !important;
     }
 }
 

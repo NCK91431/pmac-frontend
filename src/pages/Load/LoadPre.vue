@@ -143,6 +143,7 @@ async function handleSubmit(formData, fileData) {
     post_data.append("forecast_range", formData.forecast_range);
     post_data.append("file", fileData);
     post_data.append("mode", mode.value);
+    post_data.append("mark_name", formData.mark_name);
     // 如果有用户ID
     if (user.value) {
         post_data.append("user_id", user.value.id);
@@ -232,6 +233,9 @@ function onClickHistoryTab() {
 </script>
 
 <style lang="scss" scoped>
+.container {
+    min-width: 1420px;
+}
 .card {
     border-radius: 8px;
     border: 1px solid #dee2e6;

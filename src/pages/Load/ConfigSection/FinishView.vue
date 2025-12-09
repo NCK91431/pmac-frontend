@@ -138,6 +138,14 @@
             </div>
         </div>
     </div>
+    <!-- 负荷特性分析 -->
+    <div class="row">
+        <Analysis
+            :load_stabilityindex="result.load_stabilityindex"
+            :predictaBility="result.predictaBility"
+            style="margin-top: 20px"
+        />
+    </div>
     <!-- 数据异常提示 -->
     <div class="row" style="padding-right: 32px">
         <div
@@ -170,6 +178,7 @@ import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
 import { useLoadForecastStore } from "@/store/load";
+import Analysis from "./components/Analysis.vue";
 const forecastStore = useLoadForecastStore();
 const result = computed(() => forecastStore.responseData.result);
 const modelMetrics = computed(() => {

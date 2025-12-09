@@ -17,6 +17,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
             forecast_range: "",
             previous_record_id: null,
             unit: "MW", // 或 "kW"
+            mark_name: "",
         },
         uploadedFile: null,
         excelInfo: null,
@@ -32,6 +33,8 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         compare_data: null, // 用于存储对比数据
         compare_baseinfo: null, // 用于存储对比的基本信息
         compare_merge: null, // 用于存储合并后的数据
+
+        refreshHistoryListFlag: false, // 用于触发历史记录列表刷新
     }),
 
     getters: {
@@ -156,6 +159,11 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
         setCompareMerge(merge) {
             this.compare_merge = merge;
+        },
+
+        // 触发历史记录列表刷新
+        triggerRefreshHistoryList() {
+            this.refreshHistoryListFlag = !this.refreshHistoryListFlag;
         },
     },
 

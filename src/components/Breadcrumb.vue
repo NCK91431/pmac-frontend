@@ -89,6 +89,7 @@ const routeToBreadcrumb = {
     },
     elec_example: {
         title: "光伏发电预测-案例展示",
+        to: "/elec_example",
         icon: "bi bi-bookmark-check",
         hasBackBtn: true,
     },
@@ -111,6 +112,22 @@ const routeToBreadcrumb = {
         icon: "bi bi-journal-text",
     },
     light: { title: "光储定容", to: "/light", icon: "bi bi-sun" },
+    product_EGate10: {
+        title: "EGate10",
+        to: "/product_EGate10",
+        icon: "bi bi-sun",
+    },
+    health: { title: "资产健康", to: "/health", icon: "bi bi-sun" },
+    product_BMS: {
+        title: "BMS",
+        to: "/product_BMS",
+        icon: "bi bi-sun",
+    },
+    product_BMU: {
+        title: "BMU",
+        to: "/product_BMU",
+        icon: "bi bi-sun",
+    },
 };
 
 // 确保路径是绝对路径的辅助函数
@@ -160,6 +177,10 @@ const updateBreadcrumbs = () => {
     if (routeName === "ElecCompare") {
         crumbs.push(routeToBreadcrumb["elec"]);
     }
+    // 如果是EGate10产品详情页面，添加光伏发电预测-案例展示作为父级
+    if (routeName == "product_EGate10") {
+        crumbs.push(routeToBreadcrumb["elec_example"]);
+    }
 
     // 添加当前页面
     if (routeName && routeToBreadcrumb[routeName]) {
@@ -172,6 +193,9 @@ const updateBreadcrumbs = () => {
         // 如果是光伏发电预测回测分析页面，添加记录ID
         if (routeName === "ElecCompare" && route.params.recordId) {
             breadcrumbItem.title = `回测分析 - 记录 ${route.params.recordId}`;
+        }
+        if (routeName == "product_EGate10") {
+            breadcrumbItem.title = `EGate10产品详情`;
         }
 
         crumbs.push(breadcrumbItem);

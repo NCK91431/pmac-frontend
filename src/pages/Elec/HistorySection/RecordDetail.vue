@@ -17,26 +17,58 @@
                     </template>
                 </div>
                 <div class="card-body">
+                    <!-- 创建时间 -->
+                    <div class="create-time">
+                        <i class="bi bi-clock"></i> <span>创建时间:</span>
+                        <span>
+                            {{ new Date(record.created_at).toLocaleString() }}
+                        </span>
+                    </div>
                     <div class="base-info">
+                        <!-- ID -->
                         <div class="info-item">
                             <div class="label">
                                 <i class="bi bi-key"></i> ID:
                             </div>
                             <div class="value">{{ record.id }}</div>
                         </div>
+                        <!-- 自定义名称 -->
                         <div class="info-item">
                             <div class="label">
-                                <i class="bi bi-clock"></i> 请求时间:
+                                <i class="bi bi-key"></i> 自定义名称：
                             </div>
                             <div class="value">
-                                {{
-                                    new Date(record.created_at).toLocaleString()
-                                }}
+                                {{ record.mark_name || "未设置" }}
+                            </div>
+                            <div class="actions">
+                                <button @click="openEditMarkNameDialog">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </button>
                             </div>
                         </div>
+                        <!-- 装机容量 -->
                         <div class="info-item">
                             <div class="label">
-                                <i class="bi bi-calendar4-week"></i> 历史数据:
+                                <i class="bi bi-box-seam"></i> 装机容量:
+                            </div>
+                            <div class="value">
+                                {{ record.pv_capacity ? record.pv_capacity : 0
+                                }}{{ `（${record.unit}）` }}
+                            </div>
+                        </div>
+                        <!-- 地点 -->
+                        <div class="info-item">
+                            <div class="label">
+                                <i class="bi bi-geo-alt"></i> 地点:
+                            </div>
+                            <div class="value">
+                                {{ record.location.join("-") }}
+                            </div>
+                        </div>
+                        <!-- 上传数据 -->
+                        <div class="info-item">
+                            <div class="label">
+                                <i class="bi bi-calendar4-week"></i> 上传数据:
                             </div>
                             <div class="value">
                                 {{
@@ -48,7 +80,13 @@
                                         : "未知"
                                 }}
                             </div>
+                            <div class="actions">
+                                <button @click="downloadUploadExcel">
+                                    <i class="bi bi-cloud-download"></i> 下载
+                                </button>
+                            </div>
                         </div>
+                        <!-- 预测日期 -->
                         <div class="info-item">
                             <div class="label">
                                 <i class="bi bi-clipboard-pulse"></i> 预测日期:
@@ -57,33 +95,9 @@
                                 {{ record.forecast_result.date }}
                             </div>
                         </div>
-                        <div class="info-item">
-                            <div class="label">
-                                <i class="bi bi-box-seam"></i> 装机容量:
-                            </div>
-                            <div class="value">
-                                {{ record.pv_capacity ? record.pv_capacity : 0
-                                }}{{ `（${record.unit}）` }}
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="label">
-                                <i class="bi bi-geo-alt"></i> 地点:
-                            </div>
-                            <div class="value">
-                                {{ record.location.join("-") }}
-                            </div>
-                        </div>
                     </div>
+                    <el-divider />
                     <div class="options">
-                        <el-button
-                            v-if="record.previous_record_id == null"
-                            type="success"
-                            plain
-                            @click="downloadUploadExcel"
-                        >
-                            <i class="bi bi-download me-2"></i>下载上传数据
-                        </el-button>
                         <el-button
                             type="primary"
                             @click="downloadPredictionExcel"
@@ -147,6 +161,41 @@
             </div>
         </template>
     </div>
+    <!-- 编辑标记名称的弹窗 -->
+    <el-dialog
+        v-model="editMarkNameDialogVisible"
+        title="编辑标记名称"
+        width="400px"
+        center
+    >
+        <div class="edit-mark-name-dialog">
+            <el-input
+                v-model="editMarkName"
+                placeholder="请输入标记名称（不超过15字）"
+                maxlength="15"
+                show-word-limit
+                clearable
+            />
+            <div class="dialog-tip">
+                <el-icon><InfoFilled /></el-icon>
+                你可以给此次建模取名，不超过15字
+            </div>
+        </div>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="editMarkNameDialogVisible = false"
+                    >取消</el-button
+                >
+                <el-button
+                    type="primary"
+                    @click="saveMarkName"
+                    :loading="saveLoading"
+                >
+                    确认
+                </el-button>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -194,16 +243,6 @@ watch(activeHistoryRecordId, (newId) => {
         getRecordDetailById();
     }
 });
-
-const formatCustomerType = (type) => {
-    const types = {
-        hospital: "医院",
-        mall: "商超",
-        discrete: "离散工业",
-        continuous: "连续工业",
-    };
-    return types[type] || type;
-};
 
 const getUploadData = (record) => {
     // 模拟数据
@@ -372,6 +411,50 @@ const continueForecast = () => {
 
     forecastStore.resetStage(); // 重置stage
 };
+/*------------ 编辑标记名称 ------------*/
+const editMarkNameDialogVisible = ref(false);
+const editMarkName = ref("");
+const saveLoading = ref(false);
+
+// 打开编辑对话框
+const openEditMarkNameDialog = () => {
+    editMarkName.value = record.value.mark_name || "";
+    editMarkNameDialogVisible.value = true;
+};
+
+// 保存标记名称
+const saveMarkName = async () => {
+    if (editMarkName.value.trim().length > 15) {
+        ElMessage.error("标记名称不能超过15字");
+        return;
+    }
+    saveLoading.value = true;
+    try {
+        const response = await request.post(
+            "/api/elec_history/update_mark_name",
+            {
+                record_id: record.value.id,
+                mark_name: editMarkName.value.trim(),
+            }
+        );
+
+        if (response.data.success) {
+            ElMessage.success("标记名称修改成功");
+            // 触发历史记录列表刷新
+            forecastStore.triggerRefreshHistoryList();
+            // 更新本地数据
+            record.value.mark_name = editMarkName.value.trim();
+            editMarkNameDialogVisible.value = false;
+        } else {
+            ElMessage.error(response.data.error || "修改失败");
+        }
+    } catch (error) {
+        console.error("修改标记名称失败:", error);
+        ElMessage.error("修改标记名称失败");
+    } finally {
+        saveLoading.value = false;
+    }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -401,13 +484,19 @@ const continueForecast = () => {
             }
         }
     }
+    .create-time {
+        margin-top: 8px;
+        margin-bottom: 24px;
+        color: gray;
+        span {
+            margin-right: 6px;
+        }
+        font-style: italic;
+    }
     .base-info {
         display: grid;
-        grid-template-columns: 1.3fr 1.5fr 1.6fr 1.2fr;
+        grid-template-columns: 1.3fr 1.5fr 1.6fr;
         gap: 10px;
-
-        padding-bottom: 16px;
-        border-bottom: 1px solid #eaeaea;
 
         .info-item {
             display: flex;
@@ -440,6 +529,26 @@ const continueForecast = () => {
             .value {
                 color: #555;
                 font-size: 0.95rem;
+            }
+
+            .actions {
+                justify-self: flex-end;
+                margin-left: auto;
+                button {
+                    border: none;
+                    background: transparent;
+                    color: #3498db;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    transition: all 0.2s;
+                    display: inline-flex;
+                    align-items: center;
+                    font-size: 0.9rem;
+                    gap: 5px;
+                    &:hover {
+                        background-color: #e3f2fd;
+                    }
+                }
             }
         }
     }

@@ -1,5 +1,14 @@
 <template>
     <div class="record-detail">
+        <!-- 负荷特性分析 -->
+        <template v-if="result.load_stabilityindex && result.predictaBility">
+            <Analysis
+                :load_stabilityindex="result.load_stabilityindex"
+                :predictaBility="result.predictaBility"
+                class="mb-2"
+            />
+        </template>
+
         <div v-if="record.created_at" class="row mb-4">
             <div class="col-md-4">
                 <div class="card info-card">
@@ -15,7 +24,7 @@
                         </div>
                         <div class="info-item mode">
                             <div class="label">
-                                <i class="bi bi-clock"></i> 预测类型:
+                                <i class="bi bi-aspect-ratio"></i> 预测模式:
                             </div>
                             <div class="value">
                                 <span
@@ -31,34 +40,46 @@
                         </div>
                         <div class="info-item">
                             <div class="label">
-                                <i class="bi bi-clock"></i> 请求时间:
+                                <i class="bi bi-marker-tip"></i>
+                                自定义名称:
                             </div>
                             <div class="value">
-                                {{
-                                    new Date(record.created_at).toLocaleString()
-                                }}
+                                {{ record.mark_name || "未设置" }}
+                            </div>
+                            <div class="actions">
+                                <button @click="openEditMarkNameDialog">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </button>
                             </div>
                         </div>
-                        <div class="info-item">
+                        <div
+                            class="info-item"
+                            v-if="
+                                record.upload_date_range &&
+                                record.upload_date_range.length > 0
+                            "
+                        >
                             <div class="label">
-                                <i class="bi bi-calendar4-week"></i> 历史数据:
+                                <i class="bi bi-calendar4-week"></i>
+                                上传数据:
                             </div>
                             <div class="value">
-                                {{
-                                    record.upload_date_range &&
-                                    record.upload_date_range.length
-                                        ? record.upload_date_range.join(" 至 ")
-                                        : "未知"
-                                }}
+                                {{ record.upload_date_range[0] }} 至
+                                {{ record.upload_date_range[1] }}
+                            </div>
+                            <div class="actions">
+                                <button @click="downloadUploadExcel">
+                                    <i class="bi bi-cloud-download"></i> 下载
+                                </button>
                             </div>
                         </div>
                         <div class="info-item">
                             <div class="label">
                                 <i class="bi bi-clipboard-pulse"></i> 预测日:
                             </div>
-                            <div class="value">
-                                {{ record.prediction_date.value }}
-                            </div>
+                            <el-tag type="success" style="font-size: 1rem">
+                                {{ record.prediction_date.value }}</el-tag
+                            >
                         </div>
                         <template v-if="record.mode == 'S'">
                             <div class="info-item">
@@ -129,11 +150,11 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <!-- <div class="timestamp">最后更新: 刚刚</div>
-                        <div class="actions">
-                            <button><i class="bi bi-pencil"></i> 编辑</button>
-                            <button><i class="bi bi-printer"></i> 打印</button>
-                        </div> -->
+                        <div class="timestamp">
+                            <i class="bi bi-clock"></i> 创建时间 :<br />
+                            {{ new Date(record.created_at).toLocaleString() }}
+                        </div>
+
                         <button
                             class="continue-btn btn btn-primary"
                             @click="continueForecast"
@@ -145,7 +166,7 @@
                 </div>
             </div>
 
-            <div class="col-md-8">
+            <div class="col-md-8" style="padding-left: 0">
                 <div class="chart-card load card shadow-sm p-3 h-100">
                     <div class="header">
                         <h5 class="mb-3 text-success">
@@ -212,13 +233,6 @@
 
                     <div class="options">
                         <el-button
-                            type="success"
-                            plain
-                            @click="downloadUploadExcel"
-                        >
-                            <i class="bi bi-download me-2"></i>下载上传数据
-                        </el-button>
-                        <el-button
                             type="primary"
                             @click="downloadPredictionExcel"
                         >
@@ -242,6 +256,7 @@
             </div>
             <div
                 class="col-md-8"
+                style="padding-left: 0"
                 v-if="cityWeatherForecast && cityWeatherForecast.length"
             >
                 <div class="chart-card card shadow-sm p-3 h-100">
@@ -276,6 +291,41 @@
             </div>
         </div>
     </div>
+    <!-- 编辑标记名称的弹窗 -->
+    <el-dialog
+        v-model="editMarkNameDialogVisible"
+        title="编辑标记名称"
+        width="400px"
+        center
+    >
+        <div class="edit-mark-name-dialog">
+            <el-input
+                v-model="editMarkName"
+                placeholder="请输入标记名称（不超过15字）"
+                maxlength="15"
+                show-word-limit
+                clearable
+            />
+            <div class="dialog-tip">
+                <el-icon><InfoFilled /></el-icon>
+                你可以给此次建模取名，不超过15字
+            </div>
+        </div>
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button @click="editMarkNameDialogVisible = false"
+                    >取消</el-button
+                >
+                <el-button
+                    type="primary"
+                    @click="saveMarkName"
+                    :loading="saveLoading"
+                >
+                    确认
+                </el-button>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -283,6 +333,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import LoadChart from "../ResultSection/LoadChart.vue";
 import WeatherChart from "../ResultSection/WeatherChart.vue";
 import WeatherInfo from "../ResultSection/WeatherInfo.vue";
+import Analysis from "../ConfigSection/components/Analysis.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
@@ -475,13 +526,56 @@ const continueForecast = () => {
 
     forecastStore.resetStage(); // 重置stage
 };
+
+/*------------ 编辑标记名称 ------------*/
+const editMarkNameDialogVisible = ref(false);
+const editMarkName = ref("");
+const saveLoading = ref(false);
+
+// 打开编辑对话框
+const openEditMarkNameDialog = () => {
+    editMarkName.value = record.value.mark_name || "";
+    editMarkNameDialogVisible.value = true;
+};
+
+// 保存标记名称
+const saveMarkName = async () => {
+    if (editMarkName.value.trim().length > 15) {
+        ElMessage.error("标记名称不能超过15字");
+        return;
+    }
+
+    saveLoading.value = true;
+    try {
+        const response = await request.post("/api/history/update_mark_name", {
+            record_id: record.value.id,
+            mark_name: editMarkName.value.trim(),
+        });
+
+        if (response.data.success) {
+            ElMessage.success("标记名称修改成功");
+            // 触发历史记录列表刷新
+            forecastStore.triggerRefreshHistoryList();
+            // 更新本地数据
+            record.value.mark_name = editMarkName.value.trim();
+            editMarkNameDialogVisible.value = false;
+        } else {
+            ElMessage.error(response.data.error || "修改失败");
+        }
+    } catch (error) {
+        console.error("修改标记名称失败:", error);
+        ElMessage.error("修改标记名称失败");
+    } finally {
+        saveLoading.value = false;
+    }
+};
 </script>
 
 <style lang="scss" scoped>
 .record-detail {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
     .info-card {
         background: white;
         border-radius: 12px;
@@ -525,7 +619,7 @@ const continueForecast = () => {
             display: flex;
             padding: 12px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            align-items: flex-start;
+            align-items: center;
 
             &:last-child {
                 border-bottom: none;
@@ -546,7 +640,6 @@ const continueForecast = () => {
                 font-weight: 500;
                 display: flex;
                 align-items: center;
-
                 .badge-custom {
                     background-color: #e3f2fd;
                     color: #1a73e8;
@@ -592,6 +685,21 @@ const continueForecast = () => {
                     color: #3498db;
                 }
             }
+            .actions button {
+                border: none;
+                background: transparent;
+                color: #3498db;
+                padding: 5px 10px;
+                border-radius: 4px;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                font-size: 0.9rem;
+                gap: 5px;
+                &:hover {
+                    background-color: #e3f2fd;
+                }
+            }
         }
 
         .card-footer {
@@ -609,22 +717,6 @@ const continueForecast = () => {
             }
             .timestamp {
                 font-style: italic;
-            }
-
-            .actions button {
-                border: none;
-                background: transparent;
-                color: #3498db;
-                padding: 5px 10px;
-                border-radius: 4px;
-                transition: all 0.2s;
-                display: inline-flex;
-                align-items: center;
-                gap: 5px;
-
-                &:hover {
-                    background-color: #e3f2fd;
-                }
             }
         }
     }
@@ -766,6 +858,23 @@ const continueForecast = () => {
                     }
                 }
             }
+        }
+    }
+}
+/* 编辑标记名称弹窗样式 */
+.edit-mark-name-dialog {
+    padding: 10px 0;
+
+    .dialog-tip {
+        margin-top: 8px;
+        color: #909399;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .el-icon {
+            font-size: 0.9rem;
         }
     }
 }

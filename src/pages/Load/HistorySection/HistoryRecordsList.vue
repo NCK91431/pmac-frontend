@@ -70,10 +70,10 @@
         </div>
         <!-- 表头 -->
         <div class="table-header">
-            <div class="col-id">ID</div>
+            <div class="col-markname">标记名称</div>
             <div class="col-date">创建时间</div>
             <div class="col-mode">预测模式</div>
-            <div class="col-location">位置</div>
+            <div class="col-location">地点</div>
             <div class="col-range">预测范围</div>
             <div class="col-upload">上传日期范围</div>
             <div class="col-prediction">预测日期</div>
@@ -93,21 +93,31 @@
         >
             <template #default="{ node, data }">
                 <div class="node-row">
-                    <div class="col-id">
-                        <span
-                            class="status-indicator"
-                            :class="
-                                data.previous_record_id
-                                    ? 'status-inactive'
-                                    : 'status-active'
-                            "
-                        ></span>
-                        {{ data.id }}
+                    <!-- 标记名称：仅根节点显示 -->
+                    <div class="col-markname">
+                        <template v-if="node.level == 1">
+                            <span
+                                class="status-indicator"
+                                :class="
+                                    data.previous_record_id
+                                        ? 'status-inactive'
+                                        : 'status-active'
+                                "
+                            ></span
+                            >{{
+                                data.mark_name
+                                    ? data.mark_name
+                                    : `ID: ${data.id}`
+                            }}
+                        </template>
+                        <template v-else>-</template>
                     </div>
+
                     <!-- 创建时间 -->
                     <div class="col-date">
-                        {{ new Date(data.created_at).toLocaleString() }}
+                        {{ formatCreateTime(data.created_at) }}
                     </div>
+
                     <!-- 预测模式列：仅根节点显示 -->
                     <div class="col-mode">
                         <template v-if="node.level == 1">
@@ -191,7 +201,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import request from "@/utils/request";
 import { Delete, View, TopRight } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -225,6 +235,11 @@ function fetchRecords() {
         .get("/api/history")
         .then((response) => {
             records.value = response.data; // 假设后端返回的数据格式与模拟数据一致
+            // 如果 activeHistoryRecordId 为 null，默认选中第一条根节点
+            if (!activeHistoryRecordId.value && records.value.length > 0) {
+                const firstRootNode = records.value[0];
+                forecastStore.set_activeHistoryRecordId(firstRootNode.id);
+            }
         })
         .catch((error) => {
             console.error("获取历史记录失败:", error);
@@ -235,9 +250,28 @@ onMounted(() => {
     fetchRecords();
 });
 
+// 监听刷新标志的变化
+watch(
+    () => forecastStore.refreshHistoryListFlag,
+    () => {
+        fetchRecords();
+    }
+);
+
 const filteredRecords = computed(() => {
     return records.value; // 实际项目中根据搜索条件过滤
 });
+
+const formatCreateTime = (dateString) => {
+    return new Date(dateString).toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
+};
 
 const formatCustomerType = (type) => {
     const types = {
@@ -347,15 +381,18 @@ function goComparePage(recordId) {
 
     > div {
         flex-shrink: 0;
-        padding: 0 8px;
+    }
+
+    .col-markname {
+        flex: 0 0 240px;
     }
 
     .col-id {
-        flex: 0 0 120px;
+        flex: 0 0 80px;
     }
 
     .col-date {
-        flex: 0 0 160px;
+        flex: 0 0 130px;
     }
 
     .col-mode {
@@ -390,24 +427,22 @@ function goComparePage(recordId) {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 10px 15px;
+    padding: 10px 0px;
     border-bottom: 1px solid #eee;
     transition: background-color 0.2s;
 
     > div {
         flex-shrink: 0;
-        padding: 0 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .col-id {
-        flex: 0 0 100px;
+    .col-markname {
+        flex: 0 0 240px;
         display: flex;
         align-items: center;
-        gap: 6px;
-
+        gap: 5px;
         .status-indicator {
             display: inline-block;
             width: 10px;
@@ -424,8 +459,15 @@ function goComparePage(recordId) {
         }
     }
 
+    .col-id {
+        flex: 0 0 80px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
     .col-date {
-        flex: 0 0 160px;
+        flex: 0 0 130px;
     }
 
     .col-mode {

@@ -7,8 +7,23 @@
                     <i class="bi bi-graph-up-arrow me-2"></i>负荷预测回测分析
                 </h5>
             </div>
-            <CompareBaseInfo class="mb-4" />
+            <CompareBaseInfo />
         </div>
+
+        <!-- 负荷特性分析 -->
+        <template
+            v-if="
+                !previous_record_id &&
+                detail_result.load_stabilityindex &&
+                detail_result.predictaBility
+            "
+        >
+            <Analysis
+                :load_stabilityindex="detail_result.load_stabilityindex"
+                :predictaBility="detail_result.predictaBility"
+                class="mb-4"
+            />
+        </template>
 
         <div class="content-section">
             <!-- 加载状态 -->
@@ -165,6 +180,7 @@ import { addDays, isBefore, isAfter, parseISO } from "date-fns";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import CompareBaseInfo from "./CompareBaseInfo.vue";
+import Analysis from "../ConfigSection/components/Analysis.vue";
 import CompareChart from "./CompareChart.vue";
 import WeatherInfo from "../ResultSection/WeatherInfo.vue";
 import WeatherChart from "../ResultSection/WeatherChart.vue";
@@ -178,6 +194,10 @@ const user = inject("user"); //注入全局用户状态
 const recordId = ref(route.params.recordId || null);
 const selectedDate = ref(null);
 const compareData = computed(() => forecastStore.compare_data || {});
+const detail_result = computed(() => forecastStore.compare_baseinfo.result);
+const previous_record_id = computed(
+    () => forecastStore.compare_baseinfo.previous_record_id
+);
 const loading = ref(false);
 const error = ref(null);
 const selectedCityIndex = ref(0);

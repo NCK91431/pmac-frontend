@@ -70,7 +70,7 @@
         </div>
         <!-- 表头 -->
         <div class="table-header">
-            <div class="col-id">ID</div>
+            <div class="col-markname">标记名称</div>
             <div class="col-date">创建时间</div>
             <div class="col-location">位置</div>
             <div class="col-pv_capacity">装机容量</div>
@@ -92,19 +92,27 @@
         >
             <template #default="{ node, data }">
                 <div class="node-row">
-                    <div class="col-id">
-                        <span
-                            class="status-indicator"
-                            :class="
-                                data.previous_record_id
-                                    ? 'status-inactive'
-                                    : 'status-active'
-                            "
-                        ></span>
-                        {{ data.id }}
+                    <!-- 标记名称：仅根节点显示 -->
+                    <div class="col-markname">
+                        <template v-if="node.level == 1">
+                            <span
+                                class="status-indicator"
+                                :class="
+                                    data.previous_record_id
+                                        ? 'status-inactive'
+                                        : 'status-active'
+                                "
+                            ></span>
+                            {{
+                                data.mark_name
+                                    ? data.mark_name
+                                    : `ID: ${data.id}`
+                            }}
+                        </template>
+                        <template v-else>-</template>
                     </div>
                     <div class="col-date">
-                        {{ new Date(data.created_at).toLocaleString() }}
+                        {{ formatCreateTime(data.created_at) }}
                     </div>
                     <!-- 位置列：仅根节点显示 -->
                     <div class="col-location">
@@ -188,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import request from "@/utils/request";
 import { Delete, TopRight } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -220,11 +228,25 @@ function fetchRecords() {
         .get("/api/elec_history")
         .then((response) => {
             records.value = response.data; // 假设后端返回的数据格式与模拟数据一致
+            console.log(response.data);
+            // 如果 activeHistoryRecordId 为 null，默认选中第一条根节点
+            if (!activeHistoryRecordId.value && records.value.length > 0) {
+                const firstRootNode = records.value[0];
+                forecastStore.set_activeHistoryRecordId(firstRootNode.id);
+            }
         })
         .catch((error) => {
             console.error("获取历史记录失败:", error);
         });
 }
+
+// 监听刷新标志的变化
+watch(
+    () => forecastStore.refreshHistoryListFlag,
+    () => {
+        fetchRecords();
+    }
+);
 
 onMounted(() => {
     fetchRecords();
@@ -234,27 +256,16 @@ const filteredRecords = computed(() => {
     return records.value; // 实际项目中根据搜索条件过滤
 });
 
-const formatCustomerType = (type) => {
-    const types = {
-        hospital: "医院",
-        mall: "商超",
-        discrete: "离散工业",
-        continuous: "连续工业",
-    };
-    return types[type] || type;
+const formatCreateTime = (dateString) => {
+    return new Date(dateString).toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    });
 };
-
-const getCustomerTagType = (type) => {
-    const types = {
-        hospital: "success",
-        mall: "warning",
-        discrete: "",
-        continuous: "danger",
-    };
-    return types[type] || "";
-};
-
-const searchQuery = ref("");
 
 function handleNodeClick(node) {
     forecastStore.set_activeHistoryRecordId(node.id); // 设置当前选中节点
@@ -383,11 +394,10 @@ async function continueForecast(id) {
 
     > div {
         flex-shrink: 0;
-        padding: 0 8px;
     }
 
-    .col-id {
-        flex: 0 0 120px;
+    .col-markname {
+        flex: 0 0 240px;
     }
 
     .col-date {
@@ -399,7 +409,7 @@ async function continueForecast(id) {
     }
 
     .col-pv_capacity {
-        flex: 0 0 120px;
+        flex: 0 0 100px;
     }
 
     .col-type {
@@ -426,23 +436,22 @@ async function continueForecast(id) {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 10px 15px;
+    padding: 10px 0px;
     border-bottom: 1px solid #eee;
     transition: background-color 0.2s;
 
     > div {
         flex-shrink: 0;
-        padding: 0 8px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .col-id {
-        flex: 0 0 100px;
+    .col-markname {
+        flex: 0 0 240px;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
 
         .status-indicator {
             display: inline-block;
@@ -469,7 +478,7 @@ async function continueForecast(id) {
     }
 
     .col-pv_capacity {
-        flex: 0 0 120px;
+        flex: 0 0 100px;
     }
 
     .col-type {

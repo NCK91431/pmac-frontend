@@ -78,6 +78,26 @@ const router = createRouter({
             name: "light_example",
             component: () => import("@/pages/Light/HistorySection/Example.vue"),
         },
+        {
+            path: "/health",
+            name: "health",
+            component: () => import("@/pages/Health/index.vue"),
+        },
+        {
+            path: "/product_EGate10",
+            name: "product_EGate10",
+            component: () => import("@/pages/Products/EGate10.vue"),
+        },
+        {
+            path: "/product_BMS",
+            name: "product_BMS",
+            component: () => import("@/pages/Products/BMS.vue"),
+        },
+        {
+            path: "/product_BMU",
+            name: "product_BMU",
+            component: () => import("@/pages/Products/BMU.vue"),
+        },
     ],
 });
 

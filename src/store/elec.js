@@ -13,6 +13,7 @@ export const useElecStore = defineStore("elec", {
             location: [],
             previous_record_id: null,
             unit: "kWp", // 或"MWp"
+            mark_name: "",
         },
         uploadedFile: null,
         excelInfo: null,
@@ -28,6 +29,8 @@ export const useElecStore = defineStore("elec", {
         compare_merge: null, // 用于存储合并后的数据
 
         userPickDate: null, // 用户选择的继续预测日期
+
+        refreshHistoryListFlag: false, // 用于触发历史记录列表刷新
     }),
 
     getters: {
@@ -123,6 +126,11 @@ export const useElecStore = defineStore("elec", {
         },
         setCompareMerge(merge) {
             this.compare_merge = merge;
+        },
+
+        // 触发历史记录列表刷新
+        triggerRefreshHistoryList() {
+            this.refreshHistoryListFlag = !this.refreshHistoryListFlag;
         },
     },
 

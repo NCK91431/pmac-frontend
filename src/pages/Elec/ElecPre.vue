@@ -99,6 +99,7 @@ async function handleSubmit() {
     post_data.append("pv_capacity", formData.pv_capacity);
     post_data.append("location", JSON.stringify(formData.location));
     post_data.append("unit", formData.unit);
+    post_data.append("mark_name", formData.mark_name);
     // 判断是继续预测（上传日期）还是新建预测（上传文件）
     if (forecastStore.isContinue) {
         post_data.append("userPickDate", forecastStore.userPickDate); // 继续预测：上传选中的日期
@@ -194,6 +195,9 @@ function onClickHistoryTab() {
 </script>
 
 <style lang="scss" scoped>
+.container {
+    min-width: 1420px;
+}
 .top-action {
     display: flex;
     justify-content: flex-end;

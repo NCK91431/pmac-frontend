@@ -180,6 +180,27 @@
             </div>
             <!-- 峰值负荷警告提示 END -->
         </div>
+
+        <!-- 	取别名 -->
+        <el-divider />
+        <div class="mb-3">
+            <label class="form-label fw-bold">
+                <span class="optional-badge">选填</span>
+                <span class="optional-text">标记名称</span>
+            </label>
+            <input
+                type="text"
+                v-model.trim="form.mark_name"
+                class="form-control optional-field"
+                maxlength="15"
+                :disabled="isContinue"
+            />
+            <span class="optional-tip">
+                <i class="bi bi-info-circle-fill"></i>
+                你可以给此次建模取名，不超过15字
+            </span>
+        </div>
+
         <div v-if="isContinue" class="continue-form-tip">
             <el-text type="info" size="small">
                 <el-icon><InfoFilled /></el-icon>
@@ -438,8 +459,39 @@ watch(
     .form-label {
         font-size: 14px;
         margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        .optional-badge {
+            font-size: 0.7rem;
+            color: #909399;
+            background-color: #f4f4f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 6px;
+            font-weight: normal;
+        }
+        .optional-text {
+            color: #5e5e5e;
+        }
+    }
+    .optional-field {
+        border: 1px solid #e4e7ed;
+        &:disabled {
+            background-color: #f5f7fa;
+            color: #c0c4cc;
+        }
+    }
+    .optional-tip {
+        font-weight: normal;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 6px;
+        color: #909399;
     }
 }
+
 .peak-load-warning {
     background: linear-gradient(135deg, #fff8e6, #fffbeb);
     border: 1px solid #ffd666;
