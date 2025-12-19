@@ -12,6 +12,12 @@
             :button-text="'探索产品详情'"
             @button-click="goProductInfoPage('product_BMU')"
         />
+        <!-- 产品广告 - 被动均衡BMU系列 -->
+        <ProductAdvertisement
+            :product="productData.BMSPLUS"
+            :button-text="'探索产品详情'"
+            @button-click="goProductInfoPage('product_BMSPLUS')"
+        />
     </div>
 </template>
 

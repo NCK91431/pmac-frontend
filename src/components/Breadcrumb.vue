@@ -122,11 +122,19 @@ const routeToBreadcrumb = {
         title: "BMS",
         to: "/product_BMS",
         icon: "bi bi-sun",
+        hasBackBtn: true,
+    },
+    product_BMSPLUS: {
+        title: "被动均衡BMU",
+        to: "/product_BMSPLUS",
+        icon: "bi bi-sun",
+        hasBackBtn: true,
     },
     product_BMU: {
         title: "BMU",
         to: "/product_BMU",
         icon: "bi bi-sun",
+        hasBackBtn: true,
     },
 };
 
@@ -180,6 +188,13 @@ const updateBreadcrumbs = () => {
     // 如果是EGate10产品详情页面，添加光伏发电预测-案例展示作为父级
     if (routeName == "product_EGate10") {
         crumbs.push(routeToBreadcrumb["elec_example"]);
+    }
+    if (
+        routeName == "product_BMS" ||
+        routeName == "product_BMSPLUS" ||
+        routeName == "product_BMU"
+    ) {
+        crumbs.push(routeToBreadcrumb["health"]);
     }
 
     // 添加当前页面

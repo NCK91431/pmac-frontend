@@ -94,6 +94,11 @@ const router = createRouter({
             component: () => import("@/pages/Products/BMS.vue"),
         },
         {
+            path: "/product_BMSPLUS",
+            name: "product_BMSPLUS",
+            component: () => import("@/pages/Products/BMSPLUS.vue"),
+        },
+        {
             path: "/product_BMU",
             name: "product_BMU",
             component: () => import("@/pages/Products/BMU.vue"),
