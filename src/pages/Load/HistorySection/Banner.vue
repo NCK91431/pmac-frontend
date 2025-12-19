@@ -33,6 +33,7 @@ import { useLoadForecastStore } from "@/store/load";
 const forecastStore = useLoadForecastStore();
 const stage = computed(() => forecastStore.stage);
 const formData = computed(() => forecastStore.formData);
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 
@@ -42,6 +43,14 @@ const gotoLoadPrediction = () => {
     }
     router.push({ name: "loadpre" });
 };
+
+/*
+const openMessage = () => {
+    ElMessageBox.alert("系统正在升级中，请稍后再试", "提示", {
+        confirmButtonText: "好的",
+    });
+};
+*/
 
 // 添加文字动画效果
 onMounted(() => {

@@ -117,7 +117,7 @@
                 :disabled="isContinue"
             >
                 <el-option
-                    label="D-4 -> D+1 【注：4天前用电量 → 预测未来一天分时负荷】"
+                    label="D-4 -> D+1、D+2、D+3 【注：4天前用电量 → 预测未来三天分时负荷】"
                     value="D-4"
                 />
                 <el-option
@@ -141,17 +141,23 @@
                 <i class="bi bi-calendar2-week me-2"></i>预测日
             </div>
             <div class="date-info">
-                <div class="selected-date-display">
-                    <i class="bi bi-calendar-event me-1"></i>
-                    {{ predictionDate }}
-                </div>
-                <div class="weekday">
-                    <i class="bi bi-calendar-week me-1"></i>
-                    {{ predictionWeekday }}
-                </div>
-                <div class="date-type" :class="predictionDateType">
-                    <i class="me-1" :class="dateTypeIcon"></i>
-                    {{ predictionDateTypeText }}
+                <div
+                    v-for="(day, index) in predictionDays"
+                    :key="index"
+                    class="day-item"
+                >
+                    <div class="selected-date-display">
+                        <i class="bi bi-calendar-event me-1"></i>
+                        {{ day.date }}
+                    </div>
+                    <div class="weekday">
+                        <i class="bi bi-calendar-week me-1"></i>
+                        {{ day.weekday }}
+                    </div>
+                    <div class="date-type" :class="day.type">
+                        <i class="me-1" :class="day.typeIcon"></i>
+                        {{ day.typeText }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -181,7 +187,7 @@
             <!-- 峰值负荷警告提示 END -->
         </div>
 
-        <!-- 	取别名 -->
+        <!-- 取别名 -->
         <el-divider />
         <div class="mb-3">
             <label class="form-label fw-bold">
@@ -324,28 +330,63 @@ const showPredictionDate = computed(() => {
     return forecastStore.excelInfo && form.value.forecast_range;
 });
 
-// 计算预测日
-const predictionDate = computed(() => {
-    if (!forecastStore.excelInfo || !form.value.forecast_range) return "";
+// 计算预测日（返回数组）
+const predictionDays = computed(() => {
+    if (!forecastStore.excelInfo || !form.value.forecast_range) return [];
 
     const endDate = new Date(forecastStore.excelInfo.dateRange[1]);
-    const daysToAdd = getDaysToAdd(form.value.forecast_range);
-    const predictionDate = addDays(endDate, daysToAdd);
-    return format(predictionDate, "yyyy-MM-dd");
+    const baseDaysToAdd = getDaysToAdd(form.value.forecast_range);
+    const dayCount = getDayCount(form.value.forecast_range);
+
+    const days = [];
+    for (let i = 0; i < dayCount; i++) {
+        const predictionDate = addDays(endDate, baseDaysToAdd + i);
+        const dateStr = format(predictionDate, "yyyy-MM-dd");
+        const weekday = getWeekday(predictionDate);
+        const type = getDateType(predictionDate);
+
+        days.push({
+            date: dateStr,
+            weekday: weekday,
+            type: type,
+            typeText: getDateTypeText(type),
+            typeIcon: getDateTypeIcon(type),
+        });
+    }
+    console.log(days);
+    return days;
 });
+
+// 获取预测天数
+function getDayCount(forecastRange) {
+    const map = {
+        "D-4": 3, // 预测未来3天
+        "D-3": 1, // 预测未来1天
+        "D-2": 1, // 预测未来1天
+        "D-1": 1, // 预测未来1天
+    };
+    return map[forecastRange] || 1;
+}
+
+// 根据预测类型计算需要添加的天数（基值）
+function getDaysToAdd(forecastRange) {
+    const map = {
+        "D-4": 2, // 结束日期 + 2天开始预测（D+1, D+2, D+3）
+        "D-3": 2, // 结束日期 + 2天（D+1）
+        "D-2": 2, // 结束日期 + 2天（D+1）
+        "D-1": 2, // 结束日期 + 2天（D+1）
+    };
+    return map[forecastRange] || 2;
+}
 
 // 获取星期几
-const predictionWeekday = computed(() => {
-    if (!predictionDate.value) return "";
-    const date = new Date(predictionDate.value);
+function getWeekday(date) {
     const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
     return `星期${weekdays[date.getDay()]}`;
-});
+}
 
 // 判断日期类型
-const predictionDateType = computed(() => {
-    if (!predictionDate.value) return "weekday";
-    const date = new Date(predictionDate.value);
+function getDateType(date) {
     const day = date.getDay();
     // 0是周日，6是周六
     if (day === 0 || day === 6) {
@@ -353,39 +394,26 @@ const predictionDateType = computed(() => {
     }
     // 这里可以扩展节假日判断
     return "weekday";
-});
+}
 
 // 日期类型文本
-const predictionDateTypeText = computed(() => {
-    const type = predictionDateType.value;
+function getDateTypeText(type) {
     const typeMap = {
         weekday: "工作日",
         weekend: "周末",
         holiday: "节假日",
     };
     return typeMap[type] || type;
-});
+}
 
 // 日期类型图标
-const dateTypeIcon = computed(() => {
-    const type = predictionDateType.value;
+function getDateTypeIcon(type) {
     const iconMap = {
         weekday: "bi-briefcase",
         weekend: "bi-emoji-sunglasses",
         holiday: "bi-balloon",
     };
     return iconMap[type] || "bi-briefcase";
-});
-
-// 根据预测类型计算需要添加的天数
-function getDaysToAdd(forecastRange) {
-    const map = {
-        "D-4": 5, // 结束日期 + 5天
-        "D-3": 4, // 结束日期 + 4天
-        "D-2": 3, // 结束日期 + 3天
-        "D-1": 2, // 结束日期 + 2天
-    };
-    return map[forecastRange] || 0;
 }
 
 // 监听预测类型变化，重新计算预测日
@@ -570,6 +598,11 @@ watch(
 
     .date-info {
         display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .day-item {
+        display: flex;
         gap: 8px;
         flex-wrap: wrap;
 
@@ -626,7 +659,7 @@ watch(
         align-items: flex-start;
         gap: 10px;
 
-        .date-info {
+        .day-item {
             width: 100%;
             justify-content: space-between;
         }

@@ -10,6 +10,7 @@
         </template>
 
         <div v-if="record.created_at" class="row mb-4">
+            <!-- 基本信息 -->
             <div class="col-md-4">
                 <div class="card info-card">
                     <div class="card-header">
@@ -78,7 +79,7 @@
                                 <i class="bi bi-clipboard-pulse"></i> 预测日:
                             </div>
                             <el-tag type="success" style="font-size: 1rem">
-                                {{ record.prediction_date.value }}</el-tag
+                                {{ format_pred_dates }}</el-tag
                             >
                         </div>
                         <template v-if="record.mode == 'S'">
@@ -144,7 +145,12 @@
                             </div>
                             <div class="value">
                                 <span class="badge-custom forecast-badge">
-                                    {{ `${record.forecast_range} → D+1` }}
+                                    {{
+                                        activeHistoryRecord.forecast_range ==
+                                        "D-4"
+                                            ? "D-4 -> D+1、D+2、D+3"
+                                            : `${record.forecast_range} → D+1`
+                                    }}
                                 </span>
                             </div>
                         </div>
@@ -165,7 +171,7 @@
                     </div>
                 </div>
             </div>
-
+            <!-- 负荷预测结果 -->
             <div class="col-md-8" style="padding-left: 0">
                 <div class="chart-card load card shadow-sm p-3 h-100">
                     <div class="header">
@@ -173,6 +179,18 @@
                             <i class="bi bi-graph-up"></i>负荷预测结果
                         </h5>
                         <!-- 日期信息展示部分 -->
+                        <!-- 新增：预测日下拉框 -->
+                        <div style="margin-right: 20px">
+                            <el-radio-group v-model="selectedDay">
+                                <el-radio value="D+1">D + 1</el-radio>
+                                <el-radio value="D+2" :disabled="disabled_D2"
+                                    >D + 2</el-radio
+                                >
+                                <el-radio value="D+3" :disabled="disabled_D3"
+                                    >D + 3</el-radio
+                                >
+                            </el-radio-group>
+                        </div>
                         <div class="date-info" v-if="result.date.value">
                             <div class="selected-date-display">
                                 <i class="bi bi-calendar-event me-1"></i>
@@ -338,18 +356,56 @@ import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
 import { useLoadForecastStore } from "@/store/load";
+import { tr } from "date-fns/locale";
 
 const forecastStore = useLoadForecastStore();
 const activeHistoryRecordId = computed(
     () => forecastStore.activeHistoryRecordId
 ); //用户在历史记录列表里选中的某条负荷预测记录
+const activeHistoryRecord = computed(() => forecastStore.activeHistoryRecord);
 
 const record = ref({});
 const result = computed(() => record.value.result || {}); //后端返回的预测结果数据
+const format_pred_dates = computed(() => {
+    if (activeHistoryRecord.value.prediction_date) {
+        return activeHistoryRecord.value.prediction_date.value;
+    }
+    if (
+        activeHistoryRecord.value.pred_dates &&
+        activeHistoryRecord.value.pred_dates.length
+    ) {
+        let str = activeHistoryRecord.value.pred_dates[0].value;
+        if (activeHistoryRecord.value.pred_dates[1]) {
+            const item_str = activeHistoryRecord.value.pred_dates[1].value;
+            const item_arr = item_str.split("-");
+            str += `、${item_arr[1]}-${item_arr[2]}`;
+        }
+        if (activeHistoryRecord.value.pred_dates[2]) {
+            const item_str = activeHistoryRecord.value.pred_dates[2].value;
+            const item_arr = item_str.split("-");
+            str += `、${item_arr[1]}-${item_arr[2]}`;
+        }
+        return str;
+    }
+});
 
+const disabled_D2 = computed(() => {
+    return !(
+        activeHistoryRecord.value.pred_dates &&
+        activeHistoryRecord.value.pred_dates[1]
+    );
+});
+const disabled_D3 = computed(() => {
+    return !(
+        activeHistoryRecord.value.pred_dates &&
+        activeHistoryRecord.value.pred_dates[2]
+    );
+});
 /*------------日期信息------------*/
 
 const date_type = computed(() => result.date.type);
+
+const selectedDay = ref("D+1");
 
 // 获取星期几
 const getWeekday = (dateString) => {
@@ -395,7 +451,8 @@ async function getRecordDetailById() {
         // ElMessage.error("记录ID不存在，无法获取详情");
         return;
     }
-    const response = await request.get(`/api/history/${id}`);
+    const selected_day = selectedDay.value;
+    const response = await request.get(`/api/history/${id}/${selected_day}`);
     record.value = response.data;
 }
 onMounted(() => {
@@ -403,6 +460,12 @@ onMounted(() => {
 });
 watch(activeHistoryRecordId, (newId) => {
     if (newId) {
+        getRecordDetailById();
+        selectedDay.value = "D+1";
+    }
+});
+watch(selectedDay, (newDay) => {
+    if (newDay) {
         getRecordDetailById();
     }
 });

@@ -74,7 +74,7 @@
             <div class="col-date">创建时间</div>
             <div class="col-mode">预测模式</div>
             <div class="col-location">地点</div>
-            <div class="col-range">预测范围</div>
+            <div class="col-range">预测类型</div>
             <div class="col-upload">上传日期范围</div>
             <div class="col-prediction">预测日期</div>
             <div class="col-actions">操作</div>
@@ -145,7 +145,7 @@
                                 class="range-badge"
                                 :class="'range-' + data.forecast_range"
                             >
-                                {{ `${data.forecast_range} → D+1` }}
+                                {{ `${data.forecast_range} ` }}
                             </span>
                         </template>
                         <template v-else>-</template>
@@ -160,7 +160,7 @@
                     </div>
                     <div class="col-prediction">
                         <el-tag type="success">
-                            {{ data.prediction_date.value }}
+                            {{ computePredDates(data) }}
                         </el-tag>
                     </div>
                     <!-- 操作列-->
@@ -214,6 +214,28 @@ const forecastStore = useLoadForecastStore();
 const activeHistoryRecordId = computed(
     () => forecastStore.activeHistoryRecordId
 );
+const activehistoryRecord = computed(() => forecastStore.activeHistoryRecord);
+
+function computePredDates(record) {
+    console.log(record);
+    if (record.prediction_date) {
+        return record.prediction_date.value;
+    }
+    if (record.pred_dates) {
+        let str = record.pred_dates[0].value;
+        if (record.pred_dates[1]) {
+            const item_str = record.pred_dates[1].value;
+            const item_arr = item_str.split("-");
+            str += `、${item_arr[2]}`;
+        }
+        if (record.pred_dates[2]) {
+            const item_str = record.pred_dates[2].value;
+            const item_arr = item_str.split("-");
+            str += `、${item_arr[2]}`;
+        }
+        return str;
+    }
+}
 
 const router = useRouter();
 /* --------------------------- 正在执行的任务 -------------------------- */
@@ -239,6 +261,7 @@ function fetchRecords() {
             if (!activeHistoryRecordId.value && records.value.length > 0) {
                 const firstRootNode = records.value[0];
                 forecastStore.set_activeHistoryRecordId(firstRootNode.id);
+                forecastStore.set_activeHistoryRecord(firstRootNode);
             }
         })
         .catch((error) => {
@@ -297,6 +320,7 @@ const searchQuery = ref("");
 
 function handleNodeClick(node) {
     forecastStore.set_activeHistoryRecordId(node.id); // 设置当前选中节点
+    forecastStore.set_activeHistoryRecord(node);
 }
 
 // 删除历史记录

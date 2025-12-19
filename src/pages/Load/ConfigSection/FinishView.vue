@@ -70,19 +70,29 @@
                         </div>
                     </div>
                 </div>
-                <div class="preview-item metric" v-if="modelMetrics">
+
+                <div class="preview-item metric">
                     <div class="preview-label">
                         <i class="bi bi-clipboard-data"></i> 模型评估
                     </div>
-                    <div class="metric-card compact">
-                        <div class="metric-icon compact">
-                            <i class="bi bi-bar-chart-line"></i>
-                        </div>
-                        <div class="metric-content compact">
-                            <div class="metric-label compact">预测误差</div>
-                            <div class="metric-value compact">
-                                <text>{{ modelMetrics.WMAPE }}</text>
-                                <text class="unit">%</text>
+                    <div class="metric-wrap">
+                        <div
+                            v-for="modelMetrics in modelMetrics_list"
+                            :key="modelMetrics.name"
+                            class="metric-card compact"
+                        >
+                            <div class="metric-icon compact">
+                                <i class="bi bi-bar-chart-line"></i>
+                            </div>
+                            <div class="metric-content compact">
+                                <div class="metric-label compact">
+                                    {{ modelMetrics.name }}
+                                </div>
+                                <div class="metric-label compact">预测误差</div>
+                                <div class="metric-value compact">
+                                    <text>{{ modelMetrics.WMAPE }}</text>
+                                    <text class="unit">%</text>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -186,6 +196,28 @@ const modelMetrics = computed(() => {
         ? result.value.modelMetrics
         : null;
 });
+const modelMetrics_list = computed(() => {
+    const arr = [];
+    if (result.value.predictionD1) {
+        arr.push({
+            name: "D+1",
+            ...result.value.predictionD1.modelMetrics,
+        });
+    }
+    if (result.value.predictionD2) {
+        arr.push({
+            name: "D+2",
+            ...result.value.predictionD2.modelMetrics,
+        });
+    }
+    if (result.value.predictionD3) {
+        arr.push({
+            name: "D+3",
+            ...result.value.predictionD3.modelMetrics,
+        });
+    }
+    return arr;
+});
 
 const props = defineProps({
     record: {
@@ -236,7 +268,11 @@ const forecast_range = computed(() => {
         return "未知范围";
     }
     const prefix = props.record.formData.forecast_range;
-    return `${prefix} → D+1`;
+    if (prefix == "D-4") {
+        return `D-4 → D+1、D+2、D+3`;
+    } else {
+        return `${prefix} → D+1`;
+    }
 });
 
 const excel_days = computed(() => {
@@ -397,7 +433,10 @@ async function downloadUploadExcel() {
         }
         &.metric {
             flex-direction: column;
-
+            .metric-wrap {
+                display: flex;
+                gap: 20px;
+            }
             .metric-card {
                 display: flex;
                 align-items: center;

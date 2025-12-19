@@ -276,7 +276,7 @@ const fetchRecordDetail = async () => {
 
     try {
         loading.value = true;
-        const response = await request.get(`/api/history/${id}`);
+        const response = await request.get(`/api/history/${id}/D+1`);
         forecastStore.setCompareBaseinfo(response.data);
     } catch (err) {
         console.error("获取记录详情失败:", err);

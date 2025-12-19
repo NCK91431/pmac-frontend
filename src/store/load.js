@@ -26,6 +26,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         stage: -1, // -1:选择模式 0:初始状态 1:处理中 2:处理完成
         responseData: null,
         activeHistoryRecordId: null,
+        activeHistoryRecord: null,
 
         mode: "T", // 预测模式，"T"表示总负荷预测，"S"表示分项负荷预测
 
@@ -140,6 +141,9 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
         set_activeHistoryRecordId(id) {
             this.activeHistoryRecordId = id;
+        },
+        set_activeHistoryRecord(node) {
+            this.activeHistoryRecord = node;
         },
         switchMode() {
             if (this.mode === "T") {
