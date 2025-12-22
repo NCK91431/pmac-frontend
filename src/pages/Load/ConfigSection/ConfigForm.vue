@@ -117,7 +117,11 @@
                 :disabled="isContinue"
             >
                 <el-option
-                    label="D-4 -> D+1、D+2、D+3 【注：4天前用电量 → 预测未来三天分时负荷】"
+                    :label="`${
+                        mode == 'T'
+                            ? 'D-4 -> D+1、D+2、D+3 【注：4天前用电量 → 预测未来三天分时负荷】'
+                            : 'D-4 -> D+1【注：4天前用电量 → 预测未来一天分时负荷】'
+                    }`"
                     value="D-4"
                 />
                 <el-option
@@ -330,13 +334,40 @@ const showPredictionDate = computed(() => {
     return forecastStore.excelInfo && form.value.forecast_range;
 });
 
+// 获取预测天数
+function getDayCount(forecastRange) {
+    // 根据模式区分预测天数
+    if (mode.value === "T" && forecastRange === "D-4") {
+        // 总负荷预测模式下，D-4预测3天
+        return 3;
+    } else {
+        // 其他情况都预测1天
+        return 1;
+    }
+}
+
+// 根据预测类型计算需要添加的天数（基值）
+function getDaysToAdd(forecastRange) {
+    // 根据预测类型计算天数偏移
+    const offsetMap = {
+        "D-1": 2, // 结束日期 + 2天
+        "D-2": 3, // 结束日期 + 3天
+        "D-3": 4, // 结束日期 + 4天
+        "D-4": 5, // 结束日期 + 5天
+    };
+    return offsetMap[forecastRange] || 2; // 默认值
+}
+
 // 计算预测日（返回数组）
 const predictionDays = computed(() => {
     if (!forecastStore.excelInfo || !form.value.forecast_range) return [];
 
+    // 添加form.value.forecast_range作为显式依赖
+    const forecastRange = form.value.forecast_range;
+
     const endDate = new Date(forecastStore.excelInfo.dateRange[1]);
-    const baseDaysToAdd = getDaysToAdd(form.value.forecast_range);
-    const dayCount = getDayCount(form.value.forecast_range);
+    const baseDaysToAdd = getDaysToAdd(forecastRange);
+    const dayCount = getDayCount(forecastRange);
 
     const days = [];
     for (let i = 0; i < dayCount; i++) {
@@ -353,31 +384,15 @@ const predictionDays = computed(() => {
             typeIcon: getDateTypeIcon(type),
         });
     }
-    console.log(days);
+    console.log("预测日计算:", {
+        结束日期: forecastStore.excelInfo.dateRange[1],
+        预测类型: forecastRange,
+        预测天数: dayCount,
+        起始偏移: baseDaysToAdd,
+        预测日列表: days,
+    });
     return days;
 });
-
-// 获取预测天数
-function getDayCount(forecastRange) {
-    const map = {
-        "D-4": 3, // 预测未来3天
-        "D-3": 1, // 预测未来1天
-        "D-2": 1, // 预测未来1天
-        "D-1": 1, // 预测未来1天
-    };
-    return map[forecastRange] || 1;
-}
-
-// 根据预测类型计算需要添加的天数（基值）
-function getDaysToAdd(forecastRange) {
-    const map = {
-        "D-4": 2, // 结束日期 + 2天开始预测（D+1, D+2, D+3）
-        "D-3": 2, // 结束日期 + 2天（D+1）
-        "D-2": 2, // 结束日期 + 2天（D+1）
-        "D-1": 2, // 结束日期 + 2天（D+1）
-    };
-    return map[forecastRange] || 2;
-}
 
 // 获取星期几
 function getWeekday(date) {
