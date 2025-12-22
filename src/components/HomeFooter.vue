@@ -3,14 +3,16 @@
         <div class="container">
             <div class="footer-flexbox">
                 <div class="footer-column">
-                    <h3>更多内容</h3>
+                    <h3>{{ $t("footer.moreContent") }}</h3>
                     <div class="contact-info">
                         <div class="contact-item">
                             <div class="contact-icon">
                                 <el-icon><Monitor /></el-icon>
                             </div>
                             <div>
-                                <strong>官方网站</strong>
+                                <strong>{{
+                                    $t("footer.officialWebsite")
+                                }}</strong>
                                 <p>
                                     <el-link
                                         type="primary"
@@ -27,13 +29,13 @@
                                 <el-icon><ShoppingCartFull /></el-icon>
                             </div>
                             <div>
-                                <strong>天猫旗舰店</strong>
+                                <strong>{{ $t("footer.tmallStore") }}</strong>
                                 <p>
                                     <el-link
                                         type="primary"
                                         href="https://pilotdg.tmall.com/"
                                         target="_blank"
-                                        >pilot旗舰店
+                                        >{{ $t("footer.pilotStore") }}
                                     </el-link>
                                 </p>
                             </div>
@@ -41,15 +43,16 @@
                     </div>
                 </div>
                 <div class="footer-column">
-                    <h3>联系我们</h3>
+                    <h3>{{ $t("footer.contactUs") }}</h3>
                     <div class="contact-info">
-                        <!-- 公众号 -->
                         <div class="contact-item">
                             <div class="contact-icon">
                                 <el-icon><Service /></el-icon>
                             </div>
                             <div>
-                                <strong>技术支持</strong>
+                                <strong>{{
+                                    $t("footer.technicalSupport")
+                                }}</strong>
                                 <p>17722020058</p>
                             </div>
                         </div>
@@ -58,20 +61,24 @@
                                 <el-icon><Connection /></el-icon>
                             </div>
                             <div>
-                                <strong>合作热线</strong>
-                                <p>15919159383（微信同号）</p>
+                                <strong>{{
+                                    $t("footer.cooperationHotline")
+                                }}</strong>
+                                <p>
+                                    15919159383（{{ $t("footer.wechatSame") }}）
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="footer-column">
-                    <h3>派诺科技园</h3>
+                    <h3>{{ $t("footer.painoPark") }}</h3>
                     <div class="contact-item">
                         <div class="contact-icon">
                             <el-icon><i class="bi bi-telephone"></i></el-icon>
                         </div>
                         <div>
-                            <strong>客服电话</strong>
+                            <strong>{{ $t("footer.customerService") }}</strong>
                             <p>0756-6931888</p>
                         </div>
                     </div>
@@ -81,15 +88,15 @@
                                 <el-icon><Location /></el-icon>
                             </div>
                             <div>
-                                <strong>地址</strong>
-                                <p>广东省珠海市高新区科技创新海岸创新8路88号</p>
+                                <strong>{{ $t("footer.address") }}</strong>
+                                <p>{{ $t("footer.fullAddress") }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="footer-column">
-                    <h3>扫码关注</h3>
+                    <h3>{{ $t("footer.scanQRCode") }}</h3>
                     <div class="contact-info qr-code-section">
                         <el-image
                             style="width: 100px; height: 100px"
@@ -97,7 +104,9 @@
                             :fit="fit"
                             class="qr-code-image"
                         />
-                        <p class="qr-code-desc">扫码关注公众号</p>
+                        <p class="qr-code-desc">
+                            {{ $t("footer.scanToFollow") }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -105,7 +114,9 @@
             <div class="copyright">
                 <div>
                     © 2025
-                    珠海派诺科技股份有限公司&nbsp;&nbsp;股票代码&nbsp;920375
+                    {{ $t("footer.companyName") }}&nbsp;&nbsp;{{
+                        $t("footer.stockCode")
+                    }}&nbsp;920375
                 </div>
             </div>
         </div>

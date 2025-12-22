@@ -13,8 +13,12 @@
                         src="https://pmac.leyi.host/downloads/pmac/test-logo.png"
                         alt="平台Logo"
                     />
-                    <div class="pmac-title">星火平台</div>
-                    <div class="pmac-subtitle">智慧洞见 毫厘尽显</div>
+                    <div class="pmac-title">
+                        {{ $t("header.platformName") }}
+                    </div>
+                    <div class="pmac-subtitle">
+                        {{ $t("header.platformSlogan") }}
+                    </div>
                 </div>
             </div>
 
@@ -52,21 +56,23 @@
                     index="home"
                     route="/home"
                     @click="closeMobileMenu"
-                    >首页</el-menu-item
+                    >{{ $t("header.home") }}</el-menu-item
                 >
                 <el-menu-item
                     index="describe"
                     route="/describe"
                     @click="closeMobileMenu"
-                    >功能介绍</el-menu-item
+                    >{{ $t("header.features") }}</el-menu-item
                 >
                 <el-menu-item
                     index="about_us"
                     route="/about_us"
                     @click="closeMobileMenu"
-                    >关于我们</el-menu-item
+                    >{{ $t("header.about") }}</el-menu-item
                 >
             </el-menu>
+
+            <LanguageToggle />
 
             <!-- 电力交易专家 -->
             <div class="chatbot" @click="openChatbotWindow" v-if="false">
@@ -77,7 +83,9 @@
                     />
                     <div class="pulse-effect"></div>
                 </div>
-                <span class="chatbot-text">电力交易专家</span>
+                <span class="chatbot-text">{{
+                    $t("header.electricityExpert")
+                }}</span>
             </div>
 
             <!-- 用户信息区域 -->
@@ -128,7 +136,10 @@
                                     </p>
                                     <p>
                                         <i class="el-icon-office-building"></i>
-                                        {{ user.company || "未设置公司" }}
+                                        {{
+                                            user.company ||
+                                            $t("header.companyNotSet")
+                                        }}
                                     </p>
                                 </div>
                             </div>
@@ -141,7 +152,7 @@
                                     :icon="Edit"
                                     @click="gotoPage('modifyuser')"
                                 >
-                                    修改用户信息
+                                    {{ $t("header.modifyUserInfo") }}
                                 </el-button>
                                 <el-button
                                     type="danger"
@@ -150,7 +161,7 @@
                                     :icon="Notification"
                                     @click="onLogout"
                                 >
-                                    登出
+                                    {{ $t("common.logout") }}
                                 </el-button>
                             </div>
                         </div>
@@ -175,7 +186,9 @@
                                         v-if="!avatarURL"
                                     ></i>
                                 </el-avatar>
-                                <span class="company-name"> 未登录用户 </span>
+                                <span class="company-name">{{
+                                    $t("header.notLoggedIn")
+                                }}</span>
                                 <i class="el-icon-caret-bottom"></i>
                             </div>
                         </template>
@@ -193,7 +206,7 @@
                                     ></i>
                                 </el-avatar>
                                 <div class="user-details">
-                                    <h3>未登录用户</h3>
+                                    <h3>{{ $t("header.notLoggedIn") }}</h3>
                                 </div>
                             </div>
                             <div class="user-actions">
@@ -204,7 +217,7 @@
                                     :icon="User"
                                     @click="gotoPage('login')"
                                 >
-                                    去登录
+                                    {{ $t("common.login") }}
                                 </el-button>
                             </div>
                         </div>
@@ -220,7 +233,10 @@ import { Edit, Notification, User } from "@element-plus/icons-vue";
 import { computed, inject, ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { useLoadForecastStore } from "@/store/load"; // 使用新的综合Store
+import { useLoadForecastStore } from "@/store/load";
+import LanguageToggle from "./LanguageToggle.vue";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n(); // 获取 t 函数
 
 const forecastStore = useLoadForecastStore(); // 使用新的综合Store
 

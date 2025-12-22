@@ -1,9 +1,9 @@
 <template>
     <section class="intro-section">
         <div class="section-title">
-            <h2>百闻不如一试</h2>
-            <p>无需注册也可以使用</p>
-            <p>注册用户可保留所有创建模型，使用更方便</p>
+            <h2>{{ $t("intro.title") }}</h2>
+            <p>{{ $t("intro.subtitle1") }}</p>
+            <p>{{ $t("intro.subtitle2") }}</p>
         </div>
 
         <div class="swiper-container-wrapper">
@@ -25,21 +25,25 @@
                         <div class="image-container">
                             <img
                                 :src="feature.image"
-                                :alt="feature.title + '结果展示'"
+                                :alt="feature.title + $t('intro.resultDisplay')"
                                 class="feature-image"
                             />
                         </div>
                         <div class="content-container">
-                            <div class="feature-tag">{{ feature.tag }}</div>
-                            <h3>{{ feature.title }}</h3>
+                            <div class="feature-tag">
+                                {{ $t(feature.tagKey) }}
+                            </div>
+                            <h3>{{ $t(feature.titleKey) }}</h3>
                             <p class="feature-desc">
-                                {{ feature.description }}
+                                {{ $t(feature.descriptionKey) }}
                             </p>
                             <ul class="feature-list">
                                 <li
-                                    v-for="(item, itemIndex) in feature.items"
+                                    v-for="(
+                                        itemKey, itemIndex
+                                    ) in feature.itemKeys"
                                     :key="itemIndex"
-                                    v-html="item"
+                                    v-html="$t(itemKey)"
                                 ></li>
                             </ul>
                         </div>
@@ -51,7 +55,6 @@
         </div>
     </section>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
@@ -59,48 +62,51 @@ import { Mousewheel, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const router = useRouter();
 
 // 功能数据
+// 修改 features 数据，使用翻译键
 const features = ref([
     {
-        tag: "精准预测",
-        title: "日前负荷预测",
+        tagKey: "intro.features.loadForecast.tag",
+        titleKey: "intro.features.loadForecast.title",
         pathName: "load_example",
-        description: "基于国际获奖算法模型，提供业界领先的预测精度",
+        descriptionKey: "intro.features.loadForecast.description",
         image: "https://pmac.leyi.host/downloads/features/load.jpg",
-        items: [
-            "<span class='bold'>总负荷</span>平均预测精度<span class='highlight'>97%</span>",
-            "<span class='bold'>医院商超</span>单一客户平均预测精度<span class='highlight'>96%</span>",
-            "<span class='bold'>工业制造</span>单一客户平均预测精度<span class='highlight'>91%</span>",
-            "已为多家大型售电公司节省数百万成本",
+        itemKeys: [
+            "intro.features.loadForecast.items[0]",
+            "intro.features.loadForecast.items[1]",
+            "intro.features.loadForecast.items[2]",
+            "intro.features.loadForecast.items[3]",
         ],
     },
     {
-        tag: "绿色能源",
+        tagKey: "intro.features.pvForecast.tag",
         pathName: "elec_example",
-        title: "光伏发电预测",
-        description: "精准预测光伏发电量，最大化绿色能源收益",
+        titleKey: "intro.features.pvForecast.title",
+        descriptionKey: "intro.features.pvForecast.description",
         image: "https://pmac.leyi.host/downloads/features/pv.jpg",
-        items: [
-            "国家级气象数据支持",
-            "日前预测晴天平均误差3.68%",
-            "日前预测阴天平均误差5.74%",
-            "已成功服务<span class='highlight'>200+</span>光伏站点",
+        itemKeys: [
+            "intro.features.pvForecast.items[0]",
+            "intro.features.pvForecast.items[1]",
+            "intro.features.pvForecast.items[2]",
+            "intro.features.pvForecast.items[3]",
         ],
     },
     {
-        tag: "容量优化",
-        title: "光储定容",
+        tagKey: "intro.features.pvStorage.tag",
+        titleKey: "intro.features.pvStorage.title",
         pathName: "light_example",
-        description: "科学规划储能容量，实现投资回报最大化",
+        descriptionKey: "intro.features.pvStorage.description",
         image: "https://pmac.leyi.host/downloads/features/storage.jpg",
-        items: [
-            "综合考虑<span class='bold'>电价与需量</span>，平均可缩减峰值需量<span class='highlight'>10%–30%</span>",
-            "<span class='highlight'>1000+</span>场景模型生成",
-            "全国范围多尺度光伏数据支撑",
-            "支持<span class='bold'>期望成本</span>与<span class='bold'>风险分析</span>",
+        itemKeys: [
+            "intro.features.pvStorage.items[0]",
+            "intro.features.pvStorage.items[1]",
+            "intro.features.pvStorage.items[2]",
+            "intro.features.pvStorage.items[3]",
         ],
     },
 ]);

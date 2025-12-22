@@ -8,85 +8,33 @@
             :loop="true"
             class="banner-swiper"
         >
-            <swiper-slide>
-                <img
-                    src="https://pmac.leyi.host/downloads/banner/load.jpg"
-                    alt="负荷预测"
-                />
+            <swiper-slide v-for="(slide, index) in bannerSlides" :key="index">
+                <img :src="slide.imgSrc" :alt="slide.alt" />
                 <div class="slide-content">
                     <div class="wrap">
                         <div class="left">
                             <div class="title-container">
-                                <h1>负荷预测</h1>
+                                <h1>{{ $t(slide.titleKey) }}</h1>
                             </div>
                             <ul>
-                                <li>引入国家气象局高精度数据</li>
-                                <li>
-                                    负荷预测算法模型荣获国际人工智能大赛银奖
+                                <li
+                                    v-for="(item, itemIndex) in slide.features"
+                                    :key="itemIndex"
+                                >
+                                    {{
+                                        $t(
+                                            `home.${slide.name}.features[${itemIndex}]`
+                                        )
+                                    }}
                                 </li>
-                                <li>精准预测 D+1 日 24 小时逐时负荷</li>
-                                <li>已服务大型售电公司日常交易</li>
                             </ul>
                         </div>
                         <button
                             class="experience-btn"
-                            @click.stop="gotoPage('load')"
+                            @click.stop="gotoPage(slide.page)"
                         >
-                            立即体验 <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </swiper-slide>
-            <swiper-slide>
-                <img
-                    src="https://pmac.leyi.host/downloads/banner/pv.jpg"
-                    alt="光伏发电预测"
-                />
-                <div class="slide-content">
-                    <div class="wrap">
-                        <div class="left">
-                            <div class="title-container">
-                                <h1>光伏发电预测</h1>
-                            </div>
-                            <ul>
-                                <li>打通现货与虚拟电厂全链路</li>
-                                <li>引入国家气象局高精度数据</li>
-                                <li>国家级获奖算法</li>
-                                <li>成功服务上百家光伏站点</li>
-                            </ul>
-                        </div>
-                        <button
-                            class="experience-btn"
-                            @click.stop="gotoPage('elec')"
-                        >
-                            立即体验 <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </swiper-slide>
-            <swiper-slide>
-                <img
-                    src="https://pmac.leyi.host/downloads/banner/light.png"
-                    alt="光伏发电预测"
-                />
-                <div class="slide-content">
-                    <div class="wrap">
-                        <div class="left">
-                            <div class="title-container">
-                                <h1>光储定容</h1>
-                            </div>
-                            <ul>
-                                <li>基于负荷与电价曲线的智能容量优化</li>
-                                <li>综合考虑投资成本与运营收益的多目标优化</li>
-                                <li>支持多种储能技术路线与经济性对比</li>
-                                <li>已为工商业园区提供最优光储配置方案</li>
-                            </ul>
-                        </div>
-                        <button
-                            class="experience-btn"
-                            @click.stop="gotoPage('light')"
-                        >
-                            立即体验 <i class="fas fa-arrow-right"></i>
+                            {{ $t("home.immediateExperience") }}
+                            <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
@@ -97,9 +45,9 @@
     <!-- 顶部导航区 -->
     <section class="top-section">
         <div class="section-title">
-            <h2>点亮资产，预见收益</h2>
+            <h2>{{ $t("home.title") }}</h2>
             <p>
-                为电力市场参与者及能源资产持有者打造的在线决策引擎<br />将复杂的能源数据转化为清晰的预测和洞见，助您精准决策、提升收益
+                {{ $t("home.subtitle") }}
             </p>
         </div>
         <div class="nav-cards">
@@ -107,61 +55,61 @@
                 <div class="icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <h3>负荷预测</h3>
+                <h3>{{ $t("home.loadForecast.title") }}</h3>
                 <p>
-                    <text>提供精准的日前负荷预测，助力日前交易申报</text>
+                    <text>{{ $t("home.loadForecast.description") }}</text>
                 </p>
-                <el-button type="primary" @click="gotoPage('load')"
-                    >进入页面</el-button
-                >
+                <el-button type="primary" @click="gotoPage('load')">
+                    {{ $t("home.enterPage") }}
+                </el-button>
             </div>
 
             <div class="nav-card">
                 <div class="icon">
                     <i class="fas fa-sun"></i>
                 </div>
-                <h3>光伏发电预测</h3>
+                <h3>{{ $t("home.pvForecast.title") }}</h3>
                 <p>
-                    <text> 自适应模型选择，提供高精度的光伏发电预测 </text>
+                    <text>{{ $t("home.pvForecast.description") }}</text>
                 </p>
-                <el-button type="success" @click="gotoPage('elec')"
-                    >进入页面</el-button
-                >
+                <el-button type="success" @click="gotoPage('elec')">
+                    {{ $t("home.enterPage") }}
+                </el-button>
             </div>
 
             <div class="nav-card">
                 <div class="icon">
                     <i class="fas fa-solar-panel"></i>
                 </div>
-                <h3>光储定容</h3>
-                <p>光伏储能系统容量优化设计与经济性分析</p>
-                <el-button type="warning" @click="gotoPage('light')"
-                    >进入页面</el-button
-                >
+                <h3>{{ $t("home.pvStorage.title") }}</h3>
+                <p>{{ $t("home.pvStorage.description") }}</p>
+                <el-button type="warning" @click="gotoPage('light')">
+                    {{ $t("home.enterPage") }}
+                </el-button>
             </div>
             <div class="nav-card">
                 <div class="icon">
                     <i class="fas fa-coins"></i>
                 </div>
-                <h3>慧储&trade;套利模拟</h3>
+                <h3>{{ $t("home.storageArbitrage.title") }}</h3>
                 <p>
                     <text>
-                        基于负荷预测和电价，动态生成最优充放策略，最大化IRR
+                        {{ $t("home.storageArbitrage.description") }}
                     </text>
                 </p>
-                <el-button type="danger" @click="showComingSoon"
-                    >进入页面</el-button
-                >
+                <el-button type="danger" @click="showComingSoon">
+                    {{ $t("home.enterPage") }}
+                </el-button>
             </div>
             <div class="nav-card">
                 <div class="icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <h3>资产健康哨兵</h3>
-                <p>为储能电芯提供健康度评估及早期预警，保障长期收益</p>
-                <el-button type="info" @click="gotoPage('health')"
-                    >进入页面</el-button
-                >
+                <h3>{{ $t("home.assetHealth.title") }}</h3>
+                <p>{{ $t("home.assetHealth.description") }}</p>
+                <el-button type="info" @click="gotoPage('health')">
+                    {{ $t("home.enterPage") }}
+                </el-button>
             </div>
         </div>
     </section>
@@ -170,21 +118,6 @@
     <div class="intro-containner" v-if="!isMobile">
         <Intro />
     </div>
-
-    <!-- 中间产品展示区 -->
-    <section class="product-section">
-        <div class="header">
-            <h1>{{ headerTitle }}</h1>
-            <p>{{ headerSubtitle }}</p>
-        </div>
-        <div class="product-grid">
-            <ProductCard
-                v-for="(product, index) in products"
-                :key="index"
-                :product="product"
-            />
-        </div>
-    </section>
 
     <!-- 待开发功能:可爱的提示弹窗 -->
     <el-dialog
@@ -197,9 +130,9 @@
     >
         <div class="dialog-content">
             <div class="emoji">🚀</div>
-            <h3>正在快马加鞭开发中...</h3>
-            <p>功能即将上线</p>
-            <p>如有项目对接需求，请联系：15919159383</p>
+            <h3>{{ $t("home.comingSoon.title") }}</h3>
+            <p>{{ $t("home.comingSoon.message") }}</p>
+            <p>{{ $t("home.comingSoon.contact") }}</p>
             <div class="animation-container">
                 <div class="loader">
                     <div class="dot"></div>
@@ -209,7 +142,7 @@
             </div>
         </div>
         <button @click="comingSoonVisible = false" class="confirm-btn">
-            好的，期待中！
+            {{ $t("home.comingSoon.button") }}
         </button>
     </el-dialog>
 </template>
@@ -222,12 +155,14 @@ import { ElDialog } from "element-plus";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay, Pagination } from "swiper/modules";
 import Intro from "./Intro.vue";
-import ProductCard from "./ProductCard.vue";
 import "swiper/css";
 import "swiper/css/pagination";
 import { useLoadForecastStore } from "@/store/load";
 import { useElecStore } from "@/store/elec";
 import { useLightStore } from "@/store/light";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n(); // 获取 t 函数
+
 const LoadStore = useLoadForecastStore();
 const ElecStore = useElecStore();
 const LightStore = useLightStore();
@@ -241,6 +176,48 @@ const checkIsMobile = () => {
 };
 
 /* --------------------------------- 广告轮播图 ------------------------------ */
+// 轮播图数据
+const bannerSlides = [
+    {
+        imgSrc: "https://pmac.leyi.host/downloads/banner/load.jpg",
+        alt: "负荷预测",
+        titleKey: "home.loadForecast.title", // 只存储翻译的key
+        name: "loadForecast",
+        features: [
+            "引入国家气象局高精度数据",
+            "负荷预测算法模型荣获国际人工智能大赛银奖",
+            "精准预测 D+1 日 24 小时逐时负荷",
+            "已服务大型售电公司日常交易",
+        ],
+        page: "load",
+    },
+    {
+        imgSrc: "https://pmac.leyi.host/downloads/banner/pv.jpg",
+        alt: "光伏发电预测",
+        titleKey: "home.pvForecast.title", // 只存储翻译的key
+        name: "pvForecast",
+        features: [
+            "打通现货与虚拟电厂全链路",
+            "引入国家气象局高精度数据",
+            "国家级获奖算法",
+            "成功服务上百家光伏站点",
+        ],
+        page: "elec",
+    },
+    {
+        imgSrc: "https://pmac.leyi.host/downloads/banner/light.png",
+        alt: "光伏发电预测",
+        titleKey: "home.pvStorage.title", // 只存储翻译的key
+        name: "pvStorage",
+        features: [
+            "基于负荷与电价曲线的智能容量优化",
+            "综合考虑投资成本与运营收益的多目标优化",
+            "支持多种储能技术路线与经济性对比",
+            "已为工商业园区提供最优光储配置方案",
+        ],
+        page: "light",
+    },
+];
 const modules = [Autoplay, Pagination];
 // 获取header高度
 const headerHeight = inject("headerHeight");

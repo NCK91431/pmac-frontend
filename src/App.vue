@@ -17,6 +17,15 @@ const user = ref(null);
 
 // 初始化时检查本地存储
 onMounted(() => {
+    // 检查是否需要显示翻译提示
+    const showHint = localStorage.getItem("showTranslateHint");
+    if (!showHint) {
+        setTimeout(() => {
+            // 可以在这里添加翻译指导弹窗
+            console.log("提示：如需英文版，可使用浏览器翻译功能");
+        }, 3000);
+        localStorage.setItem("showTranslateHint", "true");
+    }
     const storedUser = localStorage.getItem("userInfo");
     if (storedUser) {
         try {

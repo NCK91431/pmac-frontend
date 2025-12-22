@@ -1,0 +1,146 @@
+{
+    "common": {
+        "login": "登录",
+        "logout": "登出",
+        "confirm": "确认",
+        "cancel": "取消",
+        "save": "保存",
+        "edit": "编辑",
+        "delete": "删除",
+        "back": "返回",
+        "next": "下一步",
+        "previous": "上一步"
+    },
+    "header": {
+        "home": "首页",
+        "features": "功能介绍",
+        "about": "关于我们",
+        "platformName": "星火平台",
+        "platformSlogan": "智慧洞见 毫厘尽显",
+        "electricityExpert": "电力交易专家",
+        "notLoggedIn": "未登录用户",
+        "userInfo": "用户信息",
+        "modifyUserInfo": "修改用户信息",
+        "logoutConfirm": "您确定要登出此账号吗?",
+        "logoutSuccess": "您的账号已登出",
+        "companyNotSet": "未设置公司"
+    },
+    "home": {
+        "title": "点亮资产，预见收益",
+        "subtitle": "为电力市场参与者及能源资产持有者打造的在线决策引擎\n将复杂的能源数据转化为清晰的预测和洞见，助您精准决策、提升收益",
+        "loadForecast": {
+            "title": "负荷预测",
+            "description": "提供精准的日前负荷预测，助力日前交易申报",
+            "features": [
+                "引入国家气象局高精度数据",
+                "负荷预测算法模型荣获国际人工智能大赛银奖",
+                "精准预测 D+1 日 24 小时逐时负荷",
+                "已服务大型售电公司日常交易"
+            ]
+        },
+        "pvForecast": {
+            "title": "光伏发电预测",
+            "description": "自适应模型选择，提供高精度的光伏发电预测",
+            "features": [
+                "打通现货与虚拟电厂全链路",
+                "引入国家气象局高精度数据",
+                "国家级获奖算法",
+                "成功服务上百家光伏站点"
+            ]
+        },
+        "pvStorage": {
+            "title": "光储定容",
+            "description": "光伏储能系统容量优化设计与经济性分析",
+            "features": [
+                "基于负荷与电价曲线的智能容量优化",
+                "综合考虑投资成本与运营收益的多目标优化",
+                "支持多种储能技术路线与经济性对比",
+                "已为工商业园区提供最优光储配置方案"
+            ]
+        },
+        "storageArbitrage": {
+            "title": "慧储™套利模拟",
+            "description": "基于负荷预测和电价，动态生成最优充放策略，最大化IRR"
+        },
+        "assetHealth": {
+            "title": "资产健康哨兵",
+            "description": "为储能电芯提供健康度评估及早期预警，保障长期收益"
+        },
+        "enterPage": "进入页面",
+        "immediateExperience": "立即体验",
+        "comingSoon": {
+            "title": "正在快马加鞭开发中...",
+            "message": "功能即将上线",
+            "contact": "如有项目对接需求，请联系：15919159383",
+            "button": "好的，期待中！"
+        },
+        "productSection": {
+            "title": "工业物联网产品解决方案",
+            "subtitle": "高效、稳定、安全的工业通信与数据采集设备，助力企业数字化转型"
+        }
+    },
+    "language": {
+        "zh": "中文",
+        "en": "English",
+        "toggle": "切换语言"
+    },
+    "footer": {
+        "moreContent": "更多内容",
+        "officialWebsite": "官方网站",
+        "tmallStore": "天猫旗舰店",
+        "pilotStore": "pilot旗舰店",
+        "contactUs": "联系我们",
+        "technicalSupport": "技术支持",
+        "cooperationHotline": "合作热线",
+        "wechatSame": "微信同号",
+        "painoPark": "派诺科技园",
+        "customerService": "客服电话",
+        "address": "地址",
+        "fullAddress": "广东省珠海市高新区科技创新海岸创新8路88号",
+        "scanQRCode": "扫码关注",
+        "scanToFollow": "扫码关注公众号",
+        "companyName": "珠海派诺科技股份有限公司",
+        "stockCode": "股票代码"
+    },
+    "intro": {
+        "title": "百闻不如一试",
+        "subtitle1": "无需注册也可以使用",
+        "subtitle2": "注册用户可保留所有创建模型，使用更方便",
+        "resultDisplay": "结果展示",
+        "features": {
+            "loadForecast": {
+                "tag": "精准预测",
+                "title": "日前负荷预测",
+                "description": "基于国际获奖算法模型，提供业界领先的预测精度",
+                "items": [
+                    "<span class='bold'>总负荷</span>平均预测精度<span class='highlight'>97%</span>",
+                    "<span class='bold'>医院商超</span>单一客户平均预测精度<span class='highlight'>96%</span>",
+                    "<span class='bold'>工业制造</span>单一客户平均预测精度<span class='highlight'>91%</span>",
+                    "已为多家大型售电公司节省数百万成本"
+                ]
+            },
+            "pvForecast": {
+                "tag": "绿色能源",
+                "title": "光伏发电预测",
+                "description": "精准预测光伏发电量，最大化绿色能源收益",
+                "items": [
+                    "国家级气象数据支持",
+                    "日前预测晴天平均误差3.68%",
+                    "日前预测阴天平均误差5.74%",
+                    "已成功服务<span class='highlight'>200+</span>光伏站点"
+                ]
+            },
+            "pvStorage": {
+                "tag": "容量优化",
+                "title": "光储定容",
+                "description": "科学规划储能容量，实现投资回报最大化",
+                "items": [
+                    "综合考虑<span class='bold'>电价与需量</span>，平均可缩减峰值需量<span class='highlight'>10%–30%</span>",
+                    "<span class='highlight'>1000+</span>场景模型生成",
+                    "全国范围多尺度光伏数据支撑",
+                    "支持<span class='bold'>期望成本</span>与<span class='bold'>风险分析</span>"
+                ]
+            }
+        }
+    }
+}

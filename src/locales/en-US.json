@@ -1,0 +1,146 @@
+{
+    "common": {
+        "login": "Login",
+        "logout": "Logout",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "save": "Save",
+        "edit": "Edit",
+        "delete": "Delete",
+        "back": "Back",
+        "next": "Next",
+        "previous": "Previous"
+    },
+    "header": {
+        "home": "Home",
+        "features": "Features",
+        "about": "About Us",
+        "platformName": "Spark Platform",
+        "platformSlogan": "Smart Insights, Minute Details",
+        "electricityExpert": "Electricity Trading Expert",
+        "notLoggedIn": "Not Logged In",
+        "userInfo": "User Information",
+        "modifyUserInfo": "Modify User Info",
+        "logoutConfirm": "Are you sure you want to logout?",
+        "logoutSuccess": "Your account has been logged out",
+        "companyNotSet": "Company Not Set"
+    },
+    "home": {
+        "title": "Light up assets, foresee returns",
+        "subtitle": "An online decision engine for electricity market participants and energy asset holders\nTransforming complex energy data into clear predictions and insights to help you make precise decisions and increase returns",
+        "loadForecast": {
+            "title": "Load Forecasting",
+            "description": "Provides accurate day-ahead load forecasting to assist with day-ahead trading declarations",
+            "features": [
+                "Introduces high-precision data from the National Meteorological Administration",
+                "Load forecasting algorithm model won the silver award in the International AI Competition",
+                "Accurately forecasts 24-hour hourly loads for D+1 day",
+                "Has served large electricity sales companies in daily trading"
+            ]
+        },
+        "pvForecast": {
+            "title": "PV Power Generation Forecasting",
+            "description": "Adaptive model selection provides high-precision photovoltaic power generation forecasting",
+            "features": [
+                "Connects the entire chain of spot markets and virtual power plants",
+                "Introduces high-precision data from the National Meteorological Administration",
+                "Nationally awarded algorithm",
+                "Successfully served hundreds of photovoltaic sites"
+            ]
+        },
+        "pvStorage": {
+            "title": "PV Storage Sizing",
+            "description": "Photovoltaic energy storage system capacity optimization design and economic analysis",
+            "features": [
+                "Intelligent capacity optimization based on load and electricity price curves",
+                "Multi-objective optimization considering investment costs and operating returns",
+                "Supports multiple energy storage technology routes and economic comparisons",
+                "Has provided optimal PV-storage configuration solutions for industrial and commercial parks"
+            ]
+        },
+        "storageArbitrage": {
+            "title": "Wisdom Storage™ Arbitrage Simulation",
+            "description": "Based on load forecasting and electricity prices, dynamically generates optimal charging and discharging strategies to maximize IRR"
+        },
+        "assetHealth": {
+            "title": "Asset Health Sentinel",
+            "description": "Provides health assessment and early warning for energy storage cells to ensure long-term returns"
+        },
+        "enterPage": "Enter Page",
+        "immediateExperience": "Experience Now",
+        "comingSoon": {
+            "title": "Under rapid development...",
+            "message": "Feature coming soon",
+            "contact": "For project cooperation needs, please contact: 15919159383",
+            "button": "OK, looking forward!"
+        },
+        "productSection": {
+            "title": "Industrial IoT Product Solutions",
+            "subtitle": "Efficient, stable, and secure industrial communication and data acquisition devices, helping enterprises with digital transformation"
+        }
+    },
+    "language": {
+        "zh": "Chinese",
+        "en": "English",
+        "toggle": "Toggle Language"
+    },
+    "footer": {
+        "moreContent": "More Content",
+        "officialWebsite": "Official Website",
+        "tmallStore": "Tmall Store",
+        "pilotStore": "Pilot Store",
+        "contactUs": "Contact Us",
+        "technicalSupport": "Technical Support",
+        "cooperationHotline": "Cooperation Hotline",
+        "wechatSame": "WeChat Same",
+        "painoPark": "Paino Technology Park",
+        "customerService": "Customer Service",
+        "address": "Address",
+        "fullAddress": "No. 88, Innovation 8th Road, Science and Technology Innovation Coast, High-tech Zone, Zhuhai City, Guangdong Province",
+        "scanQRCode": "Scan QR Code",
+        "scanToFollow": "Scan to follow official account",
+        "companyName": "Zhuhai Paino Technology Co., Ltd.",
+        "stockCode": "Stock Code"
+    },
+    "intro": {
+        "title": "To try this once is better than to hear about it a hundred times",
+        "subtitle1": "Can be used without registration",
+        "subtitle2": "Registered users can retain all created models for easier use",
+        "resultDisplay": "Result Display",
+        "features": {
+            "loadForecast": {
+                "tag": "Accurate Prediction",
+                "title": "Day-ahead Load Forecasting",
+                "description": "Based on internationally award-winning algorithm models, providing industry-leading prediction accuracy",
+                "items": [
+                    "<span class='bold'>Total load</span> average prediction accuracy <span class='highlight'>97%</span>",
+                    "<span class='bold'>Hospital/Supermarket</span> single customer average prediction accuracy <span class='highlight'>96%</span>",
+                    "<span class='bold'>Industrial Manufacturing</span> single customer average prediction accuracy <span class='highlight'>91%</span>",
+                    "Has saved millions in costs for multiple large electricity sales companies"
+                ]
+            },
+            "pvForecast": {
+                "tag": "Green Energy",
+                "title": "PV Power Generation Forecasting",
+                "description": "Accurately predict photovoltaic power generation to maximize green energy returns",
+                "items": [
+                    "Supported by national meteorological data",
+                    "Day-ahead prediction average error for sunny days 3.68%",
+                    "Day-ahead prediction average error for cloudy days 5.74%",
+                    "Successfully served <span class='highlight'>200+</span> photovoltaic sites"
+                ]
+            },
+            "pvStorage": {
+                "tag": "Capacity Optimization",
+                "title": "PV Storage Sizing",
+                "description": "Scientific planning of energy storage capacity to maximize return on investment",
+                "items": [
+                    "Comprehensively considering <span class='bold'>electricity prices and demand</span>, average peak demand reduction <span class='highlight'>10%–30%</span>",
+                    "<span class='highlight'>1000+</span> scenario models generated",
+                    "Multi-scale photovoltaic data support nationwide",
+                    "Supports <span class='bold'>expected cost</span> and <span class='bold'>risk analysis</span>"
+                ]
+            }
+        }
+    }
+}
