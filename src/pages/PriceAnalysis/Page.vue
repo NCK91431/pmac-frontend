@@ -3,7 +3,11 @@
         <div class="analysis-content">
             <!-- 左侧：节点树 -->
             <div class="left-panel">
-                <NodeTree :nodes="allNodes" @node-select="handleNodeSelect" />
+                <NodeTree
+                    :nodes="nodeTreeData"
+                    @node-select="handleNodeSelect"
+                    :cur_node_id="cur_node_id"
+                />
             </div>
 
             <!-- 中间：图表区域 -->
@@ -23,7 +27,7 @@
                     <div class="chart-info">
                         <span class="selected-node">
                             <i class="bi bi-node-plus"></i> 当前节点：{{
-                                selectedNodeName
+                                nav_text
                             }}
                         </span>
                     </div>
@@ -92,7 +96,6 @@ const breadcrumbHeight = inject("breadcrumbHeight", 0);
 
 // 计算容器高度
 const containerStyle = computed(() => {
-    console.log(headerHeight.value, breadcrumbHeight.value);
     const totalHeight = `calc(100vh - ${headerHeight.value}px - ${breadcrumbHeight.value}px)`;
     return {
         height: totalHeight,
@@ -101,87 +104,139 @@ const containerStyle = computed(() => {
 });
 
 // 响应式数据
-const selectedNodeName = ref("全省");
-const selectedDate = ref("2025-12-01");
+const selectedNodeName = ref("请选择节点");
+const selectedNodeId = ref("");
+const selectedDate = ref(new Date().toISOString().split("T")[0]);
 const timeType = ref("hour");
-const dayAheadData = ref({});
-const realTimeData = ref({});
+const currentDayAheadData = ref([]);
+const currentRealTimeData = ref([]);
+const nodeTreeData = ref([]);
+const cur_node_id = ref(""); //当前被选中的节点ID
+const cur_chain = ref([]); //当前被选中节点的路径
 
-// 在parseExcelData函数中，改为从后端API获取数据
-async function fetchPageData() {
+const nav_text = computed(() => {
+    const arr = cur_chain.value.map((node) => node.treeNodeName);
+    return arr.join(` -> `);
+});
+
+// 获取所有节点数据
+async function fetchAllNodeData() {
     try {
-        // 从后端API获取数据
-        const response = await request.get("/api/price/get-price-data", {
-            params: {
-                province: "广东省",
-                date: selectedDate.value,
-            },
-        });
+        const response = await request.get("/api/node-price/tree");
 
-        if (response.data.success) {
-            const priceData = response.data.data;
-            dayAheadData.value = priceData.dayAheadData;
-            realTimeData.value = priceData.realTimeData;
+        if (response.data.status === 0) {
+            // 1. 将广东省排在最前面
+            const provinces = response.data.data || [];
+            const sortedProvinces = provinces.sort((a, b) => {
+                if (a.treeNodeName === "广东省") return -1;
+                if (b.treeNodeName === "广东省") return 1;
+                return a.treeNodeName.localeCompare(b.treeNodeName, "zh-CN");
+            });
 
-            // 初始化选择第一个节点
-            if (dayAheadData.value["广东省"]?.["其他"]) {
-                const firstNode = Object.keys(
-                    dayAheadData.value["广东省"]["其他"]
-                )[0];
-                selectedNodeName.value = firstNode || "全省";
+            nodeTreeData.value = sortedProvinces;
+
+            // 2. 找到广东省的第一个叶子节点作为默认选中
+            const guangdong = sortedProvinces.find(
+                (p) => p.treeNodeName === "广东省"
+            );
+            if (guangdong) {
+                const firstLeafNode = findFirstLeafNode(guangdong);
+                if (firstLeafNode) {
+                    cur_node_id.value = firstLeafNode.treeNodeId;
+                    // 默认选中第一个叶子节点
+                    handleNodeSelect({
+                        id: firstLeafNode.treeNodeId,
+                        name: firstLeafNode.treeNodeName,
+                    });
+                } else if (isLeaf(guangdong)) {
+                    // 如果广东省本身就是叶子节点，则选中广东省
+                    handleNodeSelect({
+                        id: guangdong.treeNodeId,
+                        name: guangdong.treeNodeName,
+                    });
+                }
             }
 
-            ElMessage.success("数据加载成功");
+            ElMessage.success("节点数据加载成功");
         } else {
-            ElMessage.warning(response.data.message || "数据加载失败");
+            ElMessage.warning(response.data.msg || "节点数据加载失败");
         }
     } catch (error) {
-        console.error("加载电价数据失败:", error);
-        ElMessage.error("数据加载失败");
+        console.error("加载节点数据失败:", error);
+        ElMessage.error("节点数据加载失败");
     }
 }
 
-// 在handleDateChange函数中，添加数据重新加载
-function handleDateChange(date) {
-    console.log("日期改变:", date);
-    // 重新加载对应日期的数据
-    fetchPageData();
+// 辅助函数：查找第一个叶子节点
+function findFirstLeafNode(node) {
+    if (isLeaf(node)) {
+        return node;
+    }
+
+    if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+            const leaf = findFirstLeafNode(child);
+            if (leaf) return leaf;
+        }
+    }
+
+    return null;
 }
 
-// 计算所有节点列表
-const allNodes = computed(() => {
-    return Object.keys(dayAheadData.value).map((province) => ({
-        label: province,
-        value: province,
-        children: Object.keys(dayAheadData.value[province] || {}).map(
-            (category) => ({
-                label: category,
-                value: `${province}-${category}`,
-                children: Object.keys(
-                    dayAheadData.value[province][category] || {}
-                ).map((node) => ({
-                    label: node,
-                    value: node,
-                })),
-            })
-        ),
-    }));
-});
+// 辅助函数：判断是否为叶子节点
+function isLeaf(data) {
+    return data.leaf === 1 || data.nodeType === "1";
+}
 
-/* ------------- 计算当前节点数据 ------------- */
-const currentDayAheadData = computed(() => {
-    const nodes = dayAheadData.value["广东省"]?.["其他"];
-    return nodes?.[selectedNodeName.value] || [];
-});
+// 获取节点电价数据
+async function fetchNodePriceData(nodeId, date) {
+    try {
+        const response = await request.get("/api/node-price/price-chart", {
+            params: {
+                nodePkId: nodeId,
+                startDate: date,
+            },
+        });
 
-const currentRealTimeData = computed(() => {
-    const nodes = realTimeData.value["广东省"]?.["其他"];
-    return nodes?.[selectedNodeName.value] || [];
-});
+        if (response.data.status === 0) {
+            const priceData = response.data.data;
+            currentDayAheadData.value =
+                priceData.dayAheadData || new Array(96).fill(0);
+            currentRealTimeData.value =
+                priceData.realTimeData || new Array(96).fill(0);
+            ElMessage.success("电价数据加载成功");
+        } else {
+            ElMessage.warning(response.data.msg || "电价数据加载失败");
+            currentDayAheadData.value = new Array(96).fill(0);
+            currentRealTimeData.value = new Array(96).fill(0);
+        }
+    } catch (error) {
+        console.error("加载电价数据失败:", error);
+        ElMessage.error("电价数据加载失败");
+        currentDayAheadData.value = new Array(96).fill(0);
+        currentRealTimeData.value = new Array(96).fill(0);
+    }
+}
 
-// 事件处理
+// 日期改变处理
+function handleDateChange(date) {
+    if (selectedNodeId.value) {
+        fetchNodePriceData(selectedNodeId.value, date);
+    }
+}
+
+// 节点选择事件
 function handleNodeSelect(node) {
-    selectedNodeName.value = node;
+    selectedNodeName.value = node.name;
+    selectedNodeId.value = node.id;
+
+    if (selectedDate.value) {
+        fetchNodePriceData(node.id, selectedDate.value);
+    }
+
+    // 找到父节点树的链
+    const node_chain = getParentNodeChain(node.id, nodeTreeData.value);
+    cur_chain.value = node_chain;
 }
 
 function handleTimeTypeChange(type) {
@@ -189,7 +244,11 @@ function handleTimeTypeChange(type) {
 }
 
 function exportToExcel() {
-    // 导出数据到Excel
+    if (!selectedNodeId.value) {
+        ElMessage.warning("请先选择节点");
+        return;
+    }
+
     const wsData = [
         ["时间", "实时节点电价(元/MWh)", "日前节点电价(元/MWh)"],
         ...generateTableData(),
@@ -224,15 +283,52 @@ function generateTableData() {
         }
     }
 
-    return timePoints.map((time, index) => [
-        time,
-        currentRealTimeData.value[index] || "-",
-        currentDayAheadData.value[index] || "-",
-    ]);
+    return timePoints.map((time, index) => {
+        const hourIndex =
+            timeType.value === "hour" ? index : Math.floor(index / 4);
+        return [
+            time,
+            currentRealTimeData.value[hourIndex] || 0,
+            currentDayAheadData.value[hourIndex] || 0,
+        ];
+    });
+}
+
+// 辅助函数：获取从根节点到指定节点的路径链
+function getParentNodeChain(nodeId, treeNodes) {
+    const path = [];
+
+    function findPath(nodes, targetId, currentPath) {
+        for (const node of nodes) {
+            const newPath = [
+                ...currentPath,
+                {
+                    treeNodeId: node.treeNodeId,
+                    treeNodeName: node.treeNodeName,
+                },
+            ];
+
+            if (node.treeNodeId === targetId) {
+                path.push(...newPath);
+                return true;
+            }
+
+            if (node.children && node.children.length > 0) {
+                if (findPath(node.children, targetId, newPath)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    findPath(treeNodes, nodeId, []);
+
+    return path;
 }
 
 onMounted(() => {
-    fetchPageData();
+    fetchAllNodeData(); // 一次性加载所有节点数据
 });
 </script>
 
@@ -256,9 +352,9 @@ onMounted(() => {
             border-radius: 8px;
             padding: 16px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow-y: scroll;
         }
 
         .middle-panel {

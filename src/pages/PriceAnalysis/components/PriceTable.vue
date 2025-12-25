@@ -153,7 +153,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 
 const props = defineProps({
     dayAheadData: {
@@ -168,10 +168,6 @@ const props = defineProps({
         type: String,
         default: "hour",
     },
-});
-
-onMounted(() => {
-    console.log("table props->", props);
 });
 
 // 计算表格数据

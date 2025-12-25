@@ -7,7 +7,7 @@
 
         <div class="search-box">
             <el-input
-                v-model="filterText"
+                v-model="query"
                 placeholder="搜索节点名称"
                 clearable
                 @input="handleSearch"
@@ -19,26 +19,32 @@
         </div>
 
         <div class="tree-wrapper">
-            <el-tree
+            <!-- 使用 Tree V2 虚拟化树形控件 -->
+            <el-tree-v2
                 ref="treeRef"
-                :data="filteredTreeData"
-                node-key="value"
+                :data="props.nodes"
+                :height="treeHeight"
                 :props="defaultProps"
-                :filter-node-method="filterNode"
-                :default-expand-all="true"
+                :filter-method="filterMethod"
                 :highlight-current="true"
                 @node-click="handleNodeClick"
+                class="price-nodetree"
+                :default-expanded-keys="['440000']"
+                :current-node-key="cur_node_id"
+                :item-size="40"
             >
                 <template #default="{ node, data }">
-                    <span class="custom-tree-node">
+                    <div class="custom-tree-node">
                         <i :class="getNodeIcon(data)" class="node-icon"></i>
-                        <span class="node-label">{{ node.label }}</span>
+                        <span class="node-label">{{
+                            node.data.treeNodeName
+                        }}</span>
                         <span v-if="isLeaf(data)" class="node-price">
                             <i class="bi bi-currency-dollar"></i>
                         </span>
-                    </span>
+                    </div>
                 </template>
-            </el-tree>
+            </el-tree-v2>
         </div>
 
         <div class="tree-footer">
@@ -51,39 +57,48 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from "vue";
+import {
+    ref,
+    computed,
+    watch,
+    nextTick,
+    defineProps,
+    defineEmits,
+    onMounted,
+    onUnmounted,
+} from "vue";
 
 const props = defineProps({
     nodes: {
         type: Array,
         default: () => [],
     },
+    cur_node_id: {
+        type: String,
+    },
 });
+
+const query = ref(""); //过滤查询框输入内容
 
 const emit = defineEmits(["node-select"]);
 
 // 响应式数据
-const filterText = ref("");
 const treeRef = ref(null);
+const treeHeight = ref(500);
 
 // 树配置
 const defaultProps = {
     children: "children",
-    label: "label",
+    label: "treeNodeName",
+    value: "treeNodeId",
 };
-
-// 计算属性
-const filteredTreeData = computed(() => {
-    if (!filterText.value) return props.nodes;
-    return filterTreeData([...props.nodes]);
-});
 
 const totalNodes = computed(() => {
     let count = 0;
     const countNodes = (nodes) => {
         nodes.forEach((node) => {
             count++;
-            if (node.children) {
+            if (node.children && node.children.length > 0) {
                 countNodes(node.children);
             }
         });
@@ -92,45 +107,35 @@ const totalNodes = computed(() => {
     return count;
 });
 
-// 方法
-function filterTreeData(nodes) {
-    return nodes.filter((node) => {
-        if (node.label.toLowerCase().includes(filterText.value.toLowerCase())) {
-            return true;
-        }
-        if (node.children) {
-            const filteredChildren = filterTreeData(node.children);
-            if (filteredChildren.length > 0) {
-                node.children = filteredChildren;
-                return true;
-            }
-        }
-        return false;
-    });
-}
-
-function filterNode(value, data) {
+// Tree V2 的过滤方法
+function filterMethod(value, data) {
     if (!value) return true;
-    return data.label.toLowerCase().includes(value.toLowerCase());
+    return data.treeNodeName.toLowerCase().includes(value.toLowerCase());
 }
 
-function handleSearch() {
+function handleSearch(query) {
     nextTick(() => {
         if (treeRef.value) {
-            treeRef.value.filter(filterText.value);
+            treeRef.value.filter(query);
         }
     });
 }
 
+//当节点被点击
 function handleNodeClick(data) {
-    if (data.children) return; // 不触发非叶子节点
-    emit("node-select", data.label);
+    // 只有叶子节点才触发选择事件
+    if (isLeaf(data)) {
+        emit("node-select", {
+            id: data.treeNodeId,
+            name: data.treeNodeName,
+        });
+    }
 }
 
 function getNodeIcon(data) {
-    if (!data.children) {
+    if (isLeaf(data)) {
         return "bi bi-lightning-charge-fill";
-    } else if (data.label === "广东省") {
+    } else if (data.parentPkId === "0") {
         return "bi bi-geo-alt-fill";
     } else {
         return "bi bi-folder-fill";
@@ -138,14 +143,173 @@ function getNodeIcon(data) {
 }
 
 function isLeaf(data) {
-    return !data.children || data.children.length === 0;
+    return data.leaf === 1 || data.nodeType === "1";
 }
 
-// 监听过滤文本变化
-watch(filterText, handleSearch);
+// 动态计算树的高度
+function updateTreeHeight() {
+    nextTick(() => {
+        const container = document.querySelector(".node-tree-container");
+        if (container) {
+            const header = container.querySelector(".tree-header");
+            const searchBox = container.querySelector(".search-box");
+            const footer = container.querySelector(".tree-footer");
+
+            if (header && searchBox && footer) {
+                const containerHeight = container.clientHeight;
+                const headerHeight = header.offsetHeight;
+                const searchBoxHeight = searchBox.offsetHeight;
+                const footerHeight = footer.offsetHeight;
+
+                treeHeight.value =
+                    containerHeight -
+                    headerHeight -
+                    searchBoxHeight -
+                    footerHeight -
+                    20 -
+                    32; //32是.left-panel的上下padding之和（16px*2）
+            }
+        }
+    });
+}
+
+onMounted(() => {
+    updateTreeHeight();
+    window.addEventListener("resize", updateTreeHeight);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("resize", updateTreeHeight);
+});
 </script>
 
+<style lang="scss">
+.el-tree-node {
+    height: 40px !important;
+}
+.el-tree-node__content {
+    height: 40px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: #f0f7ff;
+    }
+
+    .custom-tree-node {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 4px 0;
+
+        .node-icon {
+            margin-right: 8px;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .node-label {
+            flex: 1;
+            font-size: 14px;
+            color: #2c3e50;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .node-price {
+            color: #67c23a;
+            font-size: 12px;
+            opacity: 0.7;
+            padding-right: 15px;
+        }
+    }
+}
+.el-tree-node {
+    &.is-current {
+        .el-tree-node__content {
+            background-color: #409eff !important;
+
+            .node-icon,
+            .node-label {
+                color: white;
+            }
+
+            .node-price {
+                color: #ffd700;
+                opacity: 1;
+            }
+        }
+    }
+}
+</style>
 <style scoped lang="scss">
+.custom-tree-node {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    .node-icon {
+        margin-right: 8px;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .node-label {
+        flex: 1;
+        font-size: 14px;
+        color: #2c3e50;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .node-price {
+        color: #67c23a;
+        font-size: 12px;
+        opacity: 0.7;
+    }
+}
+.el-tree__node {
+    margin: 4px 0;
+
+    .el-tree__node-content {
+        height: 40px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        padding: 0 8px;
+
+        &:hover {
+            background-color: #f0f7ff;
+        }
+
+        .el-tree__checkbox {
+            margin-right: 8px;
+        }
+
+        .el-tree__node-content-inner {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    &.is-current {
+        .el-tree-v2__node-content {
+            background-color: #409eff;
+
+            .node-icon,
+            .node-label {
+                color: white;
+            }
+
+            .node-price {
+                color: #ffd700;
+                opacity: 1;
+            }
+        }
+    }
+}
 .node-tree-container {
     height: 100%;
     display: flex;
@@ -191,65 +355,18 @@ watch(filterText, handleSearch);
         overflow-y: auto;
         padding-right: 4px;
 
-        :deep(.el-tree) {
+        // Tree V2 样式 - 保持与原来完全一致
+        :deep(.el-tree-v2) {
             background: transparent;
+            height: 100%;
 
-            .el-tree-node {
-                margin: 4px 0;
+            .el-tree-v2__empty {
+                padding: 20px;
+                text-align: center;
+                color: #999;
+            }
 
-                .el-tree-node__content {
-                    height: 40px;
-                    border-radius: 8px;
-                    transition: all 0.3s ease;
-
-                    &:hover {
-                        background-color: #f0f7ff;
-                    }
-
-                    .custom-tree-node {
-                        display: flex;
-                        align-items: center;
-                        width: 100%;
-                        padding: 4px 0;
-
-                        .node-icon {
-                            margin-right: 8px;
-                            font-size: 16px;
-                            flex-shrink: 0;
-                        }
-
-                        .node-label {
-                            flex: 1;
-                            font-size: 14px;
-                            color: #2c3e50;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                        }
-
-                        .node-price {
-                            color: #67c23a;
-                            font-size: 12px;
-                            opacity: 0.7;
-                        }
-                    }
-                }
-
-                &.is-current {
-                    > .el-tree-node__content {
-                        background-color: #409eff;
-
-                        .node-icon,
-                        .node-label {
-                            color: white;
-                        }
-
-                        .node-price {
-                            color: #ffd700;
-                            opacity: 1;
-                        }
-                    }
-                }
+            .el-tree__list {
             }
         }
     }
@@ -273,17 +390,17 @@ watch(filterText, handleSearch);
     }
 }
 
-// 滚动条样式
-:deep(.el-tree)::-webkit-scrollbar {
+// 滚动条样式 - 保持与原来完全一致
+:deep(.el-tree-v2__list)::-webkit-scrollbar {
     width: 6px;
 }
 
-:deep(.el-tree)::-webkit-scrollbar-track {
+:deep(.el-tree-v2__list)::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
 }
 
-:deep(.el-tree)::-webkit-scrollbar-thumb {
+:deep(.el-tree-v2__list)::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 3px;
 

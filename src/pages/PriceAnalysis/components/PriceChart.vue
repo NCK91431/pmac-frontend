@@ -27,14 +27,16 @@ let chartInstance = null;
 
 // 生成时间轴 - 始终生成96个点的时间轴
 const generateTimeAxis = () => {
-    // 始终返回96个点的时间轴（分钟级）
-    return Array.from({ length: 96 }, (_, i) => {
+    const timeAxis = Array.from({ length: 96 }, (_, i) => {
         const hour = Math.floor(i / 4);
         const minute = (i % 4) * 15;
         return `${hour.toString().padStart(2, "0")}:${minute
             .toString()
             .padStart(2, "0")}`;
     });
+    console.log("timeAxis->", timeAxis);
+    // 始终返回96个点的时间轴（分钟级）
+    return timeAxis;
 };
 
 // 查找极值点
