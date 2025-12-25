@@ -1,4 +1,6 @@
-# frontend-code
+# 星火平台前端项目代码
+
+Node 版本号：v20.19.0
 
 This template should help get you started developing with Vue 3 in Vite.
 
