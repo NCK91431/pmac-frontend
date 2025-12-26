@@ -34,7 +34,6 @@ const generateTimeAxis = () => {
             .toString()
             .padStart(2, "0")}`;
     });
-    console.log("timeAxis->", timeAxis);
     // 始终返回96个点的时间轴（分钟级）
     return timeAxis;
 };
