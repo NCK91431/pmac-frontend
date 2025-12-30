@@ -136,19 +136,6 @@ const initChart = () => {
     ];
 
     const option = {
-        title: {
-            text: `${props.nodeName} - 实时与日前电价对比`,
-            left: "left",
-            textStyle: {
-                fontSize: 16,
-                fontWeight: "bold",
-                color: "#2c3e50",
-            },
-            subtextStyle: {
-                fontSize: 12,
-                color: "#7d8ca1",
-            },
-        },
         tooltip: {
             trigger: "axis",
             axisPointer: {
@@ -178,7 +165,7 @@ const initChart = () => {
         },
         legend: {
             data: ["实时节点电价", "日前节点电价"],
-            top: 40,
+            top: 20,
             icon: "circle",
             itemWidth: 12,
             itemHeight: 12,

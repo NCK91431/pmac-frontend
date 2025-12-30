@@ -1,5 +1,9 @@
 <template>
-    <nav class="breadcrumb-container" v-if="breadcrumbs.length">
+    <nav
+        class="breadcrumb-container"
+        ref="breadcrumbRef"
+        v-if="breadcrumbs.length"
+    >
         <div class="breadcrumb-inner">
             <ol class="breadcrumb">
                 <li
@@ -52,12 +56,27 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { Back } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const breadcrumbs = ref([]);
+
+const emit = defineEmits(["update:breadcrumbHeight"]); // 定义 emits 用于传递高度给父组件
+const breadcrumbRef = ref(null);
+// 获取并传递 header 高度
+const updateBreadcrumbHeight = () => {
+    if (breadcrumbRef.value) {
+        const height = breadcrumbRef.value.offsetHeight; // 获取元素实际高度（包括 padding，不包括 margin 和 border）
+        emit("update:breadcrumbHeight", height); // 发送高度给父组件
+    }
+};
+// 初始化时获取一次高度
+onMounted(() => {
+    updateBreadcrumbHeight();
+    window.addEventListener("resize", updateBreadcrumbHeight); // 监听窗口大小变化，动态更新高度（适配响应式布局）
+});
 
 // 路由到面包屑的映射
 const routeToBreadcrumb = {
@@ -118,6 +137,12 @@ const routeToBreadcrumb = {
         icon: "bi bi-sun",
     },
     health: { title: "资产健康", to: "/health", icon: "bi bi-sun" },
+    price_analysis: {
+        title: "节点电价查询",
+        to: "/price-analysis",
+        icon: "bi bi-sun",
+        hasBackBtn: true,
+    },
     product_BMS: {
         title: "BMS",
         to: "/product_BMS",

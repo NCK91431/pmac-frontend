@@ -103,6 +103,12 @@ const router = createRouter({
             name: "product_BMU",
             component: () => import("@/pages/Products/BMU.vue"),
         },
+        /* 节点电价查询 */
+        {
+            path: "/price-analysis",
+            name: "price_analysis",
+            component: () => import("@/pages/PriceAnalysis/Page.vue"),
+        },
     ],
 });
 

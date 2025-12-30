@@ -76,7 +76,16 @@
                     {{ $t("home.enterPage") }}
                 </el-button>
             </div>
-
+            <div class="nav-card">
+                <div class="icon">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                </div>
+                <h3>{{ $t("home.nodeElePrice.title") }}</h3>
+                <p>{{ $t("home.nodeElePrice.description") }}</p>
+                <el-button type="info" @click="gotoPage('price-analysis')">
+                    {{ $t("home.enterPage") }}
+                </el-button>
+            </div>
             <div class="nav-card">
                 <div class="icon">
                     <i class="fas fa-solar-panel"></i>
@@ -101,7 +110,7 @@
                     {{ $t("home.enterPage") }}
                 </el-button>
             </div>
-            <div class="nav-card">
+            <div class="nav-card" v-if="false">
                 <div class="icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
@@ -279,6 +288,9 @@ const gotoPage = (page) => {
             break;
         case "health":
             router.push("/health");
+            break;
+        case "price-analysis":
+            router.push({ name: "price_analysis" });
             break;
         default:
             router.push("/");

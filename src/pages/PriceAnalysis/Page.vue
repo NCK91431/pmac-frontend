@@ -24,6 +24,35 @@
                             @change="handleDateChange"
                         />
                     </div>
+                    <!-- 在这里显示日期的信息 -->
+                    <div class="date-info" v-if="selectedDate">
+                        <div class="selected-date-display">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            {{ dateInfo.dateValue }}
+                        </div>
+                        <div class="weekday">
+                            <i class="bi bi-calendar-week me-1"></i>
+                            {{ dateInfo.weekday }}
+                        </div>
+                        <div class="date-type" :class="dateInfo.dateType">
+                            <i
+                                class="me-1"
+                                :class="
+                                    dateInfo.dateType === 'weekend'
+                                        ? 'bi-emoji-sunglasses'
+                                        : 'bi-briefcase'
+                                "
+                            ></i>
+                            {{
+                                dateInfo.dateType === "weekend"
+                                    ? "周末"
+                                    : "工作日"
+                            }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
                     <div class="chart-info">
                         <span class="selected-node">
                             <i class="bi bi-node-plus"></i> 当前节点：{{
@@ -31,9 +60,6 @@
                             }}
                         </span>
                     </div>
-                </div>
-
-                <div class="chart-container">
                     <div
                         v-loading="chartLoading"
                         element-loading-text="图表数据加载中..."
@@ -59,11 +85,9 @@
                             v-model="timeType"
                             @change="handleTimeTypeChange"
                         >
-                            <el-radio-button label="hour"
-                                >小时级</el-radio-button
-                            >
+                            <el-radio-button label="hour">24点</el-radio-button>
                             <el-radio-button label="minute"
-                                >分钟级</el-radio-button
+                                >96点</el-radio-button
                             >
                         </el-radio-group>
                     </div>
@@ -120,10 +144,43 @@ const containerStyle = computed(() => {
     };
 });
 
+// 计算前天的日期（格式：YYYY-MM-DD）
+function getTwoDaysAgoDate() {
+    const date = new Date();
+    date.setDate(date.getDate() - 2); // 减去2天
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+// 计算日期信息
+const dateInfo = computed(() => {
+    if (!selectedDate.value) {
+        return {
+            dateValue: "",
+            weekday: "",
+            dateType: "",
+        };
+    }
+
+    const date = new Date(selectedDate.value);
+    const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+    const weekday = `星期${weekdays[date.getDay()]}`;
+    const day = date.getDay();
+    const dateType = day === 0 || day === 6 ? "weekend" : "weekday";
+
+    return {
+        dateValue: selectedDate.value,
+        weekday,
+        dateType,
+    };
+});
+
 // 响应式数据
 const selectedNodeName = ref("请选择节点");
 const selectedNodeId = ref("");
-const selectedDate = ref(new Date().toISOString().split("T")[0]);
+const selectedDate = ref(getTwoDaysAgoDate()); // 默认选中前天
 const timeType = ref("hour");
 const currentDayAheadData = ref([]);
 const currentRealTimeData = ref([]);
@@ -462,6 +519,62 @@ onMounted(() => {
                     }
                 }
 
+                .date-info {
+                    display: flex;
+                    gap: 12px;
+                    margin-left: 20px;
+                    text-align: center;
+
+                    .selected-date-display,
+                    .weekday,
+                    .date-type {
+                        display: flex;
+                        align-items: center;
+                        min-height: 36px;
+                    }
+
+                    .selected-date-display {
+                        color: #1890ff;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        background-color: rgba(24, 144, 255, 0.1);
+                        border: 1px solid rgba(24, 144, 255, 0.2);
+                    }
+
+                    .weekday {
+                        padding: 4px 12px;
+                        background: rgba(44, 111, 187, 0.1);
+                        border-radius: 4px;
+                        color: #2c6fbb;
+                        font-weight: 500;
+                        border: 1px solid rgba(44, 111, 187, 0.2);
+                    }
+
+                    .date-type {
+                        padding: 4px 12px;
+                        border-radius: 4px;
+                        font-weight: 500;
+
+                        &.weekday {
+                            background: rgba(76, 175, 80, 0.1);
+                            color: #4caf50;
+                            border: 1px solid rgba(76, 175, 80, 0.2);
+                        }
+
+                        &.weekend {
+                            background: rgba(156, 39, 176, 0.1);
+                            color: #9c27b0;
+                            border: 1px solid rgba(156, 39, 176, 0.2);
+                        }
+                    }
+                }
+            }
+
+            .chart-container {
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
                 .chart-info {
                     .selected-node {
                         background: #f0f7ff;
@@ -475,12 +588,6 @@ onMounted(() => {
                         }
                     }
                 }
-            }
-
-            .chart-container {
-                flex: 1;
-                min-height: 0;
-                overflow: hidden;
             }
         }
 

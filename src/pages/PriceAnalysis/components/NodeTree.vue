@@ -55,6 +55,23 @@
         </div>
     </div>
 </template>
+<style lang="scss">
+.price-nodetree {
+    .is-current {
+        .el-tree-node__content {
+            background-color: #409eff !important;
+        }
+    }
+    .el-tree-node__content {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: #f0f7ff;
+        }
+    }
+}
+</style>
 
 <script setup>
 import {
@@ -183,71 +200,12 @@ onUnmounted(() => {
 });
 </script>
 
-<style lang="scss">
-.el-tree-node {
-    height: 40px !important;
-}
-.el-tree-node__content {
-    height: 40px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-
-    &:hover {
-        background-color: #f0f7ff;
-    }
-
-    .custom-tree-node {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 4px 0;
-
-        .node-icon {
-            margin-right: 8px;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        .node-label {
-            flex: 1;
-            font-size: 14px;
-            color: #2c3e50;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .node-price {
-            color: #67c23a;
-            font-size: 12px;
-            opacity: 0.7;
-            padding-right: 15px;
-        }
-    }
-}
-.el-tree-node {
-    &.is-current {
-        .el-tree-node__content {
-            background-color: #409eff !important;
-
-            .node-icon,
-            .node-label {
-                color: white;
-            }
-
-            .node-price {
-                color: #ffd700;
-                opacity: 1;
-            }
-        }
-    }
-}
-</style>
 <style scoped lang="scss">
 .custom-tree-node {
     display: flex;
     align-items: center;
     width: 100%;
+    padding: 4px 0;
     .node-icon {
         margin-right: 8px;
         font-size: 16px;
@@ -267,37 +225,13 @@ onUnmounted(() => {
         color: #67c23a;
         font-size: 12px;
         opacity: 0.7;
+        padding-right: 15px;
     }
 }
-.el-tree__node {
-    margin: 4px 0;
 
-    .el-tree__node-content {
-        height: 40px;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        padding: 0 8px;
-
-        &:hover {
-            background-color: #f0f7ff;
-        }
-
-        .el-tree__checkbox {
-            margin-right: 8px;
-        }
-
-        .el-tree__node-content-inner {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
-    }
-
+.el-tree-node {
     &.is-current {
-        .el-tree-v2__node-content {
-            background-color: #409eff;
-
+        .el-tree-node__content {
             .node-icon,
             .node-label {
                 color: white;
