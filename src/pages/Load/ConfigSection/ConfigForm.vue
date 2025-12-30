@@ -125,15 +125,27 @@
                     value="D-4"
                 />
                 <el-option
-                    label="D-3 -> D+1 【注：3天前用电量 → 预测未来一天分时负荷】"
+                    :label="`${
+                        mode == 'T'
+                            ? 'D-3 -> D+1、D+2、D+3 【注：3天前用电量 → 预测未来三天分时负荷】'
+                            : 'D-3 -> D+1【注：3天前用电量 → 预测未来一天分时负荷】'
+                    }`"
                     value="D-3"
                 />
                 <el-option
-                    label="D-2 -> D+1 【注：2天前用电量 → 预测未来一天分时负荷】"
+                    :label="`${
+                        mode == 'T'
+                            ? 'D-2 -> D+1、D+2、D+3 【注：2天前用电量 → 预测未来三天分时负荷】'
+                            : 'D-2 -> D+1【注：2天前用电量 → 预测未来一天分时负荷】'
+                    }`"
                     value="D-2"
                 />
                 <el-option
-                    label="D-1 -> D+1 【注：1天前用电量 → 预测未来一天分时负荷】"
+                    :label="`${
+                        mode == 'T'
+                            ? 'D-1 -> D+1、D+2、D+3 【注：1天前用电量 → 预测未来三天分时负荷】'
+                            : 'D-1 -> D+1【注：1天前用电量 → 预测未来一天分时负荷】'
+                    }`"
                     value="D-1"
                 />
             </el-select>
@@ -337,8 +349,8 @@ const showPredictionDate = computed(() => {
 // 获取预测天数
 function getDayCount(forecastRange) {
     // 根据模式区分预测天数
-    if (mode.value === "T" && forecastRange === "D-4") {
-        // 总负荷预测模式下，D-4预测3天
+    if (mode.value === "T") {
+        // 总负荷预测模式下
         return 3;
     } else {
         // 其他情况都预测1天

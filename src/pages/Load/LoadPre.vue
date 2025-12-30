@@ -130,8 +130,18 @@ function switchMode() {
 /* ---------------- 执行模型预测过程中 -----------------*/
 const processingTasks = ref([]); //任务队列
 
+// 新增：防重复请求标志
+let isRequesting = false;
+let currentRequestController = null;
+
 async function handleSubmit(formData, fileData) {
+    if (isRequesting) {
+        ElMessage.warning("正在处理中，请勿重复提交");
+        return; // 防止重复请求
+    }
+
     forecastStore.setStageOne(); // 设置为处理中状态 stage = 1
+    //表单数据填充：
     const post_data = new FormData();
     if (mode.value == "S") {
         post_data.append("customer_type", formData.customer_type);
@@ -144,38 +154,93 @@ async function handleSubmit(formData, fileData) {
     post_data.append("file", fileData);
     post_data.append("mode", mode.value);
     post_data.append("mark_name", formData.mark_name);
-    // 如果有用户ID
     if (user.value) {
         post_data.append("user_id", user.value.id);
     }
-    // 如果有继续预测的ID
     if (formData.previous_record_id) {
         post_data.append("previous_record_id", formData.previous_record_id);
     }
-    const now_moment = moment(new Date()).format("YYYY-MM-DD HH:mm");
-    processingTasks.value.push(now_moment);
+    // 添加请求时间戳
+    const requestStartTime = Date.now();
+    console.log(
+        `[${mode.value}预测] 开始请求，时间: ${moment(requestStartTime).format(
+            "HH:mm:ss"
+        )}`
+    );
+
+    processingTasks.value.push(
+        moment(requestStartTime).format("YYYY-MM-DD HH:mm")
+    );
+
+    // 设置请求状态
+    isRequesting = true;
+    const controller = new AbortController();
+    currentRequestController = controller;
+
+    // 设置请求超时时间（10分钟）
+    const timeoutId = setTimeout(() => {
+        if (currentRequestController) {
+            currentRequestController.abort();
+            console.warn("请求超时，已取消");
+        }
+    }, 600000); // 10分钟
+
     try {
         // 调用算法预测
         const res = await request.post("/api/forecast", post_data, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
+            signal: controller.signal, // 添加取消支持
+            retry: 0, // 明确设置不重试
+            "axios-retry": {
+                retries: 0,
+            },
         });
+        // 清除超时定时器
+        clearTimeout(timeoutId);
+
         if (res.data.success) {
+            const requestEndTime = Date.now();
+            console.log(
+                `[${mode.value}预测] 请求完成，耗时: ${
+                    (requestEndTime - requestStartTime) / 1000
+                }秒`
+            );
             ElNotification({
                 type: "success",
                 title: "预测完成",
-                message: "预测任务已完成，您可以查看结果",
+                message: `预测任务已完成，耗时 ${(
+                    (requestEndTime - requestStartTime) /
+                    1000
+                ).toFixed(1)} 秒`,
             });
             forecastStore.setCompleted(res.data); // 设置为完成状态 stage = 2
             forecastStore.clearContinueData(); // 确保清除状态、清除继续预测数据
         }
         // 处理响应
     } catch (error) {
-        forecastStore.setStageZero(); // 出错时重置状态 stage = 0
-        forecastStore.removeFile();
-        if (error.response?.status === 400 || error.response?.status === 500) {
-            console.log(error.response);
+        console.error("请求发生错误:", {
+            name: error.name,
+            message: error.message,
+            code: error.code,
+            config: error.config?.url,
+        });
+
+        // 更详细的错误处理：
+        if (error.name === "CanceledError" || error.name === "AbortError") {
+            console.log("请求被用户取消或超时");
+            ElMessage.warning("请求已取消或超时");
+            return;
+        }
+        if (error.code === "ECONNABORTED") {
+            ElMessage.warning("请求超时，可能是网络连接问题");
+        } else if (!error.response) {
+            ElMessage.warning("网络连接异常，请检查网络后重试");
+        } else if (
+            error.response?.status === 400 ||
+            error.response?.status === 500
+        ) {
             ElMessageBox.alert(
                 error.response.data.details,
                 error.response.data.error,
@@ -184,10 +249,20 @@ async function handleSubmit(formData, fileData) {
                     type: "warning",
                 }
             );
+        } else {
+            ElMessage.error("请求失败，请稍后重试");
         }
+        //其他处理：
+        forecastStore.setStageZero(); // 出错时重置状态 stage = 0
+        forecastStore.removeFile();
     } finally {
+        console.log("【END】请求任务已结束，页面状态已重置");
         // 隐藏加载状态
         processingTasks.value = []; //清空任务队列
+
+        // 重置请求状态
+        isRequesting = false;
+        currentRequestController = null;
     }
 }
 

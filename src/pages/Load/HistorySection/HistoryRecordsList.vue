@@ -217,7 +217,6 @@ const activeHistoryRecordId = computed(
 const activehistoryRecord = computed(() => forecastStore.activeHistoryRecord);
 
 function computePredDates(record) {
-    console.log(record);
     if (record.prediction_date) {
         return record.prediction_date.value;
     }

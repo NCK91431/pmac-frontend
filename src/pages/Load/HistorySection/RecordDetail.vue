@@ -146,9 +146,8 @@
                             <div class="value">
                                 <span class="badge-custom forecast-badge">
                                     {{
-                                        activeHistoryRecord.forecast_range ==
-                                        "D-4"
-                                            ? "D-4 -> D+1、D+2、D+3"
+                                        activeHistoryRecord.mode == "T"
+                                            ? `${record.forecast_range} → D+1、D+2、D+3`
                                             : `${record.forecast_range} → D+1`
                                     }}
                                 </span>
