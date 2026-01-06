@@ -380,6 +380,7 @@ const initChart = () => {
                 },
             },
         ],
+        /* 暂不支持
         dataZoom: [
             {
                 type: "inside",
@@ -398,6 +399,7 @@ const initChart = () => {
                 },
             },
         ],
+		*/
     };
 
     chartInstance.setOption(option);
