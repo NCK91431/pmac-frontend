@@ -9,7 +9,11 @@
                     <i class="bi bi-graph-up-arrow me-2"></i>预测结果
                 </h3>
                 <div class="download-buttons">
-                    <el-button type="primary" @click="downloadPredictionExcel">
+                    <el-button
+                        type="primary"
+                        @click="downloadPredictionExcel"
+                        :loading="downloadLoading"
+                    >
                         <i class="bi bi-download me-2"></i>下载预测结果
                     </el-button>
                 </div>
@@ -139,6 +143,7 @@ import WeatherInfo from "./WeatherInfo.vue";
 import { ElMessage } from "element-plus";
 import request from "@/utils/request";
 import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
 import { useLoadForecastStore } from "@/store/load";
 const forecastStore = useLoadForecastStore();
 
@@ -223,41 +228,77 @@ watch(
 );
 
 /*------------下载预测结果excel文件------------*/
+const downloadLoading = ref(false);
 async function downloadPredictionExcel() {
-    const recordId = record.value.recordId;
-    if (!recordId) {
+    const id = record.value.recordId;
+    if (!id) {
         ElMessage.error("记录ID不存在，无法下载文件");
         return;
     }
-    const fileName = record.value.resultFileName;
+
+    downloadLoading.value = true;
 
     try {
-        ElMessage.success(`正在生成预测结果Excel文件${fileName}`);
-        // 发送下载请求
+        // 1. 获取预测数据
         const response = await request.get(
-            `/api/history/${recordId}/download/prediction`,
-            {
-                responseType: "blob",
-            }
+            `/api/history/${id}/download/result`
         );
-        const blob = new Blob([response.data]); // 创建Blob对象并保存文件
-        saveAs(blob, fileName);
-    } catch (error) {
-        // 处理错误响应（如后端返回JSON错误信息）
-        if (error.response?.data?.type?.includes("application/json")) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                try {
-                    const errorData = JSON.parse(reader.result);
-                    ElMessage.error(`下载失败: ${errorData.error}`);
-                } catch {
-                    ElMessage.error("未知错误");
-                }
-            };
-            reader.readAsText(error.response.data);
-        } else {
-            ElMessage.error("文件下载失败");
+
+        if (!response.data.success) {
+            throw new Error(response.data.error || "获取预测数据失败");
         }
+
+        const predictionData = response.data.data;
+
+        // 2. 准备Excel数据
+        const wsData = [];
+
+        // 第一行：时间点标题
+        const timeRow = [
+            "",
+            ...Array.from(
+                { length: 24 },
+                (_, i) => `${String(i).padStart(2, "0")}:00`
+            ),
+        ];
+        wsData.push(timeRow);
+
+        // 添加各日预测数据行
+        ["D+1", "D+2", "D+3"].forEach((day) => {
+            if (predictionData[day] && predictionData[day].date) {
+                const row = [
+                    predictionData[day].date.value,
+                    ...predictionData[day].values,
+                ];
+                wsData.push(row);
+            }
+        });
+
+        // 3. 生成Excel文件
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "预测结果");
+
+        // 4. 设置列宽
+        ws["!cols"] = [
+            { wch: 12 }, // 日期列
+            ...Array(24).fill({ wch: 8 }), // 24个时间列
+        ];
+
+        // 5. 下载文件
+        const fileName = `负荷预测结果${
+            record.value.formData.mark_name || ""
+        }_${predictionData["D+1"].date.value}至${
+            predictionData["D+3"].date.value
+        }.xlsx`;
+        XLSX.writeFile(wb, fileName);
+
+        ElMessage.success("预测结果导出成功");
+    } catch (error) {
+        console.error("下载预测结果失败:", error);
+        ElMessage.error(error.message || "预测结果下载失败");
+    } finally {
+        downloadLoading.value = false;
     }
 }
 </script>
