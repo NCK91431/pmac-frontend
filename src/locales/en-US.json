@@ -15,8 +15,8 @@
         "home": "Home",
         "features": "Features",
         "about": "About Us",
-        "platformName": "Spark Platform",
-        "platformSlogan": "Smart Insights, Minute Details",
+        "platformName": "iSage",
+        "platformSlogan": "",
         "electricityExpert": "Electricity Trading Expert",
         "notLoggedIn": "Not Logged In",
         "userInfo": "User Information",
@@ -26,7 +26,7 @@
         "companyNotSet": "Company Not Set"
     },
     "home": {
-        "title": "Light up assets, foresee returns",
+        "title": "Asset Optimization Engine",
         "subtitle": "An online decision engine for electricity market participants and energy asset holders\nTransforming complex energy data into clear predictions and insights to help you make precise decisions and increase returns",
         "loadForecast": {
             "title": "Load Forecasting",
@@ -66,6 +66,10 @@
             "title": "Asset Health Sentinel",
             "description": "Provides health assessment and early warning for energy storage cells to ensure long-term returns"
         },
+        "nodeElePrice": {
+            "title": "Node Electricity Price Inquiry",
+            "description": "One stop query of electricity price data for various regions and nodes"
+        },
         "enterPage": "Enter Page",
         "immediateExperience": "Experience Now",
         "comingSoon": {
@@ -103,7 +107,7 @@
         "stockCode": "Stock Code"
     },
     "intro": {
-        "title": "To try this once is better than to hear about it a hundred times",
+        "title": "Free Exploration",
         "subtitle1": "Can be used without registration",
         "subtitle2": "Registered users can retain all created models for easier use",
         "resultDisplay": "Result Display",

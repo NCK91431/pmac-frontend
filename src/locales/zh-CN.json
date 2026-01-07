@@ -66,6 +66,10 @@
             "title": "资产健康哨兵",
             "description": "为储能电芯提供健康度评估及早期预警，保障长期收益"
         },
+        "nodeElePrice": {
+            "title": "节点电价查询",
+            "description": "一站式查询各地区、各节点电价数据"
+        },
         "enterPage": "进入页面",
         "immediateExperience": "立即体验",
         "comingSoon": {
