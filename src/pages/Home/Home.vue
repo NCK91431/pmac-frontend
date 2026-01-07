@@ -170,7 +170,7 @@ import { useLoadForecastStore } from "@/store/load";
 import { useElecStore } from "@/store/elec";
 import { useLightStore } from "@/store/light";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n(); // 获取 t 函数
+import request from "@/utils/request";
 
 const LoadStore = useLoadForecastStore();
 const ElecStore = useElecStore();
@@ -258,6 +258,9 @@ onUnmounted(() => {
 
 /* --------------------------------- 导航到各个功能页面 ------------------------------ */
 const gotoPage = (page) => {
+    // 发送埋点请求
+    trackAccess(page);
+    // 跳转页面
     switch (page) {
         case "home":
             router.push("/");
@@ -295,6 +298,27 @@ const gotoPage = (page) => {
         default:
             router.push("/");
             break;
+    }
+};
+
+// 埋点方法
+const trackAccess = async (module) => {
+    console.log("module->", module);
+    try {
+        // 使用fetch发送请求，不等待响应以避免阻塞页面跳转
+        await request
+            .post(
+                "/api/track/access",
+                { module },
+                {
+                    keepalive: true,
+                }
+            )
+            .catch((error) => {
+                console.warn("埋点记录失败:", error);
+            });
+    } catch (error) {
+        console.warn("埋点记录异常:", error);
     }
 };
 
