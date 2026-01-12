@@ -154,6 +154,7 @@ async function handleSubmit(formData, fileData) {
     post_data.append("file", fileData);
     post_data.append("mode", mode.value);
     post_data.append("mark_name", formData.mark_name);
+    post_data.append("upload_file_type", "Southern-Network-Standard-Edition"); //Southern-Network-Standard-Edition|old-version
     if (user.value) {
         post_data.append("user_id", user.value.id);
     }

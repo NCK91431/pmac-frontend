@@ -5,7 +5,7 @@
             <div class="image-section mb-4">
                 <h5 class="image-title mb-3">
                     <i class="bi bi-file-earmark-image me-1"></i>
-                    上传文件格式要求
+                    旧版本上传文件格式要求
                 </h5>
                 <img
                     src="https://pmac.leyi.host/downloads/pmac/load-file-img.png"

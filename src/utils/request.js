@@ -3,8 +3,8 @@ import axios from "axios";
 // 创建axios实例
 const service = axios.create({
     // baseURL: "https://api.pmac.leyi.host", // 测试环境
-    // baseURL: "https://energyun.com.cn", // 生产环境
-    baseURL: "http://localhost:3001",
+    baseURL: "https://energyun.com.cn", // 生产环境
+    // baseURL: "http://localhost:3001",
     // timeout: 10000, // 请求超时时间
 });
 
