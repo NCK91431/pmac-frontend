@@ -29,6 +29,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         activeHistoryRecord: null,
 
         mode: "T", // 预测模式，"T"表示总负荷预测，"S"表示分项负荷预测
+        upload_file_type: "Southern-Network-Standard-Edition", // 上传文件的格式 Southern-Network-Standard-Edition | old-version
 
         // LoadCompare.vue 需要用到的状态:
         compare_data: null, // 用于存储对比数据
@@ -105,6 +106,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
             this.excelInfo = null;
         },
         resetFileOnly() {
+            this.upload_file_type = "Southern-Network-Standard-Edition";
             this.uploadedFile = null;
             this.formData.previous_record_id = null;
         },
@@ -151,6 +153,9 @@ export const useLoadForecastStore = defineStore("loadForecast", {
             } else {
                 this.mode = "T";
             }
+        },
+        switchUploadFileType(type) {
+            this.upload_file_type = type;
         },
         setMode(mode) {
             this.mode = mode;

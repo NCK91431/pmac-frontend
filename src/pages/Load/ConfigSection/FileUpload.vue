@@ -11,22 +11,22 @@
         </div>
 
         <template v-if="!uploadLoading">
+            <!-- 新增：文件格式选择 -->
+            <div class="format-selector mb-4">
+                <div class="format-label">文件格式类型：</div>
+                <el-radio-group
+                    v-model="upload_file_type"
+                    class="format-radio-group"
+                    @change="onUploadFileType"
+                >
+                    <el-radio
+                        label="南网标准版"
+                        value="Southern-Network-Standard-Edition"
+                    />
+                    <el-radio label="旧版本格式" value="old-version" />
+                </el-radio-group>
+            </div>
             <template v-if="!file">
-                <!-- 新增：文件格式选择 -->
-                <div class="format-selector mb-4">
-                    <div class="format-label">文件格式类型：</div>
-                    <el-radio-group
-                        v-model="selectedFormat"
-                        class="format-radio-group"
-                    >
-                        <el-radio
-                            label="南网标准版"
-                            value="Southern-Network-Standard-Edition"
-                        />
-                        <el-radio label="旧版本格式" value="old-version" />
-                    </el-radio-group>
-                </div>
-
                 <el-upload
                     class="upload-area"
                     drag
@@ -39,7 +39,7 @@
                         <p class="text-muted">
                             <template
                                 v-if="
-                                    selectedFormat ===
+                                    upload_file_type ===
                                     'Southern-Network-Standard-Edition'
                                 "
                             >
@@ -75,7 +75,7 @@
                             <el-link
                                 type="primary"
                                 :href="
-                                    selectedFormat ===
+                                    upload_file_type ===
                                     'Southern-Network-Standard-Edition'
                                         ? `https://pmac.leyi.host/downloads/南网标准版负荷数据模版.xlsx`
                                         : `https://pmac.leyi.host/downloads/loadforecast_template.xlsx`
@@ -91,7 +91,7 @@
                         <small class="text-muted">
                             <template
                                 v-if="
-                                    selectedFormat ===
+                                    upload_file_type ===
                                     'Southern-Network-Standard-Edition'
                                 "
                             >
@@ -219,16 +219,20 @@ const isContinue = computed(() => forecastStore.isContinue); // 判断是否处�
 const excelInfo = ref(null);
 
 const uploadLoading = ref(false); // 新增：加载状态
-const selectedFormat = ref("Southern-Network-Standard-Edition"); // 新增：默认选择南网标准版
+const upload_file_type = computed(() => forecastStore.upload_file_type); // 新增：默认选择南网标准版
 const standardFormatTemplateLink = "#"; // 可以设置为标准格式示例文件的链接
 
 // 新增：监视文件格式变化，清除现有文件
-watch(selectedFormat, () => {
+watch(upload_file_type, (type) => {
     if (file.value) {
         forecastStore.removeFile();
         excelInfo.value = null;
     }
 });
+
+function onUploadFileType(type) {
+    forecastStore.switchUploadFileType(type);
+}
 
 // 监听文件上传变化：当文件上传时，更新file变量并触发事件
 async function handleFileChange(uploadFile) {
@@ -256,7 +260,7 @@ async function handleFileChange(uploadFile) {
             formData.append("file", uploadFile.raw);
             formData.append("isContinue", isContinue.value ? "1" : "0");
             formData.append("mode", mode.value);
-            formData.append("upload_file_type", selectedFormat.value); //Southern-Network-Standard-Edition|old-version
+            formData.append("upload_file_type", upload_file_type.value); //Southern-Network-Standard-Edition|old-version
 
             const response = await request.post("/api/fileinfo", formData, {
                 headers: {
@@ -270,7 +274,8 @@ async function handleFileChange(uploadFile) {
 
                 // 根据文件类型显示不同的成功消息
                 if (
-                    selectedFormat.value === "Southern-Network-Standard-Edition"
+                    upload_file_type.value ===
+                    "Southern-Network-Standard-Edition"
                 ) {
                     const stats = response.data.excelInfo.standardFormatStats;
                     if (stats) {

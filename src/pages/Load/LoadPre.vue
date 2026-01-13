@@ -115,6 +115,7 @@ const isContinue = computed(() => forecastStore.isContinue);
 const record = computed(() => forecastStore.responseData); //后端返回的完整数据；
 const stage = computed(() => forecastStore.stage); // 0:初始状态 1:处理中 2:处理完成
 const mode = computed(() => forecastStore.mode); // 预测模式
+const upload_file_type = computed(() => forecastStore.upload_file_type); // 上传文件格式类型
 
 const user = inject("user"); //注入全局用户状态
 const router = useRouter();
@@ -154,7 +155,7 @@ async function handleSubmit(formData, fileData) {
     post_data.append("file", fileData);
     post_data.append("mode", mode.value);
     post_data.append("mark_name", formData.mark_name);
-    post_data.append("upload_file_type", "Southern-Network-Standard-Edition"); //Southern-Network-Standard-Edition|old-version
+    post_data.append("upload_file_type", upload_file_type.value); //Southern-Network-Standard-Edition|old-version
     if (user.value) {
         post_data.append("user_id", user.value.id);
     }
