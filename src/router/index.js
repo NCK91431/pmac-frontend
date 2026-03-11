@@ -71,7 +71,7 @@ const router = createRouter({
         {
             path: "/load_example",
             name: "load_example",
-            component: () => import("@/pages/Load/HistorySection/Example.vue"),
+            component: () => import("@/pages/Load/HistorySection/Publicity.vue"),
         },
         {
             path: "/light_example",
@@ -108,6 +108,18 @@ const router = createRouter({
             path: "/price-analysis",
             name: "price_analysis",
             component: () => import("@/pages/PriceAnalysis/Page.vue"),
+        },
+        /* 虚拟电厂广告 */
+        {
+            path: "/VirtualPowerPlant",
+            name: "VirtualPowerPlant",
+            component: () => import("@/pages/VirtualPowerPlantPage/index.vue"),
+        },
+        /* 访问统计与文件管理 */
+        {
+            path: "/admin/access-stats",
+            name: "AccessStats",
+            component: () => import("@/pages/Admin/AccessStats.vue"),
         },
     ],
 });

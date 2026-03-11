@@ -1,6 +1,7 @@
 <template>
     <div class="price-table-container">
         <el-table
+            ref="priceTableRef"
             :data="tableData"
             border
             stripe
@@ -9,11 +10,16 @@
             :row-class-name="tableRowClassName"
             @row-click="handleRowClick"
         >
-            <el-table-column prop="time" label="时间" width="80" fixed="left">
+            <el-table-column prop="time" label="时间" width="85" fixed="left">
                 <template #header>
-                    <div class="table-header">
+                    <div
+                        class="table-header time-header"
+                        @click.stop="clearSort"
+                        title="点击取消所有排序"
+                    >
                         <i class="bi bi-clock"></i>
                         <span>时间</span>
+                        <i class="bi bi-sort-up sort-icon"></i>
                     </div>
                 </template>
                 <template #default="{ row }">
@@ -74,13 +80,19 @@
                 :sort-method="sortDiff"
             >
                 <template #header>
-                    <div class="table-header">
-                        <i
-                            class="bi bi-arrow-left-right"
-                            style="color: #e6a23c"
-                        ></i>
-                        <span>价差</span>
-                    </div>
+                    <el-tooltip
+                        effect="dark"
+                        content="价差 = 实时节点电价 - 日前节点电价"
+                        placement="top"
+                    >
+                        <div class="table-header">
+                            <i
+                                class="bi bi-arrow-left-right"
+                                style="color: #e6a23c"
+                            ></i>
+                            <span>价差</span>
+                        </div>
+                    </el-tooltip>
                 </template>
                 <template #default="{ row }">
                     <div class="diff-cell" :class="getDiffClass(row.diff)">
@@ -153,7 +165,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 
 const props = defineProps({
     dayAheadData: {
@@ -187,8 +199,11 @@ const tableData = computed(() => {
                           .padStart(2, "0")}`;
                   })();
 
-        const realTimePrice = props.realTimeData[i] || 0;
-        const dayAheadPrice = props.dayAheadData[i] || 0;
+        // 关键修改：根据 timeType 选择正确的数据索引
+        const dataIndex = props.timeType === "hour" ? i * 4 : i;
+
+        const realTimePrice = props.realTimeData[dataIndex] || 0;
+        const dayAheadPrice = props.dayAheadData[dataIndex] || 0;
         const diff = realTimePrice - dayAheadPrice;
         const changeRate = dayAheadPrice > 0 ? (diff / dayAheadPrice) * 100 : 0;
 
@@ -204,19 +219,31 @@ const tableData = computed(() => {
     return data;
 });
 
-// 计算统计信息
+// 计算统计信息 - 需要修改以使用正确的数据点
 const averageRealTime = computed(() => {
-    const sum = props.realTimeData.reduce((a, b) => a + b, 0);
-    return props.realTimeData.length > 0 ? sum / props.realTimeData.length : 0;
+    const dataPoints =
+        props.timeType === "hour"
+            ? props.realTimeData.filter((_, index) => index % 4 === 0) // 只取整点数据
+            : props.realTimeData;
+
+    if (dataPoints.length === 0) return 0;
+    const sum = dataPoints.reduce((a, b) => a + b, 0);
+    return sum / dataPoints.length;
 });
 
 const averageDayAhead = computed(() => {
-    const sum = props.dayAheadData.reduce((a, b) => a + b, 0);
-    return props.dayAheadData.length > 0 ? sum / props.dayAheadData.length : 0;
+    const dataPoints =
+        props.timeType === "hour"
+            ? props.dayAheadData.filter((_, index) => index % 4 === 0) // 只取整点数据
+            : props.dayAheadData;
+
+    if (dataPoints.length === 0) return 0;
+    const sum = dataPoints.reduce((a, b) => a + b, 0);
+    return sum / dataPoints.length;
 });
 
 const averageDiff = computed(
-    () => averageRealTime.value - averageDayAhead.value
+    () => averageRealTime.value - averageDayAhead.value,
 );
 
 // 格式化价格
@@ -277,9 +304,17 @@ const tableRowClassName = ({ row }) => {
     return isPeakTime(row.time) ? "peak-row" : "";
 };
 
-// 行点击事件
-const handleRowClick = (row) => {
-    console.log("点击行数据:", row);
+// 添加表格引用
+const priceTableRef = ref(null);
+
+// ... 原有的计算属性和方法保持不变 ...
+
+// 清除所有排序
+const clearSort = () => {
+    if (priceTableRef.value) {
+        // 使用 Element Plus 表格实例的 clearSort 方法
+        priceTableRef.value.clearSort();
+    }
 };
 </script>
 
@@ -304,9 +339,26 @@ const handleRowClick = (row) => {
                     display: flex;
                     align-items: center;
                     gap: 6px;
-
+                    cursor: pointer;
                     i {
                         font-size: 14px;
+                    }
+                    .time-header {
+                        position: relative;
+                        &:hover {
+                            opacity: 0.9;
+
+                            .sort-icon {
+                                color: #ff9800 !important;
+                            }
+                        }
+
+                        .sort-icon {
+                            font-size: 10px;
+                            margin-left: 4px;
+                            color: rgba(255, 255, 255, 0.7);
+                            transition: color 0.3s;
+                        }
                     }
                 }
             }

@@ -75,7 +75,7 @@
             <LanguageToggle />
 
             <!-- 电力交易专家 -->
-            <div class="chatbot" @click="openChatbotWindow" v-if="false">
+            <div class="chatbot" @click="openChatbotWindow">
                 <div class="chatbot-icon">
                     <img
                         src="https://pmac.leyi.host/downloads/pmac/rengongzhineng.png"
@@ -248,7 +248,7 @@ const isHaveUser = computed(() => Boolean(user.value));
 const router = useRouter();
 
 const avatarURL = ref(
-    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+    "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png",
 );
 
 // 添加移动端状态和菜单控制
@@ -308,7 +308,7 @@ function gotoPage(page) {
 
 function openChatbotWindow() {
     // 在新标签页打开外部链接
-    window.open("http://125.88.36.153/chat/xKNQVUj83HlEWtAh", "_blank");
+    window.open("https://energyun.com.cn/chat/xKNQVUj83HlEWtAh", "_blank");
 }
 
 /* ------------ 获取 DOM 元素，计算高度后通过 emit 发送给父组件 ----------- */
@@ -389,7 +389,8 @@ onUnmounted(() => {
                     font-size: 1.8rem;
                     font-weight: 600;
                     margin: 0;
-                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3),
+                    text-shadow:
+                        2px 2px 4px rgba(0, 0, 0, 0.3),
                         0 0 10px rgba(255, 255, 255, 0.2);
 
                     @media (max-width: 768px) {

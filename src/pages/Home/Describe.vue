@@ -41,7 +41,7 @@
                                             自动滚动的96点负荷预测需要一定的硬件基础支持。请联系我们进行咨询。
                                         </p>
                                         <p class="contact-info">
-                                            联系电话：15919159383（微信同号）
+                                            联系电话：18679510800（微信同号）
                                         </p>
                                     </div>
                                 </div>
@@ -72,7 +72,7 @@
                                             自动滚动的96点光伏发电预测需要一定的硬件基础支持。请联系我们进行咨询。
                                         </p>
                                         <p class="contact-info">
-                                            联系电话：15919159383（微信同号）
+                                            联系电话：18679510800（微信同号）
                                         </p>
                                     </div>
                                 </div>
@@ -195,7 +195,7 @@ const setupScrollAnimation = () => {
                 observer.observe(module);
                 observers.push(observer);
             }
-        }
+        },
     );
 };
 

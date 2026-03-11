@@ -85,7 +85,7 @@
             <div class="emoji">🚀</div>
             <h3>正在快马加鞭开发中...</h3>
             <p>功能即将上线</p>
-            <p>如有项目对接需求，请联系：15919159383</p>
+            <p>如有项目对接需求，请联系徐博士：18679510800</p>
             <div class="animation-container">
                 <div class="loader">
                     <div class="dot"></div>
@@ -130,7 +130,7 @@ const gotoPage = (page) => {
 };
 const headerTitle = ref("工业物联网产品解决方案");
 const headerSubtitle = ref(
-    "高效、稳定、安全的工业通信与数据采集设备，助力企业数字化转型"
+    "高效、稳定、安全的工业通信与数据采集设备，助力企业数字化转型",
 );
 const products = reactive([
     {

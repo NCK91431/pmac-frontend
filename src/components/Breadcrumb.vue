@@ -161,6 +161,18 @@ const routeToBreadcrumb = {
         icon: "bi bi-sun",
         hasBackBtn: true,
     },
+    VirtualPowerPlant: {
+        title: "虚拟电厂介绍",
+        to: "/VirtualPowerPlant",
+        icon: "bi bi-sun",
+        hasBackBtn: true,
+    },
+    AccessStats:{
+        title: "系统管理",
+        to: "/admin/access-stats",
+        icon: "bi bi-gear",
+        hasBackBtn: true,
+    }
 };
 
 // 确保路径是绝对路径的辅助函数
@@ -254,6 +266,8 @@ watch(() => route, updateBreadcrumbs, { immediate: true, deep: true });
     padding: 12px 20px;
     border-bottom: 1px solid #dee2e6;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 10; /* 确保高于任何背景组件的 z-index */
 }
 
 .breadcrumb-inner {

@@ -397,8 +397,8 @@
                                 <i class="bi bi-chat-dots-fill"></i>
                             </div>
                             <div class="contact-details">
-                                <div class="contact-name">李经理</div>
-                                <div class="contact-phone">15919159383</div>
+                                <div class="contact-name">徐博士</div>
+                                <div class="contact-phone">18679510800</div>
                                 <div class="contact-note">（微信同号）</div>
                             </div>
                         </div>
@@ -566,7 +566,7 @@ const particles = ref(
         y: Math.random() * 100,
         size: Math.random() * 10 + 5,
         delay: Math.random() * 5,
-    }))
+    })),
 );
 
 // 统计数据
@@ -667,25 +667,25 @@ const initAnimations = () => {
             ".hero-title .title-main",
             { y: 50, opacity: 0 },
             { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
-            "-=0.5"
+            "-=0.5",
         )
         .fromTo(
             ".hero-title .title-sub",
             { y: 30, opacity: 0 },
             { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
-            "-=0.3"
+            "-=0.3",
         )
         .fromTo(
             heroDescription.value,
             { y: 30, opacity: 0 },
             { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
-            "-=0.2"
+            "-=0.2",
         )
         .fromTo(
             heroHighlight.value,
             { y: 30, opacity: 0 },
             { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
-            "-=0.4"
+            "-=0.4",
         )
         .fromTo(
             imageContainer.value,
@@ -697,7 +697,7 @@ const initAnimations = () => {
                 duration: 1,
                 ease: "back.out(1.7)",
             },
-            "-=0.6"
+            "-=0.6",
         );
 
     // 统计数据动画
@@ -719,7 +719,7 @@ const initAnimations = () => {
                     // 动画完成后确保显示完整值
                     el.textContent = target + units[index];
                 },
-            }
+            },
         );
     });
 
@@ -740,7 +740,7 @@ const initAnimations = () => {
                     end: "bottom 20%",
                     toggleActions: "play none none reverse",
                 },
-            }
+            },
         );
     });
 
@@ -760,7 +760,7 @@ const initAnimations = () => {
                     end: "bottom 20%",
                     toggleActions: "play none none reverse",
                 },
-            }
+            },
         );
     });
 
@@ -779,7 +779,7 @@ const initAnimations = () => {
                 end: "bottom 20%",
                 toggleActions: "play none none reverse",
             },
-        }
+        },
     );
 
     // 52串参数表格动画
@@ -798,7 +798,7 @@ const initAnimations = () => {
                 end: "bottom 20%",
                 toggleActions: "play none none reverse",
             },
-        }
+        },
     );
 
     // 52串表格行逐行动画
@@ -826,7 +826,7 @@ const initAnimations = () => {
                     end: "bottom 15%",
                     toggleActions: "play none none reverse",
                 },
-            }
+            },
         );
     });
 
@@ -846,7 +846,7 @@ const initAnimations = () => {
                 end: "bottom 20%",
                 toggleActions: "play none none reverse",
             },
-        }
+        },
     );
 
     // 16串表格行逐行动画
@@ -874,7 +874,7 @@ const initAnimations = () => {
                     end: "bottom 15%",
                     toggleActions: "play none none reverse",
                 },
-            }
+            },
         );
     });
 
@@ -895,7 +895,7 @@ const initAnimations = () => {
                     end: "bottom 20%",
                     toggleActions: "play none none reverse",
                 },
-            }
+            },
         );
     });
 
@@ -914,7 +914,7 @@ const initAnimations = () => {
                 end: "bottom 20%",
                 toggleActions: "play none none reverse",
             },
-        }
+        },
     );
 
     gsap.fromTo(
@@ -931,7 +931,7 @@ const initAnimations = () => {
                 end: "bottom 20%",
                 toggleActions: "play none none reverse",
             },
-        }
+        },
     );
 
     // CTA区域动画
@@ -949,7 +949,7 @@ const initAnimations = () => {
                 end: "bottom 20%",
                 toggleActions: "play none none reverse",
             },
-        }
+        },
     );
 };
 
@@ -977,7 +977,7 @@ const openContactModal = () => {
         gsap.fromTo(
             ".contact-modal",
             { scale: 0.8, opacity: 0 },
-            { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }
+            { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" },
         );
     }
 };
@@ -1001,7 +1001,7 @@ const closeModal = () => {
 
 // 复制联系方式
 const copyContact = () => {
-    const contactInfo = "李经理 15919159383（微信同号）";
+    const contactInfo = "徐博士 18679510800（微信同号）";
     navigator.clipboard
         .writeText(contactInfo)
         .then(() => {
@@ -1038,11 +1038,13 @@ $text-light: #8a6daa;
 @keyframes glow {
     0%,
     100% {
-        box-shadow: 0 0 5px rgba($secondary-color, 0.5),
+        box-shadow:
+            0 0 5px rgba($secondary-color, 0.5),
             0 0 10px rgba($secondary-color, 0.3);
     }
     50% {
-        box-shadow: 0 0 20px rgba($secondary-color, 0.8),
+        box-shadow:
+            0 0 20px rgba($secondary-color, 0.8),
             0 0 30px rgba($secondary-color, 0.5);
     }
 }
@@ -1394,7 +1396,9 @@ body {
         border-radius: 24px;
         overflow: hidden;
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         border: 1px solid rgba(0, 0, 0, 0.05);
 
         &:hover {
@@ -1501,7 +1505,9 @@ body {
         padding: 40px 30px;
         text-align: center;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         border: 1px solid rgba(0, 0, 0, 0.05);
 
         &:hover {

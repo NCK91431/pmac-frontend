@@ -19,6 +19,10 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    chartHeight: {
+        type: Number,
+        default: 350,
+    },
 });
 
 // 响应式数据
@@ -165,10 +169,11 @@ const initChart = () => {
         },
         legend: {
             data: ["实时节点电价", "日前节点电价"],
-            top: 20,
+             bottom: "6%", 
             icon: "circle",
             itemWidth: 12,
             itemHeight: 12,
+                // backgroundColor: 'rgba(255,0,0,0.3)', // 临时背景色
             textStyle: {
                 fontSize: 12,
             },
@@ -176,8 +181,7 @@ const initChart = () => {
         grid: {
             left: "3%",
             right: "10%",
-            bottom: "12%",
-            top: "20%",
+            bottom: "12%",    // 增大底部留白
             containLabel: true,
         },
         xAxis: {
@@ -471,6 +475,6 @@ const handleResize = () => {
 .price-chart {
     width: 100%;
     height: 100%;
-    min-height: 400px;
+    min-height: v-bind(chartHeight + 'px');
 }
 </style>

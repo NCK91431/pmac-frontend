@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"name": "frontend-code",
+			"path": "/Users/guansiyu/Desktop/frontend-code"
+		},
+		{
+			"name": "backend-code",
+			"path": "/Users/guansiyu/Desktop/backend-code"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true
+		}
+	}
+}

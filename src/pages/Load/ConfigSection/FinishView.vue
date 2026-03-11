@@ -268,12 +268,7 @@ const forecast_range = computed(() => {
         return "未知范围";
     }
     const prefix = props.record.formData.forecast_range;
-    const mode = props.record.formData.mode;
-    if (mode == "T") {
-        return `${prefix} → D+1、D+2、D+3`;
-    } else {
-        return `${prefix} → D+1`;
-    }
+    return `${prefix} → D+1、D+2、D+3`;
 });
 
 const excel_days = computed(() => {

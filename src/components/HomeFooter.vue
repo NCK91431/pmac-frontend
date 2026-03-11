@@ -65,7 +65,7 @@
                                     $t("footer.cooperationHotline")
                                 }}</strong>
                                 <p>
-                                    15919159383（{{ $t("footer.wechatSame") }}）
+                                    18679510800（{{ $t("footer.wechatSame") }}）
                                 </p>
                             </div>
                         </div>
@@ -165,7 +165,8 @@ onUnmounted(() => {
     background: #2c3e50;
     color: #e2e8f0;
     padding: 35px 0 15px;
-
+    position: relative;
+    z-index: 10; /* 大于背景的 1 即可 */
     @media (max-width: 768px) {
         padding: 25px 0 15px;
     }
