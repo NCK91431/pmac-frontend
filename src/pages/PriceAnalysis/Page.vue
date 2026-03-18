@@ -40,6 +40,7 @@
                   placeholder="选择日期范围"
                   format="YYYY-MM-DD"
                   value-format="YYYY-MM-DD"
+                  :disabled-date="disabledDate"
                   @change="handleDateRangeChange"
                 />
               </template>
@@ -51,13 +52,24 @@
               <el-radio-group v-model="timeType" @change="handleTimeTypeChange">
                 <el-radio-button label="hour">24点</el-radio-button>
                 <el-radio-button label="minute">96点</el-radio-button>
+                <!-- 新增一个 用96点计算出的24点均值，鼠标hover上去要冒出一个提示”此值为96个点中每四个点算出一个平均值“ -->
+                <el-tooltip
+                  effect="dark"
+                  content="此值为96个点中每四个点算出一个平均值"
+                  placement="top"
+                >
+                  <el-radio-button label="compute">整点均值</el-radio-button>
+                </el-tooltip>
               </el-radio-group>
             </div>
+            <!-- 这里在toggleMode的情况下，单日模式调用exportToExcel，多日模式应调用新的exportToExcelRange -->
             <el-button
               type="primary"
               plain
               size="small"
-              @click="exportToExcel"
+              @click="
+                mode === 'single' ? exportToExcel() : exportToExcelRange()
+              "
               :loading="exportLoading"
             >
               <i class="bi bi-download"></i> 导出数据
@@ -105,21 +117,41 @@
                   class="charts-wrapper"
                 >
                   <div class="chart-item" ref="priceChartItem">
-                    <PriceChart
-                      :dayAheadData="currentDayAheadData"
-                      :realTimeData="currentRealTimeData"
-                      :nodeName="selectedNodeName"
-                      :chartHeight="chartItemHeight"
-                    />
+                    <template v-if="timeType === 'compute'">
+                      <PriceChartCompute
+                        :dayAheadData="currentDayAheadData"
+                        :realTimeData="currentRealTimeData"
+                        :nodeName="selectedNodeName"
+                        :chartHeight="chartItemHeight"
+                      />
+                    </template>
+                    <template v-else>
+                      <PriceChart
+                        :dayAheadData="currentDayAheadData"
+                        :realTimeData="currentRealTimeData"
+                        :nodeName="selectedNodeName"
+                        :chartHeight="chartItemHeight"
+                      />
+                    </template>
                   </div>
                   <div class="chart-item" ref="spreadChartItem">
-                    <PriceSpreadChart
-                      :dayAheadData="currentDayAheadData"
-                      :realTimeData="currentRealTimeData"
-                      :nodeName="selectedNodeName"
-                      :timeType="timeType"
-                      :chartHeight="chartItemHeight"
-                    />
+                    <template v-if="timeType === 'compute'">
+                      <PriceSpreadChartCompute
+                        :dayAheadData="currentDayAheadData"
+                        :realTimeData="currentRealTimeData"
+                        :nodeName="selectedNodeName"
+                        :chartHeight="chartItemHeight"
+                      />
+                    </template>
+                    <template v-else>
+                      <PriceSpreadChart
+                        :dayAheadData="currentDayAheadData"
+                        :realTimeData="currentRealTimeData"
+                        :nodeName="selectedNodeName"
+                        :timeType="timeType"
+                        :chartHeight="chartItemHeight"
+                      />
+                    </template>
                   </div>
                 </div>
               </div>
@@ -146,11 +178,11 @@
           </template>
           <template v-else>
             <!-- 多日模式 -->
-           <MultiDayView
-                v-if="mode === 'multi'"
-                :node-id="selectedNodeId"
-                :node-name="selectedNodeName"
-                :date-range="selectedDateRange"
+            <MultiDayView
+              v-if="mode === 'multi'"
+              :node-id="selectedNodeId"
+              :node-name="selectedNodeName"
+              :date-range="selectedDateRange"
             />
           </template>
         </div>
@@ -171,12 +203,14 @@ import {
 import NodeTree from "./components/NodeTree.vue";
 import PriceChart from "./components/PriceChart.vue";
 import PriceSpreadChart from "./components/PriceSpreadChart.vue";
+import PriceChartCompute from "./components/PriceChartCompute.vue";
+import PriceSpreadChartCompute from "./components/PriceSpreadChartCompute.vue";
 import PriceTable from "./components/PriceTable.vue";
 import * as XLSX from "xlsx";
 import request from "@/utils/request";
 import { ElMessage, ElLoading } from "element-plus";
 import { Sort } from "@element-plus/icons-vue";
-import MultiDayView from './components/MultiDayView.vue'
+import MultiDayView from "./components/MultiDayView.vue";
 
 // 注入高度
 const headerHeight = inject("headerHeight", 0);
@@ -264,6 +298,60 @@ const toggleMode = () => {
 };
 
 const selectedDateRange = ref(getDefaultDateRange()); // 多日模式下选中的日期范围
+
+// 删除原有的 pickerOptions 定义
+// const pickerOptions = {...}
+
+// 删除原来的 pickerOptions 定义
+
+// 日期禁用函数
+const disabledDate = (time) => {
+  // 将传入的时间转为日期字符串（YYYY-MM-DD）以便比较
+  const dateStr = formatDate(time);
+
+  // 今天日期字符串
+  const todayStr = formatDate(new Date());
+
+  // 1. 禁用未来日期
+  if (dateStr > todayStr) {
+    return true;
+  }
+
+  // 2. 如果已经选择了开始日期，但还没有选择结束日期，则限制结束日期的可选范围为前后7天
+  if (
+    selectedDateRange.value &&
+    selectedDateRange.value[0] &&
+    !selectedDateRange.value[1]
+  ) {
+    const startStr = selectedDateRange.value[0];
+    const startDate = new Date(startStr + "T00:00:00"); // 避免时区问题
+
+    // 计算开始日期前后7天的范围
+    const minDate = new Date(startDate);
+    minDate.setDate(startDate.getDate() - 6); // 7天范围，所以减去6天
+    const maxDate = new Date(startDate);
+    maxDate.setDate(startDate.getDate() + 6); // 7天范围，所以加上6天
+
+    const minDateStr = formatDate(minDate);
+    const maxDateStr = formatDate(maxDate);
+
+    // 如果日期小于最小日期或大于最大日期，则禁用
+    if (dateStr < minDateStr || dateStr > maxDateStr) {
+      return true;
+    }
+  }
+
+  // 其他情况（未选开始，或已选完范围）仅受未来日期限制
+  return false;
+};
+
+// 辅助函数：将 Date 对象转为 YYYY-MM-DD 格式
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 // 处理多日模式下日期范围改变
 const handleDateRangeChange = (val) => {
@@ -463,6 +551,63 @@ function handleTimeTypeChange(type) {
   timeType.value = type;
 }
 
+// 生成指定时间类型的表格数据
+function generateTableDataWithDiff(timeTypeValue) {
+  const timePoints = [];
+  let dataPoints = [];
+  
+  if (timeTypeValue === "hour") {
+    for (let i = 0; i < 24; i++) {
+      timePoints.push(`${i.toString().padStart(2, "0")}:00`);
+    }
+    dataPoints = Array.from({ length: 24 }, (_, i) => i);
+  } else if (timeTypeValue === "minute") {
+    for (let i = 0; i < 96; i++) {
+      const hour = Math.floor(i / 4);
+      const minute = (i % 4) * 15;
+      timePoints.push(`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`);
+    }
+    dataPoints = Array.from({ length: 96 }, (_, i) => i);
+  } else if (timeTypeValue === "compute") {
+    for (let i = 0; i < 24; i++) {
+      timePoints.push(`第${i + 1}时`);
+    }
+    dataPoints = Array.from({ length: 24 }, (_, i) => i);
+  }
+
+  return timePoints.map((time, index) => {
+    let realTimePrice, dayAheadPrice;
+    
+    if (timeTypeValue === "compute") {
+      // 计算整点均值
+      let realTimeSum = 0;
+      let dayAheadSum = 0;
+      for (let j = 0; j < 4; j++) {
+        const dataIndex = index * 4 + j;
+        realTimeSum += currentRealTimeData.value[dataIndex] || 0;
+        dayAheadSum += currentDayAheadData.value[dataIndex] || 0;
+      }
+      realTimePrice = realTimeSum / 4;
+      dayAheadPrice = dayAheadSum / 4;
+    } else {
+      const dataIndex = timeTypeValue === "hour" ? index * 4 : index;
+      realTimePrice = currentRealTimeData.value[dataIndex] || 0;
+      dayAheadPrice = currentDayAheadData.value[dataIndex] || 0;
+    }
+    
+    const diff = realTimePrice - dayAheadPrice;
+    const changeRate = dayAheadPrice > 0 ? (diff / dayAheadPrice) * 100 : 0;
+    
+    return [
+      time,
+      realTimePrice,
+      dayAheadPrice,
+      diff,
+      changeRate
+    ];
+  });
+}
+
 async function exportToExcel() {
   if (!selectedNodeId.value) {
     ElMessage.warning("请先选择节点");
@@ -472,20 +617,111 @@ async function exportToExcel() {
   exportLoading.value = true;
 
   try {
-    const wsData = [
-      ["时间", "实时节点电价(元/MWh)", "日前节点电价(元/MWh)"],
-      ...generateTableData(),
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "电价数据");
+    
+    // 为三种时间类型创建sheet
+    const timeTypes = [
+      { value: "hour", name: "24点" },
+      { value: "minute", name: "96点" },
+      { value: "compute", name: "整点均值" }
+    ];
+    
+    timeTypes.forEach((type) => {
+      const wsData = [
+        ["时间", "实时节点电价(元/MWh)", "日前节点电价(元/MWh)", "价差(元/MWh)", "变化率(%)"],
+        ...generateTableDataWithDiff(type.value),
+      ];
+      
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      XLSX.utils.book_append_sheet(wb, ws, type.name);
+    });
+
     XLSX.writeFile(
       wb,
       `${selectedNodeName.value}_${selectedDate.value}_电价数据.xlsx`,
     );
 
     ElMessage.success("数据导出成功");
+  } catch (error) {
+    console.error("导出失败:", error);
+    ElMessage.error("数据导出失败");
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+// 多日模式导出数据
+async function exportToExcelRange() {
+  if (!selectedNodeId.value) {
+    ElMessage.warning("请先选择节点");
+    return;
+  }
+
+  if (!selectedDateRange.value || selectedDateRange.value.length !== 2) {
+    ElMessage.warning("请选择日期范围");
+    return;
+  }
+
+  exportLoading.value = true;
+
+  try {
+    const nodePkId = selectedNodeId.value.endsWith("_copy")
+      ? selectedNodeId.value.slice(0, -5)
+      : selectedNodeId.value;
+
+    // 调用后端接口获取多日数据
+    const response = await request.get("/api/node-price/price-chart-range", {
+      params: {
+        nodePkId,
+        startDate: selectedDateRange.value[0],
+        endDate: selectedDateRange.value[1],
+        regionPkId: "440000", // 默认广东省
+      },
+    });
+
+    if (response.data.status === 0 && response.data.data) {
+      const { dayAhead, realTime } = response.data.data;
+
+      // 整理数据
+      const wsData = [
+        ["日期", "时间", "实时节点电价(元/MWh)", "日前节点电价(元/MWh)"],
+      ];
+
+      // 处理日前数据
+      const dayAheadMap = {};
+      dayAhead.forEach((item) => {
+        dayAheadMap[item.dataTime] = item.dataValues || [];
+      });
+
+      // 处理实时数据并合并
+      realTime.forEach((item) => {
+        const date = item.dataTime;
+        const realTimeValues = item.dataValues || [];
+        const dayAheadValues = dayAheadMap[date] || [];
+
+        realTimeValues.forEach((rtItem, index) => {
+          const daItem = dayAheadValues[index] || { value: 0 };
+          wsData.push([
+            date,
+            rtItem.time,
+            rtItem.value || 0,
+            daItem.value || 0,
+          ]);
+        });
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "多日电价数据");
+      XLSX.writeFile(
+        wb,
+        `${selectedNodeName.value}_${selectedDateRange.value[0]}_${selectedDateRange.value[1]}_多日电价数据.xlsx`,
+      );
+
+      ElMessage.success("多日数据导出成功");
+    } else {
+      ElMessage.warning("获取数据失败，无法导出");
+    }
   } catch (error) {
     console.error("导出失败:", error);
     ElMessage.error("数据导出失败");
