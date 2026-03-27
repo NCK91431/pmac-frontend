@@ -2,12 +2,14 @@
   <div class="multi-day-view">
     <!-- 多日电价图 -->
     <MultiDayPriceChart
+      ref="multiDayPriceChartRef"
       :date-range="dateRange"
       :price-data="processedDataByDate"
     />
 
     <!-- 多日价差图 -->
     <MultiDaySpreadChart
+      ref="multiDaySpreadChartRef"
       :date-range="dateRange"
       :price-data="processedDataByDate"
     />
@@ -95,6 +97,26 @@ import { ref, computed, watch, onMounted } from "vue";
 import request from "@/utils/request";
 import MultiDayPriceChart from "./MultiDayPriceChart.vue";
 import MultiDaySpreadChart from "./MultiDaySpreadChart.vue";
+
+// 引用子组件
+const multiDayPriceChartRef = ref(null);
+const multiDaySpreadChartRef = ref(null);
+
+// 处理resize
+const handleResize = () => {
+  // 调用子组件的resize方法
+  if (multiDayPriceChartRef.value) {
+    multiDayPriceChartRef.value.resize();
+  }
+  if (multiDaySpreadChartRef.value) {
+    multiDaySpreadChartRef.value.resize();
+  }
+};
+
+// 暴露resize方法给父组件
+defineExpose({
+  resize: handleResize,
+});
 
 const props = defineProps({
   nodeId: {

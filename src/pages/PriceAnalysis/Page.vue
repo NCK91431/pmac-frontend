@@ -1,13 +1,25 @@
 <template>
   <div class="price-analysis-container" :style="containerStyle">
-    <div class="analysis-content">
+    <div class="analysis-content" :class="{ collapsed: isCollapsed }">
       <!-- 左侧：节点树 -->
-      <div class="left-panel">
+      <div class="left-panel" :class="{ collapsed: isCollapsed }">
         <NodeTree
           :nodes="nodeTreeData"
           @node-select="handleNodeSelect"
           :cur_node_id="cur_node_id"
+          @toggle-collapse="handleToggleCollapse"
         />
+      </div>
+      <!-- 固定位置的展开/折叠按钮 -->
+      <div
+        class="collapse-toggle-btn"
+        :class="{ expanded: !isCollapsed }"
+        @click="toggleSidebar"
+      >
+        <i
+          class="bi"
+          :class="isCollapsed ? 'bi-arrow-right' : 'bi-arrow-left'"
+        ></i>
       </div>
       <div class="main-wrapper">
         <!-- 控制条 -->
@@ -76,7 +88,8 @@
             </el-button>
           </div>
         </div>
-        <div class="main">
+        <!-- 主要内容区域：图表和表格 -->
+        <div class="main" :class="{ 'multi-day': mode === 'multi' }">
           <!-- 单日模式 -->
           <template v-if="mode === 'single'">
             <!-- 中间：图表区域 -->
@@ -119,6 +132,7 @@
                   <div class="chart-item" ref="priceChartItem">
                     <template v-if="timeType === 'compute'">
                       <PriceChartCompute
+                        ref="priceChartRef"
                         :dayAheadData="currentDayAheadData"
                         :realTimeData="currentRealTimeData"
                         :nodeName="selectedNodeName"
@@ -127,6 +141,7 @@
                     </template>
                     <template v-else>
                       <PriceChart
+                        ref="priceChartRef"
                         :dayAheadData="currentDayAheadData"
                         :realTimeData="currentRealTimeData"
                         :nodeName="selectedNodeName"
@@ -137,6 +152,7 @@
                   <div class="chart-item" ref="spreadChartItem">
                     <template v-if="timeType === 'compute'">
                       <PriceSpreadChartCompute
+                        ref="spreadChartRef"
                         :dayAheadData="currentDayAheadData"
                         :realTimeData="currentRealTimeData"
                         :nodeName="selectedNodeName"
@@ -145,6 +161,7 @@
                     </template>
                     <template v-else>
                       <PriceSpreadChart
+                        ref="spreadChartRef"
                         :dayAheadData="currentDayAheadData"
                         :realTimeData="currentRealTimeData"
                         :nodeName="selectedNodeName"
@@ -179,6 +196,7 @@
           <template v-else>
             <!-- 多日模式 -->
             <MultiDayView
+              ref="multiDayViewRef"
               v-if="mode === 'multi'"
               :node-id="selectedNodeId"
               :node-name="selectedNodeName"
@@ -287,6 +305,34 @@ const nodeTreeData = ref([]);
 const cur_node_id = ref(""); //当前被选中的节点ID
 const cur_chain = ref([]); //当前被选中节点的路径
 
+// 左侧面板折叠状态
+const isCollapsed = ref(localStorage.getItem("nodeTreeCollapsed") === "true");
+
+// 处理折叠状态变化
+function handleToggleCollapse(collapsed) {
+  isCollapsed.value = collapsed;
+  saveCollapseState();
+  // 触发图表重绘
+  setTimeout(() => {
+    updateChartItemHeight();
+  }, 300);
+}
+
+// 切换侧边栏状态
+function toggleSidebar() {
+  isCollapsed.value = !isCollapsed.value;
+  saveCollapseState();
+  // 触发图表重绘
+  setTimeout(() => {
+    updateChartItemHeight();
+  }, 300);
+}
+
+// 保存折叠状态到localStorage
+function saveCollapseState() {
+  localStorage.setItem("nodeTreeCollapsed", isCollapsed.value);
+}
+
 const chartLoading = ref(false); // 图表加载状态
 const tableLoading = ref(false); // 表格加载状态
 const exportLoading = ref(false); // 导出按钮加载状态
@@ -295,6 +341,10 @@ const mode = ref("single"); // 模式：single 单日查看，multi 多日查看
 // 切换模式
 const toggleMode = () => {
   mode.value = mode.value === "single" ? "multi" : "single";
+  // 切换模式后触发图表resize
+  setTimeout(() => {
+    updateChartItemHeight();
+  }, 300);
 };
 
 const selectedDateRange = ref(getDefaultDateRange()); // 多日模式下选中的日期范围
@@ -363,16 +413,28 @@ const priceChartItem = ref(null);
 const spreadChartItem = ref(null);
 const chartItemHeight = ref(350); // 默认高度
 
-// 计算并更新 chart-item 的高度
+// 图表组件引用
+const priceChartRef = ref(null);
+const spreadChartRef = ref(null);
+const multiDayViewRef = ref(null);
+
+// 图表重绘函数
 const updateChartItemHeight = () => {
-  nextTick(() => {
-    if (priceChartItem.value) {
-      const rect = priceChartItem.value.getBoundingClientRect();
-      if (rect.height > 0) {
-        chartItemHeight.value = rect.height;
-      }
+  // 直接触发图表resize以适应新的宽度
+  if (mode.value === "single") {
+    // 单日模式
+    if (priceChartRef.value) {
+      priceChartRef.value.resize();
     }
-  });
+    if (spreadChartRef.value) {
+      spreadChartRef.value.resize();
+    }
+  } else {
+    // 多日模式
+    if (multiDayViewRef.value) {
+      multiDayViewRef.value.resize();
+    }
+  }
 };
 
 // 窗口 resize 时更新高度
@@ -555,7 +617,7 @@ function handleTimeTypeChange(type) {
 function generateTableDataWithDiff(timeTypeValue) {
   const timePoints = [];
   let dataPoints = [];
-  
+
   if (timeTypeValue === "hour") {
     for (let i = 0; i < 24; i++) {
       timePoints.push(`${i.toString().padStart(2, "0")}:00`);
@@ -565,7 +627,9 @@ function generateTableDataWithDiff(timeTypeValue) {
     for (let i = 0; i < 96; i++) {
       const hour = Math.floor(i / 4);
       const minute = (i % 4) * 15;
-      timePoints.push(`${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`);
+      timePoints.push(
+        `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
+      );
     }
     dataPoints = Array.from({ length: 96 }, (_, i) => i);
   } else if (timeTypeValue === "compute") {
@@ -577,7 +641,7 @@ function generateTableDataWithDiff(timeTypeValue) {
 
   return timePoints.map((time, index) => {
     let realTimePrice, dayAheadPrice;
-    
+
     if (timeTypeValue === "compute") {
       // 计算整点均值
       let realTimeSum = 0;
@@ -594,17 +658,11 @@ function generateTableDataWithDiff(timeTypeValue) {
       realTimePrice = currentRealTimeData.value[dataIndex] || 0;
       dayAheadPrice = currentDayAheadData.value[dataIndex] || 0;
     }
-    
+
     const diff = realTimePrice - dayAheadPrice;
     const changeRate = dayAheadPrice > 0 ? (diff / dayAheadPrice) * 100 : 0;
-    
-    return [
-      time,
-      realTimePrice,
-      dayAheadPrice,
-      diff,
-      changeRate
-    ];
+
+    return [time, realTimePrice, dayAheadPrice, diff, changeRate];
   });
 }
 
@@ -618,20 +676,26 @@ async function exportToExcel() {
 
   try {
     const wb = XLSX.utils.book_new();
-    
+
     // 为三种时间类型创建sheet
     const timeTypes = [
       { value: "hour", name: "24点" },
       { value: "minute", name: "96点" },
-      { value: "compute", name: "整点均值" }
+      { value: "compute", name: "整点均值" },
     ];
-    
+
     timeTypes.forEach((type) => {
       const wsData = [
-        ["时间", "实时节点电价(元/MWh)", "日前节点电价(元/MWh)", "价差(元/MWh)", "变化率(%)"],
+        [
+          "时间",
+          "实时节点电价(元/MWh)",
+          "日前节点电价(元/MWh)",
+          "价差(元/MWh)",
+          "变化率(%)",
+        ],
         ...generateTableDataWithDiff(type.value),
       ];
-      
+
       const ws = XLSX.utils.aoa_to_sheet(wsData);
       XLSX.utils.book_append_sheet(wb, ws, type.name);
     });
@@ -818,6 +882,12 @@ onBeforeUnmount(() => {
     gap: 4px;
     min-height: 0;
     height: 100%;
+    position: relative;
+    transition: grid-template-columns 0.3s ease;
+
+    &.collapsed {
+      grid-template-columns: 0 1fr;
+    }
 
     .left-panel {
       background: white;
@@ -825,6 +895,46 @@ onBeforeUnmount(() => {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s ease;
+
+      &.collapsed {
+        padding: 0;
+        width: 0;
+        min-width: 0;
+      }
+    }
+
+    // 固定位置的展开/折叠按钮
+    .collapse-toggle-btn {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 60px;
+      background: #409eff;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #66b1ff;
+      }
+
+      &.expanded {
+        left: 350px;
+      }
+
+      i {
+        font-size: 16px;
+      }
     }
 
     .main-wrapper {
@@ -881,9 +991,14 @@ onBeforeUnmount(() => {
     }
 
     .main {
-      display: flex;
-      flex: 1;
+      width: 100%;
+      flex: 1; // 竖向沾满
+      display: grid; // 横向排布
+      grid-template-columns: 1fr 500px;
       min-height: 0;
+      &.multi-day {
+        grid-template-columns: 1fr; // 多日模式下占据整个宽度
+      }
     }
     .middle-panel {
       flex: 1;
@@ -989,7 +1104,7 @@ onBeforeUnmount(() => {
     }
 
     .right-panel {
-      width: 500px;
+      width: 500px; //不变！！
       flex-shrink: 0;
       background: white;
       padding: 16px 8px;
@@ -1012,6 +1127,14 @@ onBeforeUnmount(() => {
     .analysis-content {
       grid-template-columns: 280px 1fr;
 
+      &.collapsed {
+        grid-template-columns: 0 1fr;
+      }
+
+      .collapse-toggle-btn.expanded {
+        left: 280px;
+      }
+
       .right-panel {
         width: 450px;
       }
@@ -1023,6 +1146,14 @@ onBeforeUnmount(() => {
   .price-analysis-container {
     .analysis-content {
       grid-template-columns: 250px 1fr;
+
+      &.collapsed {
+        grid-template-columns: 0 1fr;
+      }
+
+      .collapse-toggle-btn.expanded {
+        left: 250px;
+      }
 
       .right-panel {
         width: 400px;

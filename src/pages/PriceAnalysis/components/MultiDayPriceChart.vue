@@ -272,6 +272,11 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
   priceChart?.dispose();
 });
+
+// 暴露resize方法给父组件
+defineExpose({
+  resize: handleResize,
+});
 </script>
 
 <style scoped lang="scss">

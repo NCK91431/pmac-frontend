@@ -222,6 +222,11 @@ const handleResize = () => {
   chartInstance && chartInstance.resize();
 };
 
+// 暴露resize方法给父组件
+defineExpose({
+  resize: handleResize
+});
+
 // 监听数据变化
 watch(
   [() => props.dayAheadData, () => props.realTimeData],
