@@ -58,7 +58,6 @@ export const useLightStore = defineStore("light", {
             state.formData.location &&
             state.formData.storage_cost &&
             state.formData.pv_cost &&
-            state.formData.demand_price &&
             state.formData.discount_rate &&
             state.formData.tax_rate >= 0,
 
