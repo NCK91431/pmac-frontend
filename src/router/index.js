@@ -121,6 +121,12 @@ const router = createRouter({
             name: "AccessStats",
             component: () => import("@/pages/Admin/AccessStats.vue"),
         },
+        /* 月度需求申报 */
+        {
+            path: "/monthly-demand-report",
+            name: "MonthlyDemandReport",
+            component: () => import("@/AuxiliaryTradingTools/MonthlyDemandReport.vue"),
+        },
     ],
 });
 
