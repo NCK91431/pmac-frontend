@@ -127,7 +127,25 @@ const router = createRouter({
             name: "MonthlyDemandReport",
             component: () => import("@/AuxiliaryTradingTools/MonthlyDemandReport.vue"),
         },
-    ],
+        /* 日需求申报 */
+        {
+            path: "/daily-demand-report",
+            name: "DailyDemandReport",
+            component: () => import("@/AuxiliaryTradingTools/DailyDemandReport.vue")
+        },
+        /* 日需求申报历史 */
+        {
+            path: "/daily-demand-report/history",
+            name: "DailyDemandHistory",
+            component: () => import("@/AuxiliaryTradingTools/DailyDemandHistory.vue"),
+        },
+        /* 日收入分析 */
+        {
+            path: "/daily-demand-report/history/daily-revenue-analysis",
+            name: "DailyRevenueAnalysis",
+            component: () => import("@/AuxiliaryTradingTools/DailyRevenueAnalysis.vue"),
+        },
+    ]            
 });
 
 export default router;

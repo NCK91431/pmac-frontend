@@ -5,7 +5,7 @@
       <div class="title">⚡ 月度用电需求申报工作流</div>
       <div class="badge-wrapper">
         <span class="badge">🤖 预测算法 v1.0</span>
-        <span class="badge">📊 支持14家公司</span>
+        <span class="badge">📊 支持20家公司</span>
         <span class="badge">📅 日期类型内置2024-2026</span>
       </div>
     </div>
@@ -32,7 +32,7 @@
           <div class="field-content" ref="companyFieldContent">
             <label
               >🏢 申报公司
-              <span class="tooltip" title="支持14家签约单位，默认全选"
+              <span class="tooltip" title="支持20家签约单位，默认全选"
                 >多选</span
               ></label
             >
@@ -525,6 +525,12 @@ const COMPANY_LIST = [
   "珠海赛乐奇生物技术股份有限公司",
   "珠海市硕杰机械制造有限公司",
   "鹤山市耀晖能源科技有限公司",
+  "鹤山市沙坪街道卫生院",
+  "鹤山市共和镇卫生院",
+  "鹤山市宅梧镇中心卫生院",
+  "鹤山市桃源镇卫生院",
+  "鹤山市人民医院",
+  "广州晋实新能源科技有限公司",
 ];
 
 // ---------- 响应式数据 ----------

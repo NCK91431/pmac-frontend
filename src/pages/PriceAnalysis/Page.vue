@@ -62,7 +62,7 @@
             <div class="time-type-selector" v-if="mode == 'single'">
               <i class="bi bi-clock"></i>
               <el-radio-group v-model="timeType" @change="handleTimeTypeChange">
-                <el-radio-button label="hour">24点</el-radio-button>
+                <!-- <el-radio-button label="hour">24点</el-radio-button> -->
                 <el-radio-button label="minute">96点</el-radio-button>
                 <!-- 新增一个 用96点计算出的24点均值，鼠标hover上去要冒出一个提示”此值为96个点中每四个点算出一个平均值“ -->
                 <el-tooltip
@@ -70,7 +70,7 @@
                   content="此值为96个点中每四个点算出一个平均值"
                   placement="top"
                 >
-                  <el-radio-button label="compute">整点均值</el-radio-button>
+                  <el-radio-button label="compute">24点</el-radio-button>
                 </el-tooltip>
               </el-radio-group>
             </div>
@@ -298,7 +298,7 @@ const dateInfo = computed(() => {
 const selectedNodeName = ref("请选择节点");
 const selectedNodeId = ref("");
 const selectedDate = ref(getTwoDaysAgoDate()); // 默认选中前天
-const timeType = ref("hour");
+const timeType = ref("minute");
 const currentDayAheadData = ref([]);
 const currentRealTimeData = ref([]);
 const nodeTreeData = ref([]);

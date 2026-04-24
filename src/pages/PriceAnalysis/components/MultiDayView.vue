@@ -83,10 +83,10 @@
             </div>
           </div>
         </div>
-        <div class="advice-section">
+        <!-- <div class="advice-section">
           <div class="advice-title">📊 运营建议</div>
           <div class="advice-text">{{ adviceText }}</div>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
