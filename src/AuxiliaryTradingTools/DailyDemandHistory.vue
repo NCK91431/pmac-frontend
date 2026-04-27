@@ -340,7 +340,10 @@ async function downloadFile(url, fileName) {
     return;
   }
   try {
-    const response = await request.get(url, { responseType: "blob" });
+    // 将绝对URL转为相对路径，确保请求经过 axios 的 baseURL 配置
+    const urlObj = new URL(url);
+    const relativePath = urlObj.pathname + urlObj.search;
+    const response = await request.get(relativePath, { responseType: "blob" });
     const blob = new Blob([response.data]);
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");

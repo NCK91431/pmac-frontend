@@ -58,11 +58,7 @@
       </el-table-column>
 
       <!-- 第4列：日前低概率 -->
-      <el-table-column
-        prop="probability"
-        label="日前低概率"
-        align="center"
-      >
+      <el-table-column prop="probability" label="日前低概率" align="center">
         <template #default="{ row }">
           <div class="probability-cell">
             <el-progress
@@ -115,7 +111,11 @@
               class="adjuested-val"
               :class="getRatioValueClass(ratios[$index], row.ratio)"
             >
-              {{ ratios[$index] !== null && ratios[$index] !== undefined ? ratios[$index] : '—' }}
+              {{
+                ratios[$index] !== null && ratios[$index] !== undefined
+                  ? ratios[$index]
+                  : "—"
+              }}
             </div>
           </div>
         </template>
@@ -134,7 +134,6 @@
         </template>
       </el-table-column>
     </el-table>
-
 
     <!-- 表格底部统计信息 -->
     <div class="table-footer">
@@ -170,10 +169,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
-import {
-  CopyDocument,
-  Download,
-} from "@element-plus/icons-vue";
+import { CopyDocument, Download } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 
 // Props定义
@@ -197,16 +193,15 @@ onMounted(() => {
 // Emits定义
 const emit = defineEmits(["cell-click"]);
 
-
-
 // 计算属性：已调整的比例数量
+// ratio_settings[i] 为 null 表示该时段未调整（沿用原始比例），不计入已调整
 const adjustedCount = computed(() => {
   let count = 0;
   for (let i = 0; i < props.ratios.length; i++) {
     const adjustedRatio = props.ratios[i];
     const originalRatio = props.tableData[i]?.ratio;
-    // 如果调整比例不等于原始比例，视为已调整
-    if (adjustedRatio != originalRatio) {
+    // null 表示用户未调整该时段
+    if (adjustedRatio != null && adjustedRatio != originalRatio) {
       count++;
     }
   }
@@ -218,9 +213,8 @@ const defaultCount = computed(() => {
   let count = 0;
   for (let i = 0; i < props.ratios.length; i++) {
     const adjustedRatio = props.ratios[i];
-    const originalRatio = props.tableData[i]?.ratio;
-    // 如果调整比例等于原始比例，视为默认（未调整）
-    if (adjustedRatio == originalRatio) {
+    // null 表示用户未调整该时段，视为默认
+    if (adjustedRatio == null) {
       count++;
     }
   }
@@ -338,15 +332,13 @@ const calculateActualLoad = (row, index) => {
   const estimatedMwh = parseFloat(row.estimated_mwh); // 用户评估电量(MWh)
   const declarationMwh = parseFloat(row.declaration_mwh); // 日前建议申报电量(MWh)
   const adjustedRatio = props.ratios[index];
-  const originalRatio = row.ratio; // 原始申报比例
 
-  // 如果调整比例等于原始比例，视为未调整，实际申报电量等于日前建议申报电量
-  if (adjustedRatio == originalRatio) {
+  // null 表示用户未调整该时段，实际申报电量等于日前建议申报电量
+  if (adjustedRatio == null) {
     if (isNaN(declarationMwh)) return "—";
-    // 格式化为2位小数，与formatNumber保持一致
     return declarationMwh;
   } else {
-    // 如果调整比例不等于原始比例，视为有调整，实际申报电量等于用户评估电量×调整申报比例
+    // 已调整，实际申报电量等于用户评估电量×调整申报比例
     const ratioNum = parseFloat(adjustedRatio);
     if (isNaN(estimatedMwh) || isNaN(ratioNum) || ratioNum === 0) return "—";
     const actualLoad = estimatedMwh * ratioNum;
@@ -358,13 +350,16 @@ const calculateActualLoad = (row, index) => {
 // 获取实际申报电量单元格样式类
 const getLoadCellClass = (row, index) => {
   const adjustedRatio = props.ratios[index];
-  const originalRatio = row.ratio;
-  // 如果调整比例等于原始比例，视为未调整
-  if (adjustedRatio == originalRatio) {
+  // null 表示用户未调整该时段，视为未调整
+  if (adjustedRatio == null) {
     return "load-default";
-  } else {
-    return "load-adjusted";
   }
+  const originalRatio = row.ratio;
+  if (parseFloat(adjustedRatio) > parseFloat(originalRatio)) {
+    return "load-increased";
+  }
+  // 调整比例低于原始比例
+  return "load-decreased";
 };
 
 // 表头样式
@@ -395,16 +390,10 @@ const cellStyle = ({ row, column, rowIndex, columnIndex }) => {
   return style;
 };
 
-
-
-
-
 // 处理单元格点击
 const handleCellClick = (row, column, cell, event) => {
   emit("cell-click", { row, column, cell, event });
 };
-
-
 
 // 一键复制实际申报电量结果
 const copyResults = async () => {
@@ -678,13 +667,14 @@ const getSummaries = (param) => {
       font-style: italic;
     }
 
-    &.load-adjusted {
-      color: #1e293b;
+    &.load-increased {
+      color: #f97316;
       font-weight: 600;
-      background-color: rgba(59, 130, 246, 0.05);
-      border-radius: 4px;
-      padding: 2px 6px;
-      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    &.load-decreased {
+      color: #3b82f6;
+      font-weight: 600;
     }
   }
 
@@ -745,7 +735,6 @@ const getSummaries = (param) => {
       }
     }
   }
-
 
   .table-footer {
     padding-top: 16px;
