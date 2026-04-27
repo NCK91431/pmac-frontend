@@ -567,6 +567,7 @@ const handleUserCurrentChange = (page) => {
 const handleDownload = async (row) => {
   try {
     const response = await request.get(`/api/admin/download/${row.id}`, {
+      params: { module: row.module },
       responseType: "blob",
     });
 
