@@ -4,6 +4,7 @@ const baseURLMap = {
     pilot: "https://energyun.com.cn",
     test: "https://api.pmac.leyi.host",
     trina: "https://trinapower.leyi.host",
+    local: "http://localhost:3001",
 };
 
 const currentEnv = import.meta.env.VITE_COMPANY || "pilot";
