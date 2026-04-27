@@ -37,12 +37,16 @@
 
   <!-- 顶部导航区 -->
   <!-- <FiveNav @jump="gotoPage"/> -->
-<EnergyNav @jump="gotoPage" @showComingSoon="showComingSoon"/>
+  <EnergyNav @jump="gotoPage" @showComingSoon="showComingSoon" />
   <!-- 功能介绍宣传 -->
   <Introduction v-if="!isMobile" />
 
   <!-- 虚拟电厂平台的宣传广告入口区 -->
- <VPPAdvertisement @jump="gotoPage('vpp')" imageSrc="https://pmac.leyi.host/downloads/pmac/pilot-vpp.png"/>
+  <VPPAdvertisement
+    v-if="!isTrina"
+    @jump="gotoPage('vpp')"
+    imageSrc="https://pmac.leyi.host/downloads/pmac/pilot-vpp.png"
+  />
 
   <!-- 待开发功能:可爱的提示弹窗 -->
   <el-dialog
@@ -97,6 +101,8 @@ const ElecStore = useElecStore();
 const LightStore = useLightStore();
 
 const router = useRouter();
+
+const isTrina = import.meta.env.VITE_COMPANY == "trina";
 
 // 添加移动端检测
 const isMobile = ref(false);
@@ -218,7 +224,7 @@ const gotoPage = (page) => {
       router.push({ name: "price_analysis" });
       break;
     case "vpp":
-        router.push({name:'VirtualPowerPlant'})
+      router.push({ name: "VirtualPowerPlant" });
       break;
     default:
       router.push("/");
@@ -568,7 +574,6 @@ const trackAccess = async (module) => {
     gap: 25px !important;
   }
 }
-
 
 /* 期待弹窗样式保持不变 */
 :deep(.coming-soon-dialog) {
