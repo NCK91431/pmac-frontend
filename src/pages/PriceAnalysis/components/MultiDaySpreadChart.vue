@@ -2,7 +2,7 @@
   <div class="chart-card">
     <div class="chart-header">
       <span class="chart-title">
-        <i class="bi bi-arrow-left-right"></i> 价差图（实时 - 日前）
+        <i class="bi bi-arrow-left-right"></i> 价差图（实时均价 - 日前均价）
       </span>
     </div>
     <div ref="spreadChartRef" class="chart-container"></div>
@@ -170,7 +170,7 @@ onBeforeUnmount(() => {
 
 // 暴露resize方法给父组件
 defineExpose({
-  resize: handleResize
+  resize: handleResize,
 });
 </script>
 

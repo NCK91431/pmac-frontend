@@ -14,6 +14,20 @@
       :price-data="processedDataByDate"
     />
 
+    <!-- 每日均价对比图 -->
+    <MultiDayAverageChart
+      ref="multiDayAverageChartRef"
+      :date-range="dateRange"
+      :price-data="processedDataByDate"
+    />
+
+    <!-- 每日均价价差图 -->
+    <MultiDayAverageSpreadChart
+      ref="multiDayAverageSpreadChartRef"
+      :date-range="dateRange"
+      :price-data="processedDataByDate"
+    />
+
     <!-- 智能分析结果及建议 -->
     <div class="analysis-card">
       <div class="analysis-header">
@@ -59,7 +73,7 @@
             </div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">最大价差</div>
+            <div class="stat-label">最大均价价差 (实时均价-日前均价)</div>
             <div
               class="stat-value"
               :class="stats.maxSpread.value > 0 ? 'positive' : 'negative'"
@@ -71,7 +85,7 @@
             </div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">最小价差</div>
+            <div class="stat-label">最小均价价差 (实时均价-日前均价)</div>
             <div
               class="stat-value"
               :class="stats.minSpread.value > 0 ? 'positive' : 'negative'"
@@ -97,10 +111,14 @@ import { ref, computed, watch, onMounted } from "vue";
 import request from "@/utils/request";
 import MultiDayPriceChart from "./MultiDayPriceChart.vue";
 import MultiDaySpreadChart from "./MultiDaySpreadChart.vue";
+import MultiDayAverageChart from "./MultiDayAverageChart.vue";
+import MultiDayAverageSpreadChart from "./MultiDayAverageSpreadChart.vue";
 
 // 引用子组件
 const multiDayPriceChartRef = ref(null);
 const multiDaySpreadChartRef = ref(null);
+const multiDayAverageChartRef = ref(null);
+const multiDayAverageSpreadChartRef = ref(null);
 
 // 处理resize
 const handleResize = () => {
@@ -110,6 +128,12 @@ const handleResize = () => {
   }
   if (multiDaySpreadChartRef.value) {
     multiDaySpreadChartRef.value.resize();
+  }
+  if (multiDayAverageChartRef.value) {
+    multiDayAverageChartRef.value.resize();
+  }
+  if (multiDayAverageSpreadChartRef.value) {
+    multiDayAverageSpreadChartRef.value.resize();
   }
 };
 

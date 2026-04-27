@@ -26,10 +26,13 @@
         <div class="control-bar">
           <div class="control-bar-left">
             <!-- 模式选择 -->
-            <el-button type="primary" @click="toggleMode">
-              {{ mode === "single" ? "单日模式" : "多日模式"
-              }}<el-icon class="el-icon--right"><Sort /></el-icon>
-            </el-button>
+            <el-radio-group v-model="mode" @change="handleModeChange">
+              <el-radio-button value="single">单日模式</el-radio-button>
+              <el-radio-button value="multi">多日模式</el-radio-button>
+              <el-radio-button value="analysis"
+                >单节点与省份节点对比模式</el-radio-button
+              >
+            </el-radio-group>
             <!-- 日期选择器 -->
             <div class="date-picker-container">
               <i class="bi bi-calendar"></i>
@@ -44,7 +47,7 @@
                   @change="handleDateChange"
                 />
               </template>
-              <!-- 多日模式下显示 -->
+              <!-- 多日模式/分析模式下显示 -->
               <template v-else>
                 <el-date-picker
                   v-model="selectedDateRange"
@@ -74,7 +77,7 @@
                 </el-tooltip>
               </el-radio-group>
             </div>
-            <!-- 这里在toggleMode的情况下，单日模式调用exportToExcel，多日模式应调用新的exportToExcelRange -->
+            <!-- 这里在切换模式的情况下，单日模式调用exportToExcel，多日模式/分析模式调用exportToExcelRange -->
             <el-button
               type="primary"
               plain
@@ -89,7 +92,10 @@
           </div>
         </div>
         <!-- 主要内容区域：图表和表格 -->
-        <div class="main" :class="{ 'multi-day': mode === 'multi' }">
+        <div
+          class="main"
+          :class="{ 'multi-day': mode === 'multi' || mode === 'analysis' }"
+        >
           <!-- 单日模式 -->
           <template v-if="mode === 'single'">
             <!-- 中间：图表区域 -->
@@ -193,11 +199,19 @@
               </div>
             </div>
           </template>
-          <template v-else>
+          <template v-else-if="mode === 'multi'">
             <!-- 多日模式 -->
             <MultiDayView
               ref="multiDayViewRef"
-              v-if="mode === 'multi'"
+              :node-id="selectedNodeId"
+              :node-name="selectedNodeName"
+              :date-range="selectedDateRange"
+            />
+          </template>
+          <template v-else-if="mode === 'analysis'">
+            <!-- 单节点与省份节点对比模式 -->
+            <SingleNodeAnalysis
+              ref="analysisViewRef"
               :node-id="selectedNodeId"
               :node-name="selectedNodeName"
               :date-range="selectedDateRange"
@@ -229,6 +243,7 @@ import request from "@/utils/request";
 import { ElMessage, ElLoading } from "element-plus";
 import { Sort } from "@element-plus/icons-vue";
 import MultiDayView from "./components/MultiDayView.vue";
+import SingleNodeAnalysis from "./components/SingleNodeAnalysis.vue";
 
 // 注入高度
 const headerHeight = inject("headerHeight", 0);
@@ -337,10 +352,10 @@ const chartLoading = ref(false); // 图表加载状态
 const tableLoading = ref(false); // 表格加载状态
 const exportLoading = ref(false); // 导出按钮加载状态
 
-const mode = ref("single"); // 模式：single 单日查看，multi 多日查看
+const mode = ref("single"); // 模式：single 单日模式，multi 多日模式，analysis 单节点与省份节点对比模式
+
 // 切换模式
-const toggleMode = () => {
-  mode.value = mode.value === "single" ? "multi" : "single";
+const handleModeChange = () => {
   // 切换模式后触发图表resize
   setTimeout(() => {
     updateChartItemHeight();
@@ -417,6 +432,7 @@ const chartItemHeight = ref(350); // 默认高度
 const priceChartRef = ref(null);
 const spreadChartRef = ref(null);
 const multiDayViewRef = ref(null);
+const analysisViewRef = ref(null);
 
 // 图表重绘函数
 const updateChartItemHeight = () => {
@@ -429,10 +445,15 @@ const updateChartItemHeight = () => {
     if (spreadChartRef.value) {
       spreadChartRef.value.resize();
     }
-  } else {
+  } else if (mode.value === "multi") {
     // 多日模式
     if (multiDayViewRef.value) {
       multiDayViewRef.value.resize();
+    }
+  } else if (mode.value === "analysis") {
+    // 单节点与省份节点对比模式
+    if (analysisViewRef.value) {
+      analysisViewRef.value.resize();
     }
   }
 };
