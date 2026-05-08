@@ -159,10 +159,10 @@ const nodeRealTimeAvg = ref(0);
 const chartRef = ref(null);
 
 const dayAheadDiff = computed(
-  () => gdDayAheadAvg.value - nodeDayAheadAvg.value,
+  () => nodeDayAheadAvg.value - gdDayAheadAvg.value,
 );
 const realTimeDiff = computed(
-  () => gdRealTimeAvg.value - nodeRealTimeAvg.value,
+  () => nodeRealTimeAvg.value - gdRealTimeAvg.value,
 );
 const dayAheadDiffPercent = computed(() => {
   if (!gdDayAheadAvg.value) return "—";

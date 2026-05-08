@@ -61,7 +61,7 @@
       <div class="emoji">🚀</div>
       <h3>{{ $t("home.comingSoon.title") }}</h3>
       <p>{{ $t("home.comingSoon.message") }}</p>
-      <p>{{ $t("home.comingSoon.contact") }}</p>
+      <p>如有项目对接需求，请联系{{ isTrina ? "李经理:15919159383" : "徐博士：18679510800" }}</p>
       <div class="animation-container">
         <div class="loader">
           <div class="dot"></div>

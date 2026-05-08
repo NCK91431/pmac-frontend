@@ -28,16 +28,26 @@
             <!-- 模式选择 -->
             <el-radio-group v-model="mode" @change="handleModeChange">
               <el-radio-button value="single">单日模式</el-radio-button>
+              <el-radio-button value="single-history"
+                >溯前30天模式</el-radio-button
+              >
               <el-radio-button value="multi">多日模式</el-radio-button>
               <el-radio-button value="analysis"
                 >单节点与省份节点对比模式</el-radio-button
               >
+              <el-radio-button value="pv-capture">光伏捕获电价</el-radio-button>
             </el-radio-group>
             <!-- 日期选择器 -->
             <div class="date-picker-container">
               <i class="bi bi-calendar"></i>
-              <!-- 单日模式下显示 -->
-              <template v-if="mode === 'single'">
+              <!-- 单日/光伏捕获电价模式下显示 -->
+              <template
+                v-if="
+                  mode === 'single' ||
+                  mode === 'single-history' ||
+                  mode === 'pv-capture'
+                "
+              >
                 <el-date-picker
                   v-model="selectedDate"
                   type="date"
@@ -62,12 +72,17 @@
             </div>
           </div>
           <div class="control-bar-right">
-            <div class="time-type-selector" v-if="mode == 'single'">
+            <div
+              class="time-type-selector"
+              v-if="
+                mode == 'single' ||
+                mode == 'single-history' ||
+                mode == 'pv-capture'
+              "
+            >
               <i class="bi bi-clock"></i>
               <el-radio-group v-model="timeType" @change="handleTimeTypeChange">
-                <!-- <el-radio-button label="hour">24点</el-radio-button> -->
                 <el-radio-button label="minute">96点</el-radio-button>
-                <!-- 新增一个 用96点计算出的24点均值，鼠标hover上去要冒出一个提示”此值为96个点中每四个点算出一个平均值“ -->
                 <el-tooltip
                   effect="dark"
                   content="此值为96个点中每四个点算出一个平均值"
@@ -83,7 +98,13 @@
               plain
               size="small"
               @click="
-                mode === 'single' ? exportToExcel() : exportToExcelRange()
+                mode === 'single' ||
+                mode === 'single-history' ||
+                mode === 'pv-capture'
+                  ? mode === 'single-history'
+                    ? exportToExcelHistory()
+                    : exportToExcel()
+                  : exportToExcelRange()
               "
               :loading="exportLoading"
             >
@@ -199,6 +220,81 @@
               </div>
             </div>
           </template>
+          <!-- 溯前30天模式 -->
+          <template v-else-if="mode === 'single-history'">
+            <div class="middle-panel">
+              <div class="chart-container">
+                <div class="chart-info">
+                  <span class="selected-node">
+                    <i class="bi bi-node-plus"></i> 当前节点：{{ nav_text }}
+                  </span>
+                  <div class="history-date-info" v-if="historyDateRange">
+                    <div class="history-date-range">
+                      <i class="bi bi-calendar-range me-1"></i>
+                      {{ historyDateRange[0] }} ~ {{ historyDateRange[1] }}
+                    </div>
+                    <div class="history-date-desc">
+                      <i class="bi bi-clock-history me-1"></i>
+                      共覆盖
+                      <span class="day-count">{{
+                        computedHistoryDayCount
+                      }}</span>
+                      天（含首尾）
+                    </div>
+                  </div>
+                </div>
+                <div
+                  v-loading="historyChartLoading"
+                  element-loading-text="图表数据加载中..."
+                  element-loading-spinner="el-icon-loading"
+                  element-loading-background="rgba(255, 255, 255, 0.7)"
+                  class="history-charts-wrapper"
+                >
+                  <div class="history-chart-item" ref="historyAvgChartItem">
+                    <MultiDayAverageChart
+                      ref="historyAvgChartRef"
+                      :dateRange="historyDateRange"
+                      :priceData="historyChartProcessedData"
+                    />
+                  </div>
+                  <div class="history-chart-item" ref="historySpreadChartItem">
+                    <MultiDayAverageSpreadChart
+                      ref="historySpreadChartRef"
+                      :dateRange="historyDateRange"
+                      :priceData="historyChartProcessedData"
+                    />
+                  </div>
+                  <div
+                    class="history-chart-item"
+                    ref="historyTimeSpreadChartItem"
+                  >
+                    <ThirtyDayTimeSpreadChart
+                      ref="historyTimeSpreadChartRef"
+                      :timeSpreadData="historyDisplayTimeSpreadAvg"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="right-panel">
+              <div class="table-container">
+                <div
+                  v-loading="historyTableLoading"
+                  element-loading-text="表格数据加载中..."
+                  element-loading-spinner="el-icon-loading"
+                  element-loading-background="rgba(255, 255, 255, 0.7)"
+                  style="height: 100%; width: 100%"
+                >
+                  <ThirtyDayTable
+                    :tableData="historyDisplayTableData"
+                    :timeType="timeType"
+                    :nodeName="selectedNodeName"
+                    :endDate="historyEndDate"
+                  />
+                </div>
+              </div>
+            </div>
+          </template>
           <template v-else-if="mode === 'multi'">
             <!-- 多日模式 -->
             <MultiDayView
@@ -216,6 +312,61 @@
               :node-name="selectedNodeName"
               :date-range="selectedDateRange"
             />
+          </template>
+          <template v-else-if="mode === 'pv-capture'">
+            <!-- 中间：图表区域 -->
+            <div class="middle-panel">
+              <div class="chart-container">
+                <div
+                  v-loading="chartLoading"
+                  element-loading-text="图表数据加载中..."
+                  element-loading-spinner="el-icon-loading"
+                  element-loading-background="rgba(255, 255, 255, 0.7)"
+                  class="charts-wrapper"
+                >
+                  <div class="chart-item" ref="pvCaptureChartItem">
+                    <PvCapturePriceChart
+                      ref="pvCaptureChartRef"
+                      :dayAheadCaptureData="pvDisplayDayAheadCapture"
+                      :realTimeCaptureData="pvDisplayRealTimeCapture"
+                      :dayAheadOriginalData="pvDisplayDayAheadOriginal"
+                      :realTimeOriginalData="pvDisplayRealTimeOriginal"
+                      :irradianceData="pvIrradianceData"
+                      :nodeName="nav_text"
+                      :chartHeight="chartItemHeight"
+                      :dayAheadCaptureAvg="pvDisplayDayAheadCaptureAvg"
+                      :realTimeCaptureAvg="pvDisplayRealTimeCaptureAvg"
+                      :dateValue="selectedDate"
+                      :weekday="dateInfo.weekday"
+                      :dateType="dateInfo.dateType"
+                      :timeType="timeType"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右侧：表格区域 -->
+            <div class="right-panel">
+              <div class="table-container">
+                <div
+                  v-loading="tableLoading"
+                  element-loading-text="表格数据加载中..."
+                  element-loading-spinner="el-icon-loading"
+                  element-loading-background="rgba(255, 255, 255, 0.7)"
+                  style="height: 100%; width: 100%"
+                >
+                  <PvCapturePriceTable
+                    :dayAheadOriginalData="pvDisplayDayAheadOriginal"
+                    :realTimeOriginalData="pvDisplayRealTimeOriginal"
+                    :dayAheadCaptureData="pvDisplayDayAheadCapture"
+                    :realTimeCaptureData="pvDisplayRealTimeCapture"
+                    :irradianceData="pvIrradianceData"
+                    :timeType="timeType"
+                  />
+                </div>
+              </div>
+            </div>
           </template>
         </div>
       </div>
@@ -244,6 +395,12 @@ import { ElMessage, ElLoading } from "element-plus";
 import { Sort } from "@element-plus/icons-vue";
 import MultiDayView from "./components/MultiDayView.vue";
 import SingleNodeAnalysis from "./components/SingleNodeAnalysis.vue";
+import PvCapturePriceChart from "./components/PvCapturePriceChart.vue";
+import PvCapturePriceTable from "./components/PvCapturePriceTable.vue";
+import MultiDayAverageChart from "./components/MultiDayAverageChart.vue";
+import MultiDayAverageSpreadChart from "./components/MultiDayAverageSpreadChart.vue";
+import ThirtyDayTimeSpreadChart from "./components/ThirtyDayTimeSpreadChart.vue";
+import ThirtyDayTable from "./components/ThirtyDayTable.vue";
 
 // 注入高度
 const headerHeight = inject("headerHeight", 0);
@@ -316,6 +473,135 @@ const selectedDate = ref(getTwoDaysAgoDate()); // 默认选中前天
 const timeType = ref("minute");
 const currentDayAheadData = ref([]);
 const currentRealTimeData = ref([]);
+
+// 光伏捕获电价数据
+const pvDayAheadCaptureData = ref([]);
+const pvRealTimeCaptureData = ref([]);
+const pvDayAheadOriginalData = ref([]);
+const pvRealTimeOriginalData = ref([]);
+
+// 溯前30天模式数据
+const historyPriceData = ref(null);
+const historyDateRange = ref(null);
+const historyChartLoading = ref(false);
+const historyTableLoading = ref(false);
+// 辐照度固定从 weights.json 取值，完全不依赖 API
+const PV_WEIGHTS = {
+  hourly_weights: [
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.02, 0.05, 0.1, 0.14, 0.16, 0.17, 0.15,
+    0.12, 0.07, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+  ],
+  quarter_hourly_weights: [
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.01, 0.022, 0.039,
+    0.06, 0.085, 0.114, 0.146, 0.182, 0.221, 0.263, 0.308, 0.355, 0.404, 0.455,
+    0.507, 0.559, 0.612, 0.664, 0.715, 0.764, 0.811, 0.855, 0.896, 0.933, 0.966,
+    0.994, 1.0, 0.994, 0.979, 0.957, 0.929, 0.896, 0.859, 0.819, 0.777, 0.733,
+    0.688, 0.642, 0.596, 0.55, 0.504, 0.46, 0.417, 0.376, 0.337, 0.3, 0.265,
+    0.232, 0.202, 0.174, 0.148, 0.125, 0.104, 0.085, 0.068, 0.053, 0.04, 0.029,
+    0.02, 0.012, 0.006, 0.002, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+  ],
+};
+const pvIrradianceData = computed(() => {
+  return timeType.value === "compute"
+    ? PV_WEIGHTS.hourly_weights
+    : PV_WEIGHTS.quarter_hourly_weights;
+});
+
+function aggregateToHourly(arr) {
+  const result = [];
+  for (let i = 0; i < 24; i++) {
+    let sum = 0;
+    for (let j = 0; j < 4; j++) {
+      sum += arr[i * 4 + j] || 0;
+    }
+    result.push(sum / 4);
+  }
+  return result;
+}
+
+function computeHourlyCapture(originalArr) {
+  const hourlyAvg = aggregateToHourly(originalArr);
+  return hourlyAvg.map((avg, i) => PV_WEIGHTS.hourly_weights[i] * avg);
+}
+
+const pvDisplayDayAheadOriginal = computed(() => {
+  if (timeType.value !== "compute") return pvDayAheadOriginalData.value;
+  return aggregateToHourly(pvDayAheadOriginalData.value);
+});
+
+const pvDisplayRealTimeOriginal = computed(() => {
+  if (timeType.value !== "compute") return pvRealTimeOriginalData.value;
+  return aggregateToHourly(pvRealTimeOriginalData.value);
+});
+
+const pvDisplayDayAheadCapture = computed(() => {
+  if (timeType.value !== "compute") return pvDayAheadCaptureData.value;
+  return computeHourlyCapture(pvDayAheadOriginalData.value);
+});
+
+const pvDisplayRealTimeCapture = computed(() => {
+  if (timeType.value !== "compute") return pvRealTimeCaptureData.value;
+  return computeHourlyCapture(pvRealTimeOriginalData.value);
+});
+
+const pvDisplayDayAheadCaptureAvg = computed(() => {
+  const data = pvDisplayDayAheadCapture.value;
+  if (!data || data.length === 0) return 0;
+  return data.reduce((a, b) => a + b, 0);
+});
+
+const pvDisplayRealTimeCaptureAvg = computed(() => {
+  const data = pvDisplayRealTimeCapture.value;
+  if (!data || data.length === 0) return 0;
+  return data.reduce((a, b) => a + b, 0);
+});
+
+const pvDayAheadCaptureAvg = ref(0);
+const pvRealTimeCaptureAvg = ref(0);
+
+// 计算溯前30天日期范围
+const computeHistoryDateRange = (endDate) => {
+  const end = new Date(endDate);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 29);
+  const format = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+  return [format(start), format(end)];
+};
+
+const computedHistoryDayCount = computed(() => {
+  if (!historyDateRange.value) return 0;
+  const start = new Date(historyDateRange.value[0]);
+  const end = new Date(historyDateRange.value[1]);
+  return Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+});
+
+const historyEndDate = computed(() => {
+  return historyDateRange.value ? historyDateRange.value[1] : "";
+});
+
+const historyChartProcessedData = computed(() => {
+  return historyPriceData.value?.processedData || [];
+});
+
+const historyDisplayTimeSpreadAvg = computed(() => {
+  if (!historyPriceData.value) return [];
+  return timeType.value === "compute"
+    ? historyPriceData.value.timeSpreadAvg_compute_hour
+    : historyPriceData.value.timeSpreadAvg_quarter;
+});
+
+const historyDisplayTableData = computed(() => {
+  if (!historyPriceData.value) return [];
+  return timeType.value === "compute"
+    ? historyPriceData.value.tableData_compute_hour
+    : historyPriceData.value.tableData_quarter;
+});
 const nodeTreeData = ref([]);
 const cur_node_id = ref(""); //当前被选中的节点ID
 const cur_chain = ref([]); //当前被选中节点的路径
@@ -355,7 +641,18 @@ const exportLoading = ref(false); // 导出按钮加载状态
 const mode = ref("single"); // 模式：single 单日模式，multi 多日模式，analysis 单节点与省份节点对比模式
 
 // 切换模式
-const handleModeChange = () => {
+const handleModeChange = (newMode) => {
+  if (newMode === "single-history") {
+    if (selectedNodeId.value && selectedDate.value) {
+      fetchHistoryData(selectedNodeId.value, selectedDate.value);
+    }
+  } else if (
+    newMode === "pv-capture" &&
+    selectedNodeId.value &&
+    selectedDate.value
+  ) {
+    fetchPvCapturePriceData(selectedNodeId.value, selectedDate.value);
+  }
   // 切换模式后触发图表resize
   setTimeout(() => {
     updateChartItemHeight();
@@ -433,6 +730,16 @@ const priceChartRef = ref(null);
 const spreadChartRef = ref(null);
 const multiDayViewRef = ref(null);
 const analysisViewRef = ref(null);
+const pvCaptureChartRef = ref(null);
+const pvCaptureChartItem = ref(null);
+
+// 溯前30天模式图表引用
+const historyAvgChartRef = ref(null);
+const historySpreadChartRef = ref(null);
+const historyTimeSpreadChartRef = ref(null);
+const historyAvgChartItem = ref(null);
+const historySpreadChartItem = ref(null);
+const historyTimeSpreadChartItem = ref(null);
 
 // 图表重绘函数
 const updateChartItemHeight = () => {
@@ -445,6 +752,17 @@ const updateChartItemHeight = () => {
     if (spreadChartRef.value) {
       spreadChartRef.value.resize();
     }
+  } else if (mode.value === "single-history") {
+    // 溯前30天模式
+    if (historyAvgChartRef.value) {
+      historyAvgChartRef.value.resize();
+    }
+    if (historySpreadChartRef.value) {
+      historySpreadChartRef.value.resize();
+    }
+    if (historyTimeSpreadChartRef.value) {
+      historyTimeSpreadChartRef.value.resize();
+    }
   } else if (mode.value === "multi") {
     // 多日模式
     if (multiDayViewRef.value) {
@@ -454,6 +772,11 @@ const updateChartItemHeight = () => {
     // 单节点与省份节点对比模式
     if (analysisViewRef.value) {
       analysisViewRef.value.resize();
+    }
+  } else if (mode.value === "pv-capture") {
+    // 光伏捕获电价模式
+    if (pvCaptureChartRef.value) {
+      pvCaptureChartRef.value.resize();
     }
   }
 };
@@ -609,10 +932,83 @@ async function fetchNodePriceData(nodeId, date) {
   }
 }
 
+// 获取光伏捕获电价数据
+async function fetchPvCapturePriceData(nodeId, date) {
+  const nodePkId = nodeId.endsWith("_copy") ? nodeId.slice(0, -5) : nodeId;
+  chartLoading.value = true;
+  tableLoading.value = true;
+
+  try {
+    const response = await request.get("/api/node-price/pv-capture-price", {
+      params: { nodePkId, startDate: date },
+    });
+
+    if (response.data.status === 0) {
+      const data = response.data.data;
+      pvDayAheadCaptureData.value = data.dayAheadCaptureData || [];
+      pvRealTimeCaptureData.value = data.realTimeCaptureData || [];
+      pvDayAheadOriginalData.value = data.dayAheadOriginalData || [];
+      pvRealTimeOriginalData.value = data.realTimeOriginalData || [];
+      pvDayAheadCaptureAvg.value = data.dayAheadCaptureAvg || 0;
+      pvRealTimeCaptureAvg.value = data.realTimeCaptureAvg || 0;
+    } else {
+      ElMessage.warning(response.data.msg || "光伏捕获电价数据加载失败");
+    }
+  } catch (error) {
+    console.error("获取光伏捕获电价数据失败:", error);
+    ElMessage.error("光伏捕获电价数据加载失败");
+  } finally {
+    chartLoading.value = false;
+    tableLoading.value = false;
+  }
+}
+
+// 获取溯前30天模式数据
+async function fetchHistoryData(nodeId, date) {
+  const nodePkId = nodeId.endsWith("_copy") ? nodeId.slice(0, -5) : nodeId;
+  const range = computeHistoryDateRange(date);
+  historyDateRange.value = range;
+
+  historyChartLoading.value = true;
+  historyTableLoading.value = true;
+
+  try {
+    const response = await request.post(
+      "/api/node-price/single-history-range",
+      {
+        nodePkId,
+        startDate: range[0],
+        endDate: range[1],
+        regionPkId: "440000",
+      },
+    );
+
+    if (response.data.status === 0) {
+      historyPriceData.value = response.data.data;
+    } else {
+      ElMessage.warning(response.data.msg || "溯前模式数据加载失败");
+      historyPriceData.value = null;
+    }
+  } catch (error) {
+    console.error("加载溯前模式数据失败:", error);
+    ElMessage.error("溯前模式数据加载失败");
+    historyPriceData.value = null;
+  } finally {
+    historyChartLoading.value = false;
+    historyTableLoading.value = false;
+  }
+}
+
 // 日期改变处理
 function handleDateChange(date) {
   if (selectedNodeId.value) {
-    fetchNodePriceData(selectedNodeId.value, date);
+    if (mode.value === "single-history") {
+      fetchHistoryData(selectedNodeId.value, date);
+    } else if (mode.value === "pv-capture") {
+      fetchPvCapturePriceData(selectedNodeId.value, date);
+    } else {
+      fetchNodePriceData(selectedNodeId.value, date);
+    }
   }
 }
 
@@ -622,7 +1018,13 @@ function handleNodeSelect(node) {
   selectedNodeId.value = node.id;
 
   if (selectedDate.value) {
-    fetchNodePriceData(node.id, selectedDate.value);
+    if (mode.value === "single-history") {
+      fetchHistoryData(node.id, selectedDate.value);
+    } else if (mode.value === "pv-capture") {
+      fetchPvCapturePriceData(node.id, selectedDate.value);
+    } else {
+      fetchNodePriceData(node.id, selectedDate.value);
+    }
   }
 
   // 找到父节点树的链
@@ -807,6 +1209,80 @@ async function exportToExcelRange() {
     } else {
       ElMessage.warning("获取数据失败，无法导出");
     }
+  } catch (error) {
+    console.error("导出失败:", error);
+    ElMessage.error("数据导出失败");
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+// 溯前30天模式导出数据
+async function exportToExcelHistory() {
+  if (!selectedNodeId.value) {
+    ElMessage.warning("请先选择节点");
+    return;
+  }
+  if (!historyPriceData.value) {
+    ElMessage.warning("暂无历史数据可导出");
+    return;
+  }
+
+  exportLoading.value = true;
+
+  try {
+    const wb = XLSX.utils.book_new();
+
+    const quarterData = historyPriceData.value.tableData_quarter || [];
+    const computeData = historyPriceData.value.tableData_compute_hour || [];
+
+    const quarterRows = [
+      [
+        "时间",
+        "实时均价(元/MWh)",
+        "日前均价(元/MWh)",
+        "价差均值(元/MWh)",
+        "变化率",
+      ],
+      ...quarterData.map((r) => [
+        r.time,
+        r.realTimePrice.toFixed(2),
+        r.dayAheadPrice.toFixed(2),
+        r.diff.toFixed(2),
+        `${r.changeRate >= 0 ? "+" : ""}${r.changeRate.toFixed(2)}%`,
+      ]),
+    ];
+    const quarterWs = XLSX.utils.aoa_to_sheet(quarterRows);
+    XLSX.utils.book_append_sheet(wb, quarterWs, "96点");
+
+    const computeRows = [
+      [
+        "时间",
+        "实时均价(元/MWh)",
+        "日前均价(元/MWh)",
+        "价差均值(元/MWh)",
+        "变化率",
+      ],
+      ...computeData.map((r) => [
+        r.time,
+        r.realTimePrice.toFixed(2),
+        r.dayAheadPrice.toFixed(2),
+        r.diff.toFixed(2),
+        `${r.changeRate >= 0 ? "+" : ""}${r.changeRate.toFixed(2)}%`,
+      ]),
+    ];
+    const computeWs = XLSX.utils.aoa_to_sheet(computeRows);
+    XLSX.utils.book_append_sheet(wb, computeWs, "24点");
+
+    const endDate = historyDateRange.value
+      ? historyDateRange.value[1]
+      : selectedDate.value;
+    XLSX.writeFile(
+      wb,
+      `${selectedNodeName.value}_${endDate}_溯前30天分时价差数据.xlsx`,
+    );
+
+    ElMessage.success("溯前模式数据导出成功");
   } catch (error) {
     console.error("导出失败:", error);
     ElMessage.error("数据导出失败");
@@ -1052,6 +1528,21 @@ onBeforeUnmount(() => {
           }
         }
 
+        .history-charts-wrapper {
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          overflow-y: auto;
+
+          .history-chart-item {
+            flex-shrink: 0;
+            min-height: 350px;
+            overflow: hidden;
+          }
+        }
+
         .chart-info {
           display: flex;
           justify-content: space-between;
@@ -1117,6 +1608,67 @@ onBeforeUnmount(() => {
                 background: rgba(156, 39, 176, 0.1);
                 color: #9c27b0;
                 border: 1px solid rgba(156, 39, 176, 0.2);
+              }
+            }
+          }
+
+          .history-date-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e6f3ff 100%);
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(64, 158, 255, 0.15);
+
+            .history-date-range {
+              display: flex;
+              align-items: center;
+              font-size: 14px;
+              font-weight: 600;
+              color: #1677ff;
+              background: rgba(24, 144, 255, 0.08);
+              padding: 4px 14px;
+              border-radius: 12px;
+              border: 1px solid rgba(24, 144, 255, 0.15);
+              letter-spacing: 0.3px;
+
+              i {
+                font-size: 15px;
+                color: #1677ff;
+                margin-right: 6px;
+              }
+            }
+
+            .history-date-desc {
+              display: flex;
+              align-items: center;
+              font-size: 13px;
+              color: #5a6872;
+              background: rgba(255, 255, 255, 0.7);
+              padding: 4px 14px;
+              border-radius: 12px;
+              border: 1px solid rgba(0, 0, 0, 0.06);
+
+              i {
+                font-size: 14px;
+                color: #faad14;
+                margin-right: 6px;
+              }
+
+              .day-count {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #1677ff, #4096ff);
+                color: white;
+                font-weight: 700;
+                font-size: 12px;
+                min-width: 22px;
+                height: 22px;
+                border-radius: 11px;
+                padding: 0 6px;
+                margin: 0 4px;
               }
             }
           }

@@ -71,14 +71,24 @@ function renderAverageSpreadChart() {
   const option = {
     tooltip: {
       trigger: "axis",
-      axisPointer: { type: "cross" },
+      axisPointer: {
+        type: "cross",
+        crossStyle: {
+          color: "#999",
+          type: "dashed",
+          width: 1,
+        },
+        label: {
+          backgroundColor: "#6a7985",
+        },
+      },
       formatter: (params) => {
-        const val = params[0].value.value;
+        const val = params[0].value;
         const color = val >= 0 ? "#67c23a" : "#409eff";
         return `
           <div>${params[0].axisValue}</div>
           <div style="display:flex;align-items:center;margin:2px 0;">
-            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${params[0].color};margin-right:6px;"></span>
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:6px;"></span>
             <span>价差: <b style="color:${color}">${val.toFixed(2)}</b> 元/MWh</span>
           </div>
         `;
@@ -97,10 +107,18 @@ function renderAverageSpreadChart() {
       axisLabel: {
         rotate: 30,
       },
+      axisPointer: {
+        show: true,
+        type: "shadow",
+      },
     },
     yAxis: {
       type: "value",
       name: "价差 (元/MWh)",
+      axisPointer: {
+        show: true,
+        type: "line",
+      },
     },
     series: [
       {
