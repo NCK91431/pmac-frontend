@@ -36,6 +36,9 @@
                 >单节点与省份节点对比模式</el-radio-button
               >
               <el-radio-button value="pv-capture">光伏捕获电价</el-radio-button>
+              <el-radio-button value="multi-pv-capture"
+                >多日光伏捕获电价</el-radio-button
+              >
             </el-radio-group>
             <!-- 日期选择器 -->
             <div class="date-picker-container">
@@ -57,7 +60,7 @@
                   @change="handleDateChange"
                 />
               </template>
-              <!-- 多日模式/分析模式下显示 -->
+              <!-- 多日模式/分析模式/多日光伏捕获电价模式下显示 -->
               <template v-else>
                 <el-date-picker
                   v-model="selectedDateRange"
@@ -97,15 +100,10 @@
               type="primary"
               plain
               size="small"
-              @click="
-                mode === 'single' ||
-                mode === 'single-history' ||
-                mode === 'pv-capture'
-                  ? mode === 'single-history'
-                    ? exportToExcelHistory()
-                    : exportToExcel()
-                  : exportToExcelRange()
+              v-if="
+                mode !== 'multi-pv-capture' || multiPvCaptureRef?.hasCompleted
               "
+              @click="handleExportData()"
               :loading="exportLoading"
             >
               <i class="bi bi-download"></i> 导出数据
@@ -115,40 +113,25 @@
         <!-- 主要内容区域：图表和表格 -->
         <div
           class="main"
-          :class="{ 'multi-day': mode === 'multi' || mode === 'analysis' }"
+          :class="{
+            'multi-day':
+              mode === 'multi' ||
+              mode === 'analysis' ||
+              mode === 'multi-pv-capture',
+          }"
         >
           <!-- 单日模式 -->
           <template v-if="mode === 'single'">
             <!-- 中间：图表区域 -->
             <div class="middle-panel">
               <div class="chart-container">
-                <div class="chart-info">
-                  <span class="selected-node">
-                    <i class="bi bi-node-plus"></i> 当前节点：{{ nav_text }}
-                  </span>
-                  <!-- 在这里显示日期的信息 -->
-                  <div class="date-info" v-if="selectedDate">
-                    <div class="selected-date-display">
-                      <i class="bi bi-calendar-event me-1"></i>
-                      {{ dateInfo.dateValue }}
-                    </div>
-                    <div class="weekday">
-                      <i class="bi bi-calendar-week me-1"></i>
-                      {{ dateInfo.weekday }}
-                    </div>
-                    <div class="date-type" :class="dateInfo.dateType">
-                      <i
-                        class="me-1"
-                        :class="
-                          dateInfo.dateType === 'weekend'
-                            ? 'bi-emoji-sunglasses'
-                            : 'bi-briefcase'
-                        "
-                      ></i>
-                      {{ dateInfo.dateType === "weekend" ? "周末" : "工作日" }}
-                    </div>
-                  </div>
-                </div>
+                <ChartInfoBar
+                  type="date"
+                  :navText="nav_text"
+                  :dateValue="dateInfo.dateValue"
+                  :weekday="dateInfo.weekday"
+                  :dateType="dateInfo.dateType"
+                />
                 <div
                   v-loading="chartLoading"
                   element-loading-text="图表数据加载中..."
@@ -224,25 +207,11 @@
           <template v-else-if="mode === 'single-history'">
             <div class="middle-panel">
               <div class="chart-container">
-                <div class="chart-info">
-                  <span class="selected-node">
-                    <i class="bi bi-node-plus"></i> 当前节点：{{ nav_text }}
-                  </span>
-                  <div class="history-date-info" v-if="historyDateRange">
-                    <div class="history-date-range">
-                      <i class="bi bi-calendar-range me-1"></i>
-                      {{ historyDateRange[0] }} ~ {{ historyDateRange[1] }}
-                    </div>
-                    <div class="history-date-desc">
-                      <i class="bi bi-clock-history me-1"></i>
-                      共覆盖
-                      <span class="day-count">{{
-                        computedHistoryDayCount
-                      }}</span>
-                      天（含首尾）
-                    </div>
-                  </div>
-                </div>
+                <ChartInfoBar
+                  type="history"
+                  :navText="nav_text"
+                  :dateRange="historyDateRange"
+                />
                 <div
                   v-loading="historyChartLoading"
                   element-loading-text="图表数据加载中..."
@@ -368,6 +337,15 @@
               </div>
             </div>
           </template>
+          <!-- 多日光伏捕获电价模式 -->
+          <template v-else-if="mode === 'multi-pv-capture'">
+            <MultiDayPvCaptureAnalysis
+              ref="multiPvCaptureRef"
+              :node-id="selectedNodeId"
+              :node-name="selectedNodeName"
+              :date-range="selectedDateRange"
+            />
+          </template>
         </div>
       </div>
     </div>
@@ -392,11 +370,12 @@ import PriceTable from "./components/PriceTable.vue";
 import * as XLSX from "xlsx";
 import request from "@/utils/request";
 import { ElMessage, ElLoading } from "element-plus";
-import { Sort } from "@element-plus/icons-vue";
 import MultiDayView from "./components/MultiDayView.vue";
 import SingleNodeAnalysis from "./components/SingleNodeAnalysis.vue";
 import PvCapturePriceChart from "./components/PvCapturePriceChart.vue";
 import PvCapturePriceTable from "./components/PvCapturePriceTable.vue";
+import ChartInfoBar from "./components/ChartInfoBar.vue";
+import MultiDayPvCaptureAnalysis from "./components/MultiDayPvCaptureAnalysis.vue";
 import MultiDayAverageChart from "./components/MultiDayAverageChart.vue";
 import MultiDayAverageSpreadChart from "./components/MultiDayAverageSpreadChart.vue";
 import ThirtyDayTimeSpreadChart from "./components/ThirtyDayTimeSpreadChart.vue";
@@ -574,13 +553,6 @@ const computeHistoryDateRange = (endDate) => {
   return [format(start), format(end)];
 };
 
-const computedHistoryDayCount = computed(() => {
-  if (!historyDateRange.value) return 0;
-  const start = new Date(historyDateRange.value[0]);
-  const end = new Date(historyDateRange.value[1]);
-  return Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-});
-
 const historyEndDate = computed(() => {
   return historyDateRange.value ? historyDateRange.value[1] : "";
 });
@@ -661,11 +633,6 @@ const handleModeChange = (newMode) => {
 
 const selectedDateRange = ref(getDefaultDateRange()); // 多日模式下选中的日期范围
 
-// 删除原有的 pickerOptions 定义
-// const pickerOptions = {...}
-
-// 删除原来的 pickerOptions 定义
-
 // 日期禁用函数
 const disabledDate = (time) => {
   // 将传入的时间转为日期字符串（YYYY-MM-DD）以便比较
@@ -732,6 +699,7 @@ const multiDayViewRef = ref(null);
 const analysisViewRef = ref(null);
 const pvCaptureChartRef = ref(null);
 const pvCaptureChartItem = ref(null);
+const multiPvCaptureRef = ref(null);
 
 // 溯前30天模式图表引用
 const historyAvgChartRef = ref(null);
@@ -777,6 +745,11 @@ const updateChartItemHeight = () => {
     // 光伏捕获电价模式
     if (pvCaptureChartRef.value) {
       pvCaptureChartRef.value.resize();
+    }
+  } else if (mode.value === "multi-pv-capture") {
+    // 多日光伏捕获电价模式
+    if (multiPvCaptureRef.value) {
+      multiPvCaptureRef.value.resize();
     }
   }
 };
@@ -870,27 +843,6 @@ async function fetchAllNodeData() {
 
     loadingInstance.close(); //关闭加载状态
   }
-}
-
-// 辅助函数：查找第一个叶子节点
-function findFirstLeafNode(node) {
-  if (isLeaf(node)) {
-    return node;
-  }
-
-  if (node.children && node.children.length > 0) {
-    for (const child of node.children) {
-      const leaf = findFirstLeafNode(child);
-      if (leaf) return leaf;
-    }
-  }
-
-  return null;
-}
-
-// 辅助函数：判断是否为叶子节点
-function isLeaf(data) {
-  return data.leaf === 1 || data.nodeType === "1";
 }
 
 // 获取节点电价数据
@@ -1082,13 +1034,44 @@ function generateTableDataWithDiff(timeTypeValue) {
       dayAheadPrice = currentDayAheadData.value[dataIndex] || 0;
     }
 
-    const diff = realTimePrice - dayAheadPrice;
-    const changeRate = dayAheadPrice > 0 ? (diff / dayAheadPrice) * 100 : 0;
+    const rawDiff = realTimePrice - dayAheadPrice;
+    const rawChangeRate =
+      dayAheadPrice > 0 ? (rawDiff / dayAheadPrice) * 100 : 0;
 
-    return [time, realTimePrice, dayAheadPrice, diff, changeRate];
+    return [
+      time,
+      Number(realTimePrice.toFixed(2)),
+      Number(dayAheadPrice.toFixed(2)),
+      Number(rawDiff.toFixed(2)),
+      Number(rawChangeRate.toFixed(2)),
+    ];
   });
 }
 
+/* ------------------------------------ 导出数据 ------------------------------------ */
+async function handleExportData() {
+  switch (mode.value) {
+    case "single-history":
+      await exportToExcelHistory();
+      break;
+    case "pv-capture":
+      await exportToExcelPvCapture();
+      break;
+    case "multi-pv-capture":
+      await exportToExcelMultiPvCapture();
+      break;
+    case "analysis":
+      await exportToExcelAnalysis();
+      break;
+    case "single":
+      await exportToExcel();
+      break;
+    default:
+      await exportToExcelRange();
+  }
+}
+
+// 单节点电价模式导出数据
 async function exportToExcel() {
   if (!selectedNodeId.value) {
     ElMessage.warning("请先选择节点");
@@ -1100,11 +1083,10 @@ async function exportToExcel() {
   try {
     const wb = XLSX.utils.book_new();
 
-    // 为三种时间类型创建sheet
+    // 为两种时间类型创建sheet
     const timeTypes = [
-      { value: "hour", name: "24点" },
       { value: "minute", name: "96点" },
-      { value: "compute", name: "整点均值" },
+      { value: "compute", name: "24点" },
     ];
 
     timeTypes.forEach((type) => {
@@ -1129,6 +1111,206 @@ async function exportToExcel() {
     );
 
     ElMessage.success("数据导出成功");
+  } catch (error) {
+    console.error("导出失败:", error);
+    ElMessage.error("数据导出失败");
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+// 光伏捕获电价模式导出数据
+async function exportToExcelPvCapture() {
+  if (!selectedNodeId.value) {
+    ElMessage.warning("请先选择节点");
+    return;
+  }
+
+  exportLoading.value = true;
+
+  try {
+    const wb = XLSX.utils.book_new();
+
+    // 96点 sheet
+    const wsData96 = [
+      [
+        "时间",
+        "DA原始电价(元/MWh)",
+        "RT原始电价(元/MWh)",
+        "归一化辐照度",
+        "DA加权贡献值(元/MWh)",
+        "RT加权贡献值(元/MWh)",
+      ],
+    ];
+
+    for (let i = 0; i < 96; i++) {
+      const hour = Math.floor(i / 4);
+      const minute = (i % 4) * 15;
+      const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+      wsData96.push([
+        time,
+        Number((pvDayAheadOriginalData.value[i] || 0).toFixed(2)),
+        Number((pvRealTimeOriginalData.value[i] || 0).toFixed(2)),
+        Number((PV_WEIGHTS.quarter_hourly_weights[i] || 0).toFixed(4)),
+        Number((pvDayAheadCaptureData.value[i] || 0).toFixed(2)),
+        Number((pvRealTimeCaptureData.value[i] || 0).toFixed(2)),
+      ]);
+    }
+
+    const ws96 = XLSX.utils.aoa_to_sheet(wsData96);
+    XLSX.utils.book_append_sheet(wb, ws96, "96点");
+
+    // 24点 sheet
+    const hourlyDayAheadOriginal = aggregateToHourly(
+      pvDayAheadOriginalData.value,
+    );
+    const hourlyRealTimeOriginal = aggregateToHourly(
+      pvRealTimeOriginalData.value,
+    );
+    const hourlyDayAheadCapture = computeHourlyCapture(
+      pvDayAheadOriginalData.value,
+    );
+    const hourlyRealTimeCapture = computeHourlyCapture(
+      pvRealTimeOriginalData.value,
+    );
+
+    const wsData24 = [
+      [
+        "时间",
+        "DA原始电价(元/MWh)",
+        "RT原始电价(元/MWh)",
+        "归一化辐照度",
+        "DA加权贡献值(元/MWh)",
+        "RT加权贡献值(元/MWh)",
+      ],
+    ];
+
+    for (let i = 0; i < 24; i++) {
+      wsData24.push([
+        `第${i + 1}时`,
+        Number((hourlyDayAheadOriginal[i] || 0).toFixed(2)),
+        Number((hourlyRealTimeOriginal[i] || 0).toFixed(2)),
+        Number((PV_WEIGHTS.hourly_weights[i] || 0).toFixed(4)),
+        Number((hourlyDayAheadCapture[i] || 0).toFixed(2)),
+        Number((hourlyRealTimeCapture[i] || 0).toFixed(2)),
+      ]);
+    }
+
+    const ws24 = XLSX.utils.aoa_to_sheet(wsData24);
+    XLSX.utils.book_append_sheet(wb, ws24, "24点");
+
+    XLSX.writeFile(
+      wb,
+      `${selectedNodeName.value}_${selectedDate.value}_光伏捕获电价数据.xlsx`,
+    );
+
+    ElMessage.success("数据导出成功");
+  } catch (error) {
+    console.error("导出失败:", error);
+    ElMessage.error("数据导出失败");
+  } finally {
+    exportLoading.value = false;
+  }
+}
+
+// 单节点与省份节点对比模式导出数据
+async function exportToExcelAnalysis() {
+  if (!selectedNodeId.value) {
+    ElMessage.warning("请先选择节点");
+    return;
+  }
+
+  if (!selectedDateRange.value || selectedDateRange.value.length !== 2) {
+    ElMessage.warning("请选择日期范围");
+    return;
+  }
+
+  const analysisRef = analysisViewRef.value;
+  if (
+    !analysisRef ||
+    !analysisRef.gdDayAheadSeries ||
+    analysisRef.gdDayAheadSeries.length === 0
+  ) {
+    ElMessage.warning("请先点击'开始计算'获取分析数据");
+    return;
+  }
+
+  exportLoading.value = true;
+
+  try {
+    const dataCount = analysisRef.gdDayAheadSeries.length;
+    const timeLabels = [];
+    for (let i = 0; i < dataCount; i++) {
+      const totalMinutes = i * 15;
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      timeLabels.push(
+        `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`,
+      );
+    }
+
+    const wsData = [
+      [
+        "时间",
+        "广东省日前均价(元/MWh)",
+        "广东省实时均价(元/MWh)",
+        `${selectedNodeName.value}日前均价(元/MWh)`,
+        `${selectedNodeName.value}实时均价(元/MWh)`,
+      ],
+    ];
+
+    for (let i = 0; i < dataCount; i++) {
+      wsData.push([
+        timeLabels[i],
+        Number((analysisRef.gdDayAheadSeries[i] || 0).toFixed(2)),
+        Number((analysisRef.gdRealTimeSeries[i] || 0).toFixed(2)),
+        Number((analysisRef.nodeDayAheadSeries[i] || 0).toFixed(2)),
+        Number((analysisRef.nodeRealTimeSeries[i] || 0).toFixed(2)),
+      ]);
+    }
+
+    wsData.push([]);
+    wsData.push(["汇总信息"]);
+    wsData.push([
+      "广东加权日前均价",
+      Number(analysisRef.gdDayAheadAvg.toFixed(2)),
+    ]);
+    wsData.push([
+      "广东加权实时均价",
+      Number(analysisRef.gdRealTimeAvg.toFixed(2)),
+    ]);
+    wsData.push([
+      `${selectedNodeName.value}加权日前均价`,
+      Number(analysisRef.nodeDayAheadAvg.toFixed(2)),
+    ]);
+    wsData.push([
+      `${selectedNodeName.value}加权实时均价`,
+      Number(analysisRef.nodeRealTimeAvg.toFixed(2)),
+    ]);
+    wsData.push([
+      "日前加权差异值",
+      `${analysisRef.dayAheadDiff >= 0 ? "+" : ""}${Number(analysisRef.dayAheadDiff.toFixed(2))}`,
+      analysisRef.gdDayAheadAvg > 0
+        ? `${(analysisRef.dayAheadDiff / analysisRef.gdDayAheadAvg) * 100 >= 0 ? "+" : ""}${Number(((analysisRef.dayAheadDiff / analysisRef.gdDayAheadAvg) * 100).toFixed(1))}%`
+        : "—",
+    ]);
+    wsData.push([
+      "实时加权差异值",
+      `${analysisRef.realTimeDiff >= 0 ? "+" : ""}${Number(analysisRef.realTimeDiff.toFixed(2))}`,
+      analysisRef.gdRealTimeAvg > 0
+        ? `${(analysisRef.realTimeDiff / analysisRef.gdRealTimeAvg) * 100 >= 0 ? "+" : ""}${Number(((analysisRef.realTimeDiff / analysisRef.gdRealTimeAvg) * 100).toFixed(1))}%`
+        : "—",
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "对比分析数据");
+    XLSX.writeFile(
+      wb,
+      `${selectedNodeName.value}_${selectedDateRange.value[0]}_${selectedDateRange.value[1]}_对比分析数据.xlsx`,
+    );
+
+    ElMessage.success("对比分析数据导出成功");
   } catch (error) {
     console.error("导出失败:", error);
     ElMessage.error("数据导出失败");
@@ -1291,33 +1473,69 @@ async function exportToExcelHistory() {
   }
 }
 
-function generateTableData() {
-  const timePoints = [];
-  if (timeType.value === "hour") {
-    for (let i = 0; i < 24; i++) {
-      timePoints.push(`${i.toString().padStart(2, "0")}:00`);
-    }
-  } else {
-    for (let i = 0; i < 96; i++) {
-      const hour = Math.floor(i / 4);
-      const minute = (i % 4) * 15;
-      timePoints.push(
-        `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`,
-      );
-    }
+// 多日光伏捕获电价模式导出数据
+async function exportToExcelMultiPvCapture() {
+  if (!multiPvCaptureRef.value) {
+    ElMessage.warning("暂无数据可导出，请先计算");
+    return;
   }
 
-  return timePoints.map((time, index) => {
-    const hourIndex = timeType.value === "hour" ? index : Math.floor(index / 4);
-    return [
-      time,
-      currentRealTimeData.value[hourIndex] || 0,
-      currentDayAheadData.value[hourIndex] || 0,
+  const dailyData = multiPvCaptureRef.value.dailyData || [];
+  const summary = multiPvCaptureRef.value.summary || {};
+
+  if (!dailyData || dailyData.length === 0) {
+    ElMessage.warning("暂无数据可导出");
+    return;
+  }
+
+  exportLoading.value = true;
+
+  try {
+    const wb = XLSX.utils.book_new();
+
+    const wsData = [
+      [
+        "日期",
+        "日前捕获均价(元/MWh)",
+        "实时捕获均价(元/MWh)",
+        "捕获价差(元/MWh)",
+      ],
+      ...dailyData.map((item) => {
+        const date = new Date(item.date);
+        const mmdd = `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        return [
+          mmdd,
+          item.dayAheadCaptureAvg ? item.dayAheadCaptureAvg.toFixed(2) : "-",
+          item.realTimeCaptureAvg ? item.realTimeCaptureAvg.toFixed(2) : "-",
+          item.captureSpread ? item.captureSpread.toFixed(2) : "-",
+        ];
+      }),
+      [],
+      [
+        "统计",
+        `DA均价：${summary.dayAheadCaptureAvg ? summary.dayAheadCaptureAvg.toFixed(2) : "-"}`,
+        `RT均价：${summary.realTimeCaptureAvg ? summary.realTimeCaptureAvg.toFixed(2) : "-"}`,
+        `价差均值：${summary.spreadAvg ? summary.spreadAvg.toFixed(2) : "-"}`,
+      ],
     ];
-  });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    XLSX.utils.book_append_sheet(wb, ws, "多日光伏捕获电价");
+    XLSX.writeFile(
+      wb,
+      `${selectedNodeName.value}_${selectedDateRange.value[0]}_${selectedDateRange.value[1]}_多日光伏捕获电价.xlsx`,
+    );
+
+    ElMessage.success("数据导出成功");
+  } catch (error) {
+    console.error("导出失败:", error);
+    ElMessage.error("数据导出失败");
+  } finally {
+    exportLoading.value = false;
+  }
 }
+
+/* ------------------------------------ 辅助函数 ------------------------------------ */
 
 // 辅助函数：获取从根节点到指定节点的路径链
 function getParentNodeChain(nodeId, treeNodes) {
@@ -1350,6 +1568,11 @@ function getParentNodeChain(nodeId, treeNodes) {
   findPath(treeNodes, nodeId, []);
 
   return path;
+}
+
+// 辅助函数：判断是否为叶子节点
+function isLeaf(data) {
+  return data.leaf === 1 || data.nodeType === "1";
 }
 
 onMounted(() => {
