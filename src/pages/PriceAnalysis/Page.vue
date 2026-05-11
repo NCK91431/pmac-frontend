@@ -101,7 +101,10 @@
               plain
               size="small"
               v-if="
-                mode !== 'multi-pv-capture' || multiPvCaptureRef?.hasCompleted
+                !(
+                  mode === 'multi-pv-capture' &&
+                  !multiPvCaptureRef?.hasCompleted
+                ) && !(mode === 'analysis' && !analysisViewRef?.hasCompleted)
               "
               @click="handleExportData()"
               :loading="exportLoading"

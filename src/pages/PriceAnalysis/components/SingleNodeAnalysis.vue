@@ -326,8 +326,13 @@ const resize = () => {
   }
 };
 
+const hasCompleted = computed(() => {
+  return hasStarted.value && !loading.value;
+});
+
 defineExpose({
   resize,
+  hasCompleted,
   gdDayAheadSeries,
   gdRealTimeSeries,
   nodeDayAheadSeries,
