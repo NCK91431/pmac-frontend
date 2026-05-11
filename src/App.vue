@@ -5,6 +5,23 @@
     <RouterView />
   </div>
   <HomeFooter v-if="showFooter" @update:footerHeight="handleFooterHeight" />
+  
+  <div v-if="showUpdateModal" class="update-modal-overlay">
+    <div class="update-modal">
+      <div class="update-modal-header">
+        <i class="bi bi-info-circle"></i>
+        <span>系统更新提示</span>
+      </div>
+      <div class="update-modal-body">
+        <p>检测到系统有新版本可用，请刷新页面以使用最新版本</p>
+        <p class="version-info">当前版本: {{ updateInfo.currentVersion }}</p>
+        <p class="version-info">最新版本: {{ updateInfo.latestVersion }}</p>
+      </div>
+      <div class="update-modal-footer">
+        <button class="btn btn-primary" @click="handleRefresh">立即刷新</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -12,16 +29,19 @@ import { ref, provide, onMounted, computed } from "vue";
 import HeaderSection from "./components/HeaderSection.vue";
 import Breadcrumb from "./components/Breadcrumb.vue";
 import HomeFooter from "./components/HomeFooter.vue";
-// 用户状态响应式变量
-const user = ref(null);
+import { checkForUpdate, refreshPage } from "./utils/versionCheck";
 
-// 初始化时检查本地存储
+const user = ref(null);
+const showUpdateModal = ref(false);
+const updateInfo = ref({
+  currentVersion: '0.0.0',
+  latestVersion: '0.0.0'
+});
+
 onMounted(() => {
-  // 检查是否需要显示翻译提示
   const showHint = localStorage.getItem("showTranslateHint");
   if (!showHint) {
     setTimeout(() => {
-      // 可以在这里添加翻译指导弹窗
       console.log("提示：如需英文版，可使用浏览器翻译功能");
     }, 3000);
     localStorage.setItem("showTranslateHint", "true");
@@ -35,7 +55,25 @@ onMounted(() => {
       localStorage.removeItem("authToken");
     }
   }
+  
+  checkVersionUpdate();
 });
+
+const checkVersionUpdate = async () => {
+  const result = await checkForUpdate();
+  if (result.hasUpdate) {
+    updateInfo.value = {
+      currentVersion: result.currentVersion,
+      latestVersion: result.latestVersion
+    };
+    showUpdateModal.value = true;
+  }
+};
+
+const handleRefresh = () => {
+  showUpdateModal.value = false;
+  refreshPage();
+};
 
 // 更新用户状态的方法
 function updateUser(userInfo, authToken) {
@@ -96,5 +134,64 @@ const contentStyle = computed(() => ({
   background-color: #e6e8ea;
   overflow-x: hidden;
   box-sizing: border-box;
+}
+
+.update-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.update-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.update-modal-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.update-modal-header i {
+  margin-right: 8px;
+  color: #3b82f6;
+  font-size: 24px;
+}
+
+.update-modal-body {
+  padding: 20px;
+}
+
+.update-modal-body p {
+  margin: 0 0 8px 0;
+  color: #374151;
+}
+
+.update-modal-body .version-info {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.update-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
 }
 </style>
