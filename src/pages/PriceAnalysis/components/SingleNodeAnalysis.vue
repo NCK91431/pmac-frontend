@@ -328,6 +328,18 @@ const resize = () => {
 
 defineExpose({
   resize,
+  gdDayAheadSeries,
+  gdRealTimeSeries,
+  nodeDayAheadSeries,
+  nodeRealTimeSeries,
+  gdDayAheadAvg,
+  gdRealTimeAvg,
+  nodeDayAheadAvg,
+  nodeRealTimeAvg,
+  dayAheadDiff,
+  realTimeDiff,
+  dayAheadDiffPercent,
+  realTimeDiffPercent,
 });
 </script>
 
