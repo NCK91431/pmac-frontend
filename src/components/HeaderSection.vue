@@ -1,6 +1,7 @@
 <template>
   <div class="header-container" ref="headerRef">
     <div class="header-content">
+      <!-- 公司Logo -->
       <div class="logo-section">
         <img
           class="company-logo"
@@ -28,53 +29,10 @@
           </div>
         </div>
       </div>
-
-      <!-- 移动端汉堡菜单 -->
-      <div class="mobile-menu-toggle" @click="toggleMobileMenu" v-if="isMobile">
-        <i class="fas fa-bars"></i>
+      <!-- 语言切换 -->
+      <div class="language-toggle-wrapper">
+        <LanguageToggle />
       </div>
-
-      <!-- 移动端菜单遮罩 -->
-      <div
-        class="mobile-menu-overlay"
-        v-if="isMobile && mobileMenuOpen"
-        @click="closeMobileMenu"
-      ></div>
-
-      <el-menu
-        class="menus"
-        :class="{
-          'mobile-menu': isMobile,
-          'menu-open': mobileMenuOpen,
-        }"
-        mode="horizontal"
-        background-color="transparent"
-        text-color="#fff"
-        active-text-color="#ffd04b"
-        :ellipsis="false"
-        default-active="home"
-        router
-      >
-        <el-menu-item index="home" route="/home" @click="closeMobileMenu">{{
-          $t("header.home")
-        }}</el-menu-item>
-        <el-menu-item
-          index="describe"
-          route="/describe"
-          @click="closeMobileMenu"
-          >{{ $t("header.features") }}</el-menu-item
-        >
-        <el-menu-item
-          v-if="!isTrina"
-          index="about_us"
-          route="/about_us"
-          @click="closeMobileMenu"
-          >{{ $t("header.about") }}</el-menu-item
-        >
-      </el-menu>
-
-      <LanguageToggle />
-
       <!-- 电力交易专家 -->
       <div class="chatbot" @click="openChatbotWindow">
         <div class="chatbot-icon">
@@ -86,7 +44,6 @@
         </div>
         <span class="chatbot-text">{{ $t("header.electricityExpert") }}</span>
       </div>
-
       <!-- 用户信息区域 -->
       <div class="user-info" :class="{ 'mobile-user-info': isMobile }">
         <!-- 有用户 -->
@@ -180,6 +137,49 @@
           </el-popover>
         </template>
       </div>
+
+      <!-- 移动端汉堡菜单 -->
+      <div class="mobile-menu-toggle" @click="toggleMobileMenu" v-if="isMobile">
+        <i class="fas fa-bars"></i>
+      </div>
+
+      <!-- 移动端菜单遮罩 -->
+      <div
+        class="mobile-menu-overlay"
+        v-if="isMobile && mobileMenuOpen"
+        @click="closeMobileMenu"
+      ></div>
+      <!-- <el-menu
+        class="menus"
+        :class="{
+          'mobile-menu': isMobile,
+          'menu-open': mobileMenuOpen,
+        }"
+        mode="horizontal"
+        background-color="transparent"
+        text-color="#fff"
+        active-text-color="#ffd04b"
+        :ellipsis="false"
+        default-active="home"
+        router
+      >
+        <el-menu-item index="home" route="/home" @click="closeMobileMenu">{{
+          $t("header.home")
+        }}</el-menu-item>
+        <el-menu-item
+          index="describe"
+          route="/describe"
+          @click="closeMobileMenu"
+          >{{ $t("header.features") }}</el-menu-item
+        >
+        <el-menu-item
+          v-if="!isTrina"
+          index="about_us"
+          route="/about_us"
+          @click="closeMobileMenu"
+          >{{ $t("header.about") }}</el-menu-item
+        >
+      </el-menu> -->
     </div>
   </div>
 </template>
@@ -298,7 +298,7 @@ onUnmounted(() => {
 .header-container {
   background: linear-gradient(135deg, #2c6fbb, #34a4dc);
   color: white;
-  padding: 1.5rem 0;
+  padding: 1.1rem 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: fixed;
   top: 0;
@@ -675,7 +675,14 @@ onUnmounted(() => {
   }
 }
 
+.language-toggle-wrapper {
+  justify-self: flex-end;
+  margin-left: auto;
+}
+
 .chatbot {
+  justify-self: flex-end;
+  margin-left: 20px;
   display: flex;
   align-items: center;
   padding: 6px 16px 6px 12px;
@@ -683,7 +690,6 @@ onUnmounted(() => {
   border-radius: 24px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-left: 20px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   position: relative;
   overflow: hidden;
