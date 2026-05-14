@@ -1,11 +1,13 @@
 <template>
-  <HeaderSection @update:headerHeight="handleHeaderHeight" />
+  <HeaderSection v-if="isHomePage" @update:headerHeight="handleHeaderHeight" />
+  <UniversalHeader v-else @update:headerHeight="handleHeaderHeight" />
+  <GlobalSidebar />
   <div class="page-content" :style="contentStyle">
-    <Breadcrumb @update:breadcrumbHeight="handleBreadcrumbHeight" />
+    <!-- <Breadcrumb @update:breadcrumbHeight="handleBreadcrumbHeight" /> -->
     <RouterView />
   </div>
   <HomeFooter v-if="showFooter" @update:footerHeight="handleFooterHeight" />
-  
+
   <div v-if="showUpdateModal" class="update-modal-overlay">
     <div class="update-modal">
       <div class="update-modal-header">
@@ -25,18 +27,38 @@
 </template>
 
 <script setup>
-import { ref, provide, onMounted, computed } from "vue";
+import { ref, provide, onMounted, computed, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import HeaderSection from "./components/HeaderSection.vue";
+import UniversalHeader from "./components/UniversalHeader.vue";
+import GlobalSidebar from "./components/GlobalSidebar.vue";
 import Breadcrumb from "./components/Breadcrumb.vue";
 import HomeFooter from "./components/HomeFooter.vue";
 import { checkForUpdate, refreshPage } from "./utils/versionCheck";
 
+const router = useRouter();
 const user = ref(null);
 const showUpdateModal = ref(false);
 const updateInfo = ref({
-  currentVersion: '0.0.0',
-  latestVersion: '0.0.0'
+  currentVersion: "0.0.0",
+  latestVersion: "0.0.0",
 });
+
+const isHomePage = computed(() => {
+  const currentRoute = router.currentRoute.value;
+  return (
+    currentRoute.name === "home" ||
+    currentRoute.path === "/" ||
+    currentRoute.path === "/home"
+  );
+});
+
+watch(
+  () => router.currentRoute.value.path,
+  () => {
+    handleHeaderHeight(headerHeight.value);
+  },
+);
 
 onMounted(() => {
   const showHint = localStorage.getItem("showTranslateHint");
@@ -55,7 +77,7 @@ onMounted(() => {
       localStorage.removeItem("authToken");
     }
   }
-  
+
   checkVersionUpdate();
 });
 
@@ -64,7 +86,7 @@ const checkVersionUpdate = async () => {
   if (result.hasUpdate) {
     updateInfo.value = {
       currentVersion: result.currentVersion,
-      latestVersion: result.latestVersion
+      latestVersion: result.latestVersion,
     };
     showUpdateModal.value = true;
   }
@@ -101,7 +123,11 @@ const headerHeight = ref(0);
 const footerHeight = ref(0);
 const breadcrumbHeight = ref(0);
 
-const showFooter = import.meta.env.VITE_COMPANY === "pilot";
+const route = useRoute();
+const showFooter = computed(
+  () =>
+    import.meta.env.VITE_COMPANY !== "trina" && route.meta?.showFooter === true,
+);
 
 // 提供headerHeight给所有子组件
 provide("headerHeight", headerHeight);
@@ -122,11 +148,14 @@ const handleFooterHeight = (height) => {
   footerHeight.value = height;
 };
 
-// 计算内容区域样式（关键修改）
-const contentStyle = computed(() => ({
-  marginTop: `${headerHeight.value}px`,
-  minHeight: `calc(100vh - ${headerHeight.value}px - ${footerHeight.value}px)`,
-}));
+const contentStyle = computed(() => {
+  // 判断是否真的要减去 Footer 高度
+  const extra = showFooter.value ? footerHeight.value : 0;
+  return {
+    marginTop: `${headerHeight.value}px`,
+    minHeight: `calc(100vh - ${headerHeight.value}px - ${extra}px)`,
+  };
+});
 </script>
 
 <style scoped>
@@ -134,6 +163,7 @@ const contentStyle = computed(() => ({
   background-color: #e6e8ea;
   overflow-x: hidden;
   box-sizing: border-box;
+  padding-left: 48px;
 }
 
 .update-modal-overlay {
@@ -154,7 +184,9 @@ const contentStyle = computed(() => ({
   border-radius: 8px;
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .update-modal-header {
