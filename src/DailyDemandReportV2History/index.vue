@@ -282,7 +282,7 @@ onMounted(async () => {
   flex: 1;
   padding: 24px 32px;
   transition: margin-right 0.3s ease;
-  max-width: calc(100% - 280px);
+  max-width: calc(100% - 450px);
 
   &.panel-collapsed {
     max-width: 100%;
@@ -360,7 +360,7 @@ onMounted(async () => {
 }
 
 .right-panel {
-  $panel-width: 280px;
+  $panel-width: 450px;
 
   width: $panel-width;
   flex-shrink: 0;
@@ -383,33 +383,6 @@ onMounted(async () => {
   }
 }
 
-.toggle-btn {
-  position: absolute;
-  left: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 48px;
-  border: 1px solid #e8e8e8;
-  border-right: none;
-  background: #fff;
-  cursor: pointer;
-  font-size: 10px;
-  color: #8c8c8c;
-  border-radius: 4px 0 0 4px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1001;
-  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.04);
-
-  &:hover {
-    color: #1890ff;
-    background: #f0f5ff;
-  }
-}
-
 .panel-header {
   display: flex;
   align-items: center;
@@ -422,6 +395,23 @@ onMounted(async () => {
     font-size: 15px;
     color: #303133;
     font-weight: 600;
+  }
+}
+
+.collapse-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #bfbfbf;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #1890ff;
+    background: #f0f5ff;
   }
 }
 
@@ -484,65 +474,88 @@ onMounted(async () => {
   }
 }
 
-.day-list {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 4px 16px 8px 32px;
-  gap: 2px;
+.month-detail {
+  padding: 4px 8px 12px 28px;
 }
 
-.day-item {
-  $day-width: 20%;
-  width: calc($day-width - 2px);
-  padding: 4px 2px;
-  font-size: 11px;
-  color: #8c8c8c;
-  cursor: pointer;
-  border-radius: 3px;
+.history-calendar {
+  --el-calendar-border: none;
+  width: 100%;
+
+  :deep(.el-calendar__header) {
+    display: none;
+  }
+
+  :deep(.el-calendar-table) {
+    border: none;
+
+    .el-calendar-day {
+      padding: 2px;
+      height: auto;
+      min-height: 30px;
+      border: none;
+    }
+
+    .el-calendar-table__row {
+      &:not(:last-child) .el-calendar-day {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      border: none;
+    }
+
+    td.is-today {
+      color: #1890ff;
+      font-weight: 600;
+    }
+  }
+}
+
+.cal-cell {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  padding: 2px 4px;
+  font-size: 11px;
+  border-radius: 3px;
+  cursor: pointer;
   transition: all 0.15s;
-  position: relative;
-
-  &:hover {
-    background: #f0f5ff;
-    color: #1890ff;
-  }
 
   &.has-record {
     color: #1890ff;
     font-weight: 500;
 
-    .check-mark {
+    .cal-dot {
       color: #1890ff;
     }
   }
 
-  &.selected {
+  &.is-selected {
     background: #1890ff;
     color: #fff;
     font-weight: 600;
 
+    .cal-dot {
+      color: #fff;
+    }
+
     &:hover {
       background: #40a9ff;
     }
+  }
 
-    .check-mark {
-      color: #fff;
-    }
+  &:hover {
+    background: #f0f5ff;
   }
 }
 
-.day-text {
-  flex-shrink: 0;
-}
-
-.check-mark {
-  font-size: 10px;
+.cal-dot {
+  font-size: 9px;
   font-weight: 700;
-  flex-shrink: 0;
+  line-height: 1;
 }
 
 .v2-card {
