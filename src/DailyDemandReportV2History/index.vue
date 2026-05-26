@@ -174,6 +174,7 @@ import StrategyTableV2 from "@/DailyDemandReportV2/components/StrategyTableV2.vu
 
 const store = useDailyDeclarationHistoryStore();
 
+const calendarDate = ref(new Date());
 const panelCollapsed = ref(false);
 const loading = ref(false);
 const expandedYear = ref(null);
@@ -193,25 +194,36 @@ const yearList = computed(() => {
 
 const historyDateSet = computed(() => new Set(store.historyDates));
 
+function formatCalendarDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function hasRecordByDate(date) {
+  return historyDateSet.value.has(formatCalendarDate(date));
+}
+
+function selectFromCalendar(date) {
+  const dateStr = formatCalendarDate(date);
+  if (!hasRecordByDate(date)) {
+    ElMessage.info("该日期暂无申报记录");
+    return;
+  }
+  selectedDate.value = dateStr;
+  loading.value = true;
+  store.fetchRecord(dateStr).finally(() => {
+    loading.value = false;
+  });
+}
+
 const selectedDateSet = computed(() => {
   if (!store.allSelectedDates || store.allSelectedDates.length === 0) {
     return new Set();
   }
   return new Set(store.allSelectedDates.map((d) => d.date));
 });
-
-function daysInMonth(year, month) {
-  return new Date(year, month, 0).getDate();
-}
-
-function formatDate(year, month, day) {
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function hasRecord(year, month, day) {
-  const dateStr = formatDate(year, month, day);
-  return historyDateSet.value.has(dateStr);
-}
 
 function toggleYear(year) {
   if (expandedYear.value === year) {
@@ -230,27 +242,19 @@ function toggleMonth(year, month) {
   } else {
     expandedYear.value = year;
     expandedMonth.value = key;
-  }
-}
-
-async function selectDate(year, month, day) {
-  const dateStr = formatDate(year, month, day);
-  if (!hasRecord(year, month, day)) {
-    ElMessage.info("该日期暂无申报记录");
-    return;
-  }
-  selectedDate.value = dateStr;
-  loading.value = true;
-  try {
-    await store.fetchRecord(dateStr);
-  } finally {
-    loading.value = false;
+    calendarDate.value = new Date(year, month - 1, 1);
   }
 }
 
 onMounted(async () => {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+
   expandedYear.value = currentYear;
-  expandedMonth.value = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+  const defaultMonth = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+  expandedMonth.value = defaultMonth;
+  calendarDate.value = new Date(currentYear, currentMonth - 1, 1);
+
   await store.fetchHistoryDates();
 
   if (store.historyDates.length > 0) {
