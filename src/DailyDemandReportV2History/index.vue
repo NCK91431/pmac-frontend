@@ -132,23 +132,23 @@
                 v-show="
                   expandedMonth === `${year}-${String(month).padStart(2, '0')}`
                 "
-                class="day-list"
+                class="month-detail"
               >
-                <div
-                  v-for="day in daysInMonth(year, month)"
-                  :key="formatDate(year, month, day)"
-                  class="day-item"
-                  :class="{
-                    'has-record': hasRecord(year, month, day),
-                    selected: selectedDate === formatDate(year, month, day),
-                  }"
-                  @click="selectDate(year, month, day)"
-                >
-                  <span class="day-text">{{ day }}日</span>
-                  <span v-if="hasRecord(year, month, day)" class="check-mark"
-                    >✓</span
-                  >
-                </div>
+                <el-calendar v-model="calendarDate" class="history-calendar">
+                  <template #date-cell="{ data }">
+                    <div
+                      class="cal-cell"
+                      :class="{
+                        'has-record': hasRecordByDate(data.date),
+                        'is-selected': selectedDate === formatCalendarDate(data.date),
+                      }"
+                      @click="selectFromCalendar(data.date)"
+                    >
+                      {{ data.day.split('-').pop() }}
+                      <span v-if="hasRecordByDate(data.date)" class="cal-dot">✓</span>
+                    </div>
+                  </template>
+                </el-calendar>
               </div>
             </div>
           </div>
