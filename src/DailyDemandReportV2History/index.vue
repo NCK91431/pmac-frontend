@@ -94,15 +94,14 @@
     </div>
 
     <div class="right-panel" :class="{ collapsed: panelCollapsed }">
-      <button class="toggle-btn" @click="panelCollapsed = !panelCollapsed">
-        {{ panelCollapsed ? "◀" : "▶" }}
-      </button>
-
       <div class="panel-header">
         <h3>历史申报日期</h3>
         <el-tag size="small" type="success"
           >{{ store.historyDates.length }} 天</el-tag
         >
+        <button class="collapse-btn" @click="panelCollapsed = !panelCollapsed">
+          ▶
+        </button>
       </div>
 
       <div class="year-list">
