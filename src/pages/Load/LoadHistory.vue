@@ -37,82 +37,131 @@
         </div>
         <!--配置信息与负荷特性分析 -->
         <div class="detail-sections">
-          <Analysis
-            v-if="result.load_stabilityindex && result.predictaBility"
-            :load_stabilityindex="result.load_stabilityindex"
-            :predictaBility="result.predictaBility"
-            :mode="record.mode"
-            :form-data="{
-              location: record.location,
-              forecast_range: record.forecast_range,
-              customer_type: record.customer_type,
-              pv_config: record.pv_config,
-              pv_capacity: record.pv_capacity,
-              unit: record.unit,
-              mark_name: record.mark_name,
-            }"
-            :excel-info="record.excelInfo"
-            :predict-id="record.id"
-            :created-at="record.created_at"
-          />
-          <!-- 预测日选择器 -->
-          <div class="day-selector">
-            <span class="selector-label">预测日选择：</span>
-            <el-radio-group v-model="selectedDay">
-              <el-radio value="D+1">D + 1</el-radio>
-              <el-radio value="D+2" :disabled="disabled_D2">D + 2</el-radio>
-              <el-radio value="D+3" :disabled="disabled_D3">D + 3</el-radio>
-            </el-radio-group>
-          </div>
-
-          <div class="section-block">
-            <h3 class="section-title">
-              <i class="bi bi-graph-up"></i>
-              负荷预测结果
-            </h3>
-            <div class="date-info" v-if="result.date?.value">
-              <span class="date-item selected-date-display">
-                <i class="bi bi-calendar-event"></i>
-                {{ result.date.value }}
-              </span>
-              <span class="date-item weekday-display">
-                <i class="bi bi-calendar-week"></i>
-                {{ getWeekday(result.date.value) }}
-              </span>
-              <span class="date-item" :class="'date-type-' + result.date.type">
-                <i
-                  :class="{
-                    'bi-briefcase': result.date.type === 'weekday',
-                    'bi-emoji-sunglasses': result.date.type === 'weekend',
-                    'bi-balloon': result.date.type === 'holiday',
-                  }"
-                ></i>
-                {{ formatDateType(result.date.type) }}
-              </span>
+          <template v-if="viewMode === 'detail'">
+            <Analysis
+              v-if="result.load_stabilityindex && result.predictaBility"
+              :load_stabilityindex="result.load_stabilityindex"
+              :predictaBility="result.predictaBility"
+              :mode="record.mode"
+              :form-data="{
+                location: record.location,
+                forecast_range: record.forecast_range,
+                customer_type: record.customer_type,
+                pv_config: record.pv_config,
+                pv_capacity: record.pv_capacity,
+                unit: record.unit,
+                mark_name: record.mark_name,
+              }"
+              :excel-info="record.excelInfo"
+              :predict-id="record.id"
+              :created-at="record.created_at"
+            />
+            <div class="day-selector">
+              <span class="selector-label">预测日选择：</span>
+              <el-radio-group v-model="selectedDay">
+                <el-radio value="D+1">D + 1</el-radio>
+                <el-radio value="D+2" :disabled="disabled_D2">D + 2</el-radio>
+                <el-radio value="D+3" :disabled="disabled_D3">D + 3</el-radio>
+              </el-radio-group>
             </div>
-            <LoadChart
-              :loads="result.predictionData"
-              :date="result.date"
-              :similarDayLoad="result.similarDayLoad"
+
+            <div class="section-block">
+              <h3 class="section-title">
+                <i class="bi bi-graph-up"></i>
+                负荷预测结果
+              </h3>
+              <div class="date-info" v-if="result.date?.value">
+                <span class="date-item selected-date-display">
+                  <i class="bi bi-calendar-event"></i>
+                  {{ result.date.value }}
+                </span>
+                <span class="date-item weekday-display">
+                  <i class="bi bi-calendar-week"></i>
+                  {{ getWeekday(result.date.value) }}
+                </span>
+                <span
+                  class="date-item"
+                  :class="'date-type-' + result.date.type"
+                >
+                  <i
+                    :class="{
+                      'bi-briefcase': result.date.type === 'weekday',
+                      'bi-emoji-sunglasses': result.date.type === 'weekend',
+                      'bi-balloon': result.date.type === 'holiday',
+                    }"
+                  ></i>
+                  {{ formatDateType(result.date.type) }}
+                </span>
+              </div>
+              <LoadChart
+                :loads="result.predictionData"
+                :date="result.date"
+                :similarDayLoad="result.similarDayLoad"
+                :unit="record.unit"
+              />
+              <div
+                v-if="result.dataAnomaly?.abnormal_flag"
+                class="anomaly-alert"
+              >
+                <div class="anomaly-problem">
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                  <span class="anomaly-label">提示：</span>
+                  <span class="anomaly-text">{{
+                    result.dataAnomaly.problem
+                  }}</span>
+                </div>
+                <div class="anomaly-suggestion">
+                  <i class="bi bi-lightbulb-fill"></i>
+                  <span class="anomaly-label">建议：</span>
+                  <span class="anomaly-text">{{
+                    result.dataAnomaly.suggestion
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <template v-else>
+            <Analysis
+              v-if="backtestCompareData"
+              :load_stabilityindex="result.load_stabilityindex"
+              :predictaBility="result.predictaBility"
+              :mode="record.mode"
+              :form-data="{
+                location: record.location,
+                forecast_range: record.forecast_range,
+                customer_type: record.customer_type,
+                pv_config: record.pv_config,
+                pv_capacity: record.pv_capacity,
+                unit: record.unit,
+                mark_name: record.mark_name,
+              }"
+              :excel-info="record.excelInfo"
+              :predict-id="record.id"
+              :created-at="record.created_at"
+              :model-metrics="backtestCompareData?.modelMetrics"
+              :daily-metrics="backtestCompareData?.dailyMetrics"
+            />
+            <div class="day-selector">
+              <span class="selector-label">回测日期选择：</span>
+              <el-date-picker
+                v-model="backtestSelectedDate"
+                type="date"
+                :disabled-date="disabledBacktestDates"
+                placeholder="选择回测日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                :loading="backtestLoading"
+              />
+            </div>
+            <CompareChart
+              v-if="backtestCompareData"
+              :actual-data="backtestCompareData.sourseData"
+              :prediction-data="backtestCompareData.predictionData"
+              :similarDayLoad="backtestCompareData.similarDayLoad"
               :unit="record.unit"
             />
-            <div v-if="result.dataAnomaly?.abnormal_flag" class="anomaly-alert">
-              <div class="anomaly-problem">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <span class="anomaly-label">提示：</span>
-                <span class="anomaly-text">{{
-                  result.dataAnomaly.problem
-                }}</span>
-              </div>
-              <div class="anomaly-suggestion">
-                <i class="bi bi-lightbulb-fill"></i>
-                <span class="anomaly-label">建议：</span>
-                <span class="anomaly-text">{{
-                  result.dataAnomaly.suggestion
-                }}</span>
-              </div>
-            </div>
-          </div>
+          </template>
 
           <div v-if="selectedCityWeather" class="section-block">
             <h3 class="section-title">
@@ -191,6 +240,7 @@ import LoadChart from "./ResultSection/LoadChart.vue";
 import WeatherChart from "./ResultSection/WeatherChart.vue";
 import WeatherInfo from "./ResultSection/WeatherInfo.vue";
 import Analysis from "./ConfigSection/components/Analysis.vue";
+import CompareChart from "./HistorySection/CompareChart.vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { InfoFilled, FolderOpened } from "@element-plus/icons-vue";
 import request from "@/utils/request";
