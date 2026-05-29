@@ -196,6 +196,7 @@ import { InfoFilled, FolderOpened } from "@element-plus/icons-vue";
 import request from "@/utils/request";
 import * as XLSX from "xlsx";
 import { useLoadForecastStore } from "@/store/load";
+import { parseISO, addDays, isBefore, isAfter, format } from "date-fns";
 
 const forecastStore = useLoadForecastStore();
 const router = useRouter();
@@ -257,9 +258,36 @@ const cityWeatherForecast = computed(
 );
 const selectedCityIndex = ref(0);
 const viewMode = ref("detail");
+const mergeData = ref(null);
+const backtestCompareData = ref(null);
+const backtestSelectedDate = ref(null);
+const backtestLoading = ref(false);
 const selectedCityWeather = computed(() => {
   return cityWeatherForecast.value[selectedCityIndex.value] || null;
 });
+
+const availableBacktestDates = computed(() => {
+  if (
+    !mergeData.value ||
+    !mergeData.value.merge_range ||
+    mergeData.value.merge_range.length < 2
+  ) {
+    return null;
+  }
+  const [startDateStr, endDateStr] = mergeData.value.merge_range;
+  const startDate = parseISO(startDateStr);
+  const endDate = parseISO(endDateStr);
+  const availableStartDate = addDays(startDate, 15);
+  if (isAfter(availableStartDate, endDate)) return null;
+  return { start: availableStartDate, end: endDate };
+});
+
+const disabledBacktestDates = (time) => {
+  const dates = availableBacktestDates.value;
+  if (!dates) return true;
+  const date = new Date(time);
+  return isBefore(date, dates.start) || isAfter(date, dates.end);
+};
 watch(
   cityWeatherForecast,
   (newVal) => {
@@ -292,6 +320,58 @@ watch(activeHistoryRecordId, (newId) => {
 watch(selectedDay, () => {
   getRecordDetailById();
 });
+
+watch([viewMode, () => record.id], async ([newMode, recId]) => {
+  if (newMode === "backtest" && recId) {
+    if (!mergeData.value) {
+      await fetchBacktestMerge(recId);
+    }
+  }
+});
+
+watch(backtestSelectedDate, (newDt) => {
+  if (viewMode.value === "backtest" && record.id && newDt) {
+    fetchBacktestCompare(record.id, newDt);
+  }
+});
+
+async function fetchBacktestMerge(record_id) {
+  if (!record_id) return;
+  try {
+    const response = await request.get(`/api/history/merge/${record_id}`);
+    if (response.data.success) {
+      mergeData.value = response.data.result;
+      const range = response.data.result?.merge_range;
+      if (range && range.length > 1) {
+        backtestSelectedDate.value = range[1];
+        await fetchBacktestCompare(record_id, range[1]);
+      }
+    }
+  } catch (err) {
+    console.error("backtest merge err:", err);
+  }
+}
+
+async function fetchBacktestCompare(record_id, selectDate) {
+  if (!record_id || !selectDate) return;
+  try {
+    backtestLoading.value = true;
+    const userId = localStorage.getItem("user_id");
+    const response = await request.post(`/api/history/compare`, {
+      selectDate: selectDate,
+      recordId: Number(record_id),
+      userId: userId ? Number(userId) : 0,
+    });
+    if (response.data.success) {
+      backtestCompareData.value = response.data.result;
+    }
+  } catch (err) {
+    console.error("backtest compare err:", err);
+    ElMessage.error("获取回测数据失败");
+  } finally {
+    backtestLoading.value = false;
+  }
+}
 
 const formatCustomerType = (type) => {
   const types = {
