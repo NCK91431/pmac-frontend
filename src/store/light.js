@@ -141,7 +141,17 @@ export const useLightStore = defineStore("light", {
             this.stage = 2;
         },
         setCompleted(responseData) {
-            this.responseData = responseData;
+            const normalizedData = { ...responseData };
+            if (normalizedData.formData) {
+                if (typeof normalizedData.formData.location === "string") {
+                    try {
+                        normalizedData.formData.location = JSON.parse(normalizedData.formData.location);
+                    } catch {
+                        normalizedData.formData.location = [];
+                    }
+                }
+            }
+            this.responseData = normalizedData;
         },
         resetStage() {
             this.stage = 0;

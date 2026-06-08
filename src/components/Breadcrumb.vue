@@ -83,6 +83,11 @@ const routeToBreadcrumb = {
     icon: "bi bi-graph-up-arrow",
     hasBackBtn: true,
   },
+  loadpre_history: {
+    title: "已建模型",
+    icon: "bi bi-clock-history",
+    hasBackBtn: true,
+  },
   load_example: {
     title: "负荷预测-案例展示",
     icon: "bi bi-bookmark-check",
@@ -171,22 +176,10 @@ const routeToBreadcrumb = {
     icon: "bi bi-sun",
     hasBackBtn: true,
   },
-  DailyDemandReport: {
-    title: "日前需求申报",
-    to: "/daily-demand-report",
+  DailyDemandReportV2: {
+    title: "日前用电侧申报V2",
+    to: "/daily-demand-report-v2",
     icon: "bi bi-clock-history",
-    hasBackBtn: false,
-  },
-  DailyDemandHistory: {
-    title: "日前需求申报历史",
-    to: "/daily-demand-report/history",
-    icon: "bi bi-card-heading",
-    hasBackBtn: true,
-  },
-  DailyRevenueAnalysis: {
-    title: "日收入分析",
-    to: "/daily-demand-report/history/daily-revenue-analysis",
-    icon: "bi bi-card-heading",
     hasBackBtn: true,
   },
 };
@@ -241,14 +234,6 @@ const updateBreadcrumbs = () => {
   // 如果是EGate10产品详情页面，添加光伏发电预测-案例展示作为父级
   if (routeName == "product_EGate10") {
     crumbs.push(routeToBreadcrumb["elec_example"]);
-  }
-  // 如果是需求申报历史页面，添加每日需求申报作为父级
-  if (routeName === "DailyDemandHistory") {
-    crumbs.push(routeToBreadcrumb["DailyDemandReport"]);
-  }
-  // 如果是日收入分析页面，添加日前需求申报作为作为父级
-  if (routeName === "DailyRevenueAnalysis") {
-    crumbs.push(routeToBreadcrumb["DailyDemandReport"]);
   }
 
   if (

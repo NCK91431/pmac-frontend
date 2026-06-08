@@ -108,7 +108,17 @@ export const useElecStore = defineStore("elec", {
         },
         setCompleted(responseData) {
             this.stage = 2;
-            this.responseData = responseData;
+            const normalizedData = { ...responseData };
+            if (normalizedData.formData) {
+                if (typeof normalizedData.formData.location === "string") {
+                    try {
+                        normalizedData.formData.location = JSON.parse(normalizedData.formData.location);
+                    } catch {
+                        normalizedData.formData.location = [];
+                    }
+                }
+            }
+            this.responseData = normalizedData;
             this.excelInfo = null;
         },
         resetStage() {

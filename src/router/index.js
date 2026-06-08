@@ -26,6 +26,17 @@ const router = createRouter({
             },
         },
         {
+            path:"/loadpre-history",
+            name:"loadpre_history",
+            component: () => import("../pages/Load/LoadHistory.vue"),
+            meta: {
+                breadcrumb: {
+                    title: "已建模型",
+                    icon: "bi bi-clock-history",
+                },
+            },
+        },
+        {
             path: "/login",
             name: "login",
             component: () => import("@/pages/Home/LoginRegister.vue"),
@@ -251,40 +262,74 @@ const router = createRouter({
             },
         },
         {
-            path: "/daily-demand-report",
-            name: "DailyDemandReport",
-            component: () => import("@/AuxiliaryTradingTools/DailyDemandReport.vue"),
+            path: "/daily-demand-report-v2",
+            name: "DailyDemandReportV2",
+            component: () => import("@/DailyDemandReportV2/index.vue"),
             meta: {
                 module: "trading",
                 permission: "internal",
-                breadcrumb: { title: "日前需求申报", icon: "bi bi-clock-history" },
+                breadcrumb: { title: "日前用电侧申报V2", icon: "bi bi-clock-history" },
             },
         },
         {
-            path: "/daily-demand-report/history",
-            name: "DailyDemandHistory",
-            component: () => import("@/AuxiliaryTradingTools/DailyDemandHistory.vue"),
+            path: "/daily-demand-report-v2/history",
+            name: "DailyDemandReportV2History",
+            component: () => import("@/DailyDemandReportV2History/index.vue"),
             meta: {
                 module: "trading",
                 permission: "internal",
                 breadcrumb: {
-                    title: "日前需求申报历史",
-                    icon: "bi bi-card-heading",
-                    parentRouteName: "DailyDemandReport",
+                    title: "历史日前申报查询",
+                    icon: "bi bi-clock-history",
+                    parentRouteName: "DailyDemandReportV2",
                 },
             },
         },
         {
-            path: "/daily-demand-report/history/daily-revenue-analysis",
-            name: "DailyRevenueAnalysis",
-            component: () => import("@/AuxiliaryTradingTools/DailyRevenueAnalysis.vue"),
+            path: "/daily-profit",
+            name: "DailyProfit",
+            component: () => import("@/DailyProfitPage/index.vue"),
+            meta: {
+                module: "trading",
+                permission: "internal",
+                breadcrumb: { title: "每日收益", icon: "bi bi-graph-up" },
+            },
+        },
+        {
+            path: "/daily-profit/monthly",
+            name: "MonthlyProfit",
+            component: () => import("@/DailyProfitPage/MonthlyProfit.vue"),
+            meta: {
+                module: "trading",
+                permission: "internal",
+                breadcrumb: { title: "月度收益", icon: "bi bi-graph-up" },
+            },
+        },
+        // {
+        //     path: "/daily-demand-report/history",
+        //     name: "DailyDemandHistory",
+        //     component: () => import("@/AuxiliaryTradingTools/DailyDemandHistory.vue"),
+        //     meta: {
+        //         module: "trading",
+        //         permission: "internal",
+        //         breadcrumb: {
+        //             title: "日前需求申报历史",
+        //             icon: "bi bi-card-heading",
+        //             parentRouteName: "DailyDemandReport",
+        //         },
+        //     },
+        // },
+        {
+            path: "/user-price-config",
+            name: "UserPriceConfig",
+            component: () => import("@/views/UserPriceConfig.vue"),
             meta: {
                 module: "trading",
                 permission: "internal",
                 breadcrumb: {
-                    title: "日收入分析",
-                    icon: "bi bi-card-heading",
-                    parentRouteName: "DailyDemandReport",
+                    title: "用户均价配置",
+                    icon: "bi bi-settings",
+                    parentRouteName: "DailyDemandReportV2",
                 },
             },
         },
@@ -308,6 +353,7 @@ const sidebarMenuConfig = {
         children: [
             { title: "案例展示", route: "/load_example" },
             { title: "新建模型", route: "/loadpre" },
+            { title: "已建模型", route: "/loadpre-history" },
         ]
     },
     elec: {
@@ -339,9 +385,14 @@ const sidebarMenuConfig = {
         icon: "bi-graph-up-arrow",
         permission: "internal",
         children: [
-            { title: "日前交易申报", route: "/daily-demand-report" },
-            { title: "历史申报", route: "/daily-demand-report/history" },
-            { title: "收益分析", route: "/daily-demand-report/history/daily-revenue-analysis" },
+            // { title: "日前交易申报", route: "/daily-demand-report" },
+            { title: "日前用电侧申报V2", route: "/daily-demand-report-v2" },
+            { title: "历史日前申报查询", route: "/daily-demand-report-v2/history" },
+            { title: "每日收益", route: "/daily-profit" },
+            { title: "月度收益", route: "/daily-profit/monthly" },
+            // { title: "历史申报", route: "/daily-demand-report/history" },
+            // { title: "收益分析", route: "/daily-demand-report/history/daily-revenue-analysis" },
+            { title: "用户均价配置", route: "/user-price-config" },
             { title: "月度需求申报", route: "/monthly-demand-report" },
         ]
     }
