@@ -403,7 +403,7 @@ function formatDeclaredRatio(val) {
 }
 
 function getAdjustedRatioValue(period) {
-  const idx = parseInt(period) - 1;
+  const idx = parseInt(period);
   const adjusted = props.adjustedRatios[idx];
   if (adjusted !== null && adjusted !== undefined) return adjusted;
   const periodData = props.periods.find((p) => p.period === period);
@@ -696,11 +696,9 @@ defineExpose({
     }
 
     .el-table__body-wrapper tbody tr:hover td {
-      background: #f5f7fa;
-    }
-
-    .el-table__body-wrapper tbody tr:hover ~ tr:hover td {
-      background: #f5f7fa;
+      background: #e6f7ff !important;
+      border-top: 1px solid #1da3fd !important;
+      border-bottom: 1px solid #1da3fd !important;
     }
 
     .el-table__body-wrapper tbody tr:nth-child(even) td.el-table__cell {
@@ -708,7 +706,9 @@ defineExpose({
     }
 
     .el-table__body-wrapper tbody tr:nth-child(even):hover td.el-table__cell {
-      background: #f0f5ff;
+      background: #e6f7ff !important;
+      border-top: 1px solid #1da3fd !important;
+      border-bottom: 1px solid #1da3fd !important;
     }
 
     thead tr:first-child th:first-child {

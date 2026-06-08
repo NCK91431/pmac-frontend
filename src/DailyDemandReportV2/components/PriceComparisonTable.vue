@@ -448,11 +448,15 @@ function getSpread(period, dateStr) {
     }
 
     tr:hover td {
-      background: #f5f7fa;
+      background: #e6f7ff !important;
+      border-top: 1px solid #1da3fd !important;
+      border-bottom: 1px solid #1da3fd !important;
     }
 
     tr:nth-child(even):hover td {
-      background: #f0f5ff;
+      background: #e6f7ff !important;
+      border-top: 1px solid #1da3fd !important;
+      border-bottom: 1px solid #1da3fd !important;
     }
   }
 

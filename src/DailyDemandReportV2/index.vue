@@ -11,7 +11,9 @@
       <div class="v2-step-title">
         <span class="step-badge s1">1</span>
         <span class="step-label">选择申报日期</span>
-        <span class="step-tag">自 DailyDemandReport.vue 已有组件</span>
+        <span class="step-tag"
+          >限制：1.已申报过的日期不可重复申报，仅可申报未申报日期，如需修改请至“历史日前申报”。2.最晚可申报明日日期</span
+        >
       </div>
 
       <DeclarationDateSection v-if="!isStep1Readonly" />
@@ -96,12 +98,12 @@
         </div>
         <div class="v2-card-body">
           <QueryResultTable
-          :results="store.queryResults"
-          :selected-date-set="selectedDateSet"
-          :readonly="isStep2Readonly"
-          @select="(row) => store.selectQueryResult(row)"
-          @deselect="(row) => store.deselectQueryResult(row.date)"
-        />
+            :results="store.queryResults"
+            :selected-date-set="selectedDateSet"
+            :readonly="isStep2Readonly"
+            @select="(row) => store.selectQueryResult(row)"
+            @deselect="(row) => store.deselectQueryResult(row.date)"
+          />
         </div>
       </div>
 
@@ -144,7 +146,10 @@
       </div>
 
       <div v-if="!isStep2Readonly" class="step-nav">
-        <el-button @click="handleBackToStep1WithWarning" class="btn-prev"
+        <el-button
+          v-if="!isEditMode"
+          @click="handleBackToStep1WithWarning"
+          class="btn-prev"
           >← 上一步</el-button
         >
         <el-button
@@ -248,7 +253,9 @@
           :adjusted-ratios="store.adjustedRatios"
           :readonly="isStep3Readonly"
           :submitted="isStep3Submitted"
-          @confirm-edit="(payload) => store.setAdjustedRatio(payload.period, payload.ratio)"
+          @confirm-edit="
+            (payload) => store.setAdjustedRatio(payload.period, payload.ratio)
+          "
           @reset-all="store.resetAdjustedRatios"
         />
       </div>
@@ -257,9 +264,9 @@
         <el-button @click="handleBackToStep2WithWarning" class="btn-prev"
           >← 上一步</el-button
         >
-        <el-button @click="handleSubmit" class="btn-finish"
-          >✔ 完成并提交</el-button
-        >
+        <el-button @click="handleSubmit" class="btn-finish">
+          {{ isEditMode ? "✔ 提交修改" : "✔ 完成并提交" }}
+        </el-button>
       </div>
       <div v-else class="step-nav">
         <el-button @click="handleNewDeclaration" class="btn-prev"
@@ -292,6 +299,8 @@ import { ref, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Loading } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
+import { useEditMode } from "@/DailyDemandReportV2/composables/useEditMode";
+import { historyDetailApi, updateHistoryApi } from "@/DailyDemandReportV2/api";
 
 import { useDailyDeclarationV2Store } from "@/store/dailyDeclarationV2";
 import { useStepNavigation } from "@/DailyDemandReportV2/composables/useStepNavigation";
@@ -299,9 +308,9 @@ import { useStepNavigation } from "@/DailyDemandReportV2/composables/useStepNavi
 import StepBarV2 from "@/DailyDemandReportV2/components/StepBarV2.vue";
 import DeclarationDateSection from "@/DailyDemandReportV2/components/DeclarationDateSection.vue";
 import DateTargetBanner from "@/DailyDemandReportV2/components/DateTargetBanner.vue";
-import WeatherInfo from "@/AuxiliaryTradingTools/components/WeatherInfo.vue";
-import PriceChart from "@/AuxiliaryTradingTools/components/PriceChart.vue";
-import UnifiedDispatchChart from "@/AuxiliaryTradingTools/components/UnifiedDispatchChart.vue";
+import WeatherInfo from "@/DailyDemandReportV2/components/WeatherInfo.vue";
+import PriceChart from "@/DailyDemandReportV2/components/PriceChart.vue";
+import UnifiedDispatchChart from "@/DailyDemandReportV2/components/UnifiedDispatchChart.vue";
 import AiQueryPanel from "@/DailyDemandReportV2/components/AiQueryPanel.vue";
 import QueryResultTable from "@/DailyDemandReportV2/components/QueryResultTable.vue";
 import SelectedDatesTable from "@/DailyDemandReportV2/components/SelectedDatesTable.vue";
@@ -315,6 +324,7 @@ import "@/DailyDemandReportV2/styles/index.scss";
 
 const store = useDailyDeclarationV2Store();
 const router = useRouter();
+const { isEditMode, editDate } = useEditMode();
 const strategyTableRef = ref(null);
 const { goToStep2, goToStep3, goBackToStep1, goBackToStep2 } =
   useStepNavigation();
@@ -409,6 +419,19 @@ function handleBackToStep2WithWarning() {
     .catch(() => {});
 }
 
+function buildPayload() {
+  return {
+    declaration_date: store.declarationDate,
+    dateInfo: store.dateInfo,
+    aiQueryText: store.aiQueryText,
+    queryResults: store.queryResults,
+    allSelectedDates: store.allSelectedDates,
+    priceComparisonData: store.priceComparisonData,
+    strategyPeriods: store.strategyPeriods,
+    adjustedRatios: store.adjustedRatios,
+  };
+}
+
 function handleSubmit() {
   if (strategyTableRef.value?.hasUnconfirmedEdit) {
     ElMessageBox.alert(
@@ -426,7 +449,14 @@ function handleSubmit() {
 
 async function handleConfirmSubmit() {
   showConfirm.value = false;
-  const result = await store.submitDeclaration();
+  let result;
+  if (isEditMode.value) {
+    const payload = buildPayload();
+    const res = await updateHistoryApi(payload);
+    result = res.data;
+  } else {
+    result = await store.submitDeclaration();
+  }
   if (result.success) {
     store.markStepCompleted(3);
     store.setSubmitted(true);
@@ -444,8 +474,28 @@ function handleViewHistory() {
   router.push("/daily-demand-report-v2/history");
 }
 
-onMounted(() => {
+onMounted(async () => {
   store.resetAll();
+
+  if (isEditMode.value && editDate.value) {
+    store.setDeclarationDate(editDate.value);
+    try {
+      const res = await historyDetailApi(editDate.value);
+      if (res.data.success && res.data.data) {
+        store.prefillFromRecord(res.data.data);
+        store.markStepCompleted(1);
+        store.markStepCompleted(2);
+        store.setCurrentStep(3);
+      } else {
+        ElMessage.error(
+          res.data.error || "未找到该日期的申报记录，无法进入编辑模式",
+        );
+      }
+    } catch (err) {
+      console.error("[编辑模式] 获取历史记录失败:", err);
+      ElMessage.error("获取历史申报记录失败，请检查网络连接");
+    }
+  }
 });
 </script>
 

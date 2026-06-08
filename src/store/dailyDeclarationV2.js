@@ -9,7 +9,8 @@ import {
   vppWeatherChartApi,
   vppWeatherSummaryApi,
   vppPriceChartApi,
-  vppDispatchChartApi
+  vppDispatchChartApi,
+  historyDatesApi
 } from '@/DailyDemandReportV2/api'
 
 export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () => {
@@ -104,6 +105,20 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     ])
   }
 
+  const declaredDates = ref([])
+
+  async function fetchDeclaredDates() {
+    try {
+      const res = await historyDatesApi()
+      if (res.data.success && Array.isArray(res.data.data)) {
+        declaredDates.value = res.data.data
+      }
+    } catch (e) {
+      console.error('获取已申报日期列表失败', e)
+      declaredDates.value = []
+    }
+  }
+
   async function fetchPriceComparison(dates) {
     const res = await priceComparisonApi(dates)
     const body = res.data
@@ -121,7 +136,7 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
       strategySummary.value = body.summary
       const ratios = new Array(24)
       ;(body.data || []).forEach(p => {
-        ratios[parseInt(p.period) - 1] = p.declared_ratio
+        ratios[parseInt(p.period)] = p.declared_ratio
       })
       adjustedRatios.value = ratios
       actualQuantities.value = {}
@@ -193,7 +208,7 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
   }
 
   function periodToIndex(period) {
-    return parseInt(period) - 1
+    return parseInt(period)
   }
 
   function setAdjustedRatio(period, ratio) {
@@ -211,6 +226,19 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
   function resetAdjustedRatios() {
     adjustedRatios.value = []
     actualQuantities.value = {}
+  }
+
+  function prefillFromRecord(record) {
+    if (record.dateInfo) dateInfo.value = record.dateInfo
+    if (record.aiQueryText) aiQueryText.value = record.aiQueryText
+    if (Array.isArray(record.queryResults)) queryResults.value = record.queryResults
+    if (Array.isArray(record.allSelectedDates)) {
+      selectedDates.value = record.allSelectedDates.filter((d) => !d.isManual)
+      manualDates.value = record.allSelectedDates.filter((d) => d.isManual)
+    }
+    if (record.priceComparisonData) priceComparisonData.value = record.priceComparisonData
+    if (Array.isArray(record.strategyPeriods)) strategyPeriods.value = record.strategyPeriods
+    if (Array.isArray(record.adjustedRatios)) adjustedRatios.value = record.adjustedRatios
   }
 
   function isStepCompleted(step) {
@@ -249,6 +277,7 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     strategySummary.value = null
     adjustedRatios.value = []
     actualQuantities.value = {}
+    declaredDates.value = []
   }
 
   return {
@@ -264,6 +293,8 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     selectAllQueryResults, deselectAllQueryResults,
     addQueryResult: selectQueryResult,
     removeSelectedDate, addManualDate, clearAllSelected,
-    setAdjustedRatio, getAdjustedRatio, setActualQuantity, resetAdjustedRatios, resetAll
+    setAdjustedRatio, getAdjustedRatio, setActualQuantity, resetAdjustedRatios, prefillFromRecord,
+    declaredDates, fetchDeclaredDates,
+    resetAll
   }
 })

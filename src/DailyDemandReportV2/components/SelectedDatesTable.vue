@@ -117,7 +117,9 @@ function getSelectedRowClass({ row }) {
   }
 
   :deep(.el-table__body tr:hover > td.el-table__cell) {
-    background: #f5f7fa !important;
+    background: #f6ffed !important;
+    border-top: 1px solid #b7eb8f !important;
+    border-bottom: 1px solid #b7eb8f !important;
   }
 
   :deep(.el-table__body tr.el-table__row--striped > td.el-table__cell) {
@@ -125,7 +127,9 @@ function getSelectedRowClass({ row }) {
   }
 
   :deep(.el-table__body tr.el-table__row--striped:hover > td.el-table__cell) {
-    background: #f5f7fa !important;
+    background: #f6ffed !important;
+    border-top: 1px solid #b7eb8f !important;
+    border-bottom: 1px solid #b7eb8f !important;
   }
 
   :deep(.v2-table .row-selected) {

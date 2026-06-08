@@ -40,10 +40,7 @@
           @click="emit('select', row)"
           >＋ 选中</span
         >
-        <span
-          v-else
-          class="op-btn selected"
-          @click="emit('deselect', row)"
+        <span v-else class="op-btn selected" @click="emit('deselect', row)"
           >✔ 已选</span
         >
       </template>
@@ -66,7 +63,7 @@ const props = defineProps({
   readonly: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['select', 'deselect']);
+const emit = defineEmits(["select", "deselect"]);
 
 const enhancedResults = computed(() => {
   return props.results.map((item) => ({
@@ -115,7 +112,9 @@ function headerCellStyle({ column }) {
 
   :deep(.el-table__body tr) {
     &:hover > td {
-      background: #f5f7fa;
+      background: #f6ffed !important;
+      border-top: 1px solid #b7eb8f !important;
+      border-bottom: 1px solid #b7eb8f !important;
     }
   }
 

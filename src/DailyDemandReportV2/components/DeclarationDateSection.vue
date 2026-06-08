@@ -12,6 +12,7 @@
         value-format="YYYY-MM-DD"
         size="large"
         style="width: 200px"
+        :disabled-date="disabledDate"
         @change="handleDateChange"
       />
       <div v-if="store.dateInfo" class="date-info-wrapper">
@@ -54,7 +55,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { useDailyDeclarationV2Store } from "@/store/dailyDeclarationV2";
 
@@ -89,6 +90,27 @@ async function handleDateChange(date) {
     ElMessage.error("获取日期信息失败");
   }
   store.fetchStep1Charts(date);
+}
+
+onMounted(() => {
+  store.fetchDeclaredDates();
+});
+
+function disabledDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const dateStr = `${y}-${m}-${d}`;
+  if (store.declaredDates.includes(dateStr)) return true;
+
+  const today = new Date();
+  const endOfTomorrow = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + 1,
+    23, 59, 59
+  );
+  return date > endOfTomorrow;
 }
 </script>
 

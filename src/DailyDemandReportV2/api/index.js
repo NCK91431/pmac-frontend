@@ -29,8 +29,16 @@ export function historyDatesApi() {
   return request.get(`${BASE}/history/dates`)
 }
 
-export function historyDetailApi(date) {
-  return request.get(`${BASE}/history`, { params: { date } })
+export function historyDeclaredDatesApi() {
+  return request.get(`${BASE}/history/declared-dates`)
+}
+
+export function historyDeclarersApi(date) {
+  return request.get(`${BASE}/history/declarers`, { params: { date } })
+}
+
+export function historyDetailApi(date, declarantId) {
+  return request.get(`${BASE}/history`, { params: { date, declarant_id: declarantId } })
 }
 
 export function aiQueryApi(prompt) {
@@ -60,4 +68,46 @@ export function vppDispatchChartApi(date) {
   return request.get('/api/vpp/vpp-manage/v1/price/analysis/unified/dispatch/chart', {
     params: { startDate: date }
   })
+}
+
+export function deleteHistoryApi(date) {
+  return request.delete(`${BASE}/history`, { params: { date } })
+}
+
+export function updateHistoryApi(payload) {
+  return request.put(`${BASE}/history`, payload)
+}
+
+export function powerTradingConfigApi(configurationItemName) {
+  return request.get('/api/power-trading-config', { params: { configuration_item_name: configurationItemName } })
+}
+
+export function createPowerTradingConfigApi(payload) {
+  return request.post('/api/power-trading-config', payload)
+}
+
+export function updatePowerTradingConfigApi(payload) {
+  return request.put('/api/power-trading-config', payload)
+}
+
+export function profitAnalysisApi(date, declarantId) {
+  return request.get(`${BASE}/profit-analysis`, { params: { date, declarant_id: declarantId } })
+}
+
+export function mainTableDataApi(date) {
+  return request.get(`${BASE}/getDailyProfitMainTableData`, { params: { date } })
+}
+
+export function subTableDataApi(date, declarantId) {
+  return request.get(`${BASE}/getDailyProfitSubTableData`, {
+    params: { date, declarant_id: declarantId },
+  })
+}
+
+export function monthlyProfitDataApi(month) {
+  return request.get(`${BASE}/getMonthlyProfitData`, { params: { month } })
+}
+
+export function dateInfoApi(date) {
+  return request.get('/api/auxiliaray_date_info', { params: { date } })
 }

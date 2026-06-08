@@ -12,11 +12,13 @@
         </div>
       </div>
 
+      <!-- 加载状态 -->
       <div v-if="loading" class="loading-state">
         <el-icon class="is-loading" :size="32"><Loading /></el-icon>
         <p>加载中...</p>
       </div>
 
+      <!-- 无记录状态 -->
       <div v-else-if="!store.record" class="empty-state">
         <el-empty
           description="请从右侧日期列表中选择一天查看历史申报记录"
@@ -24,7 +26,58 @@
         />
       </div>
 
+      <!-- 有记录状态 -->
       <template v-else>
+        <!-- 基本信息与功能banner -->
+        <div class="record-banner">
+          <div class="banner-left">
+            <span class="banner-field">
+              共{{ store.declarers.length }}人申报此目标日期
+            </span>
+            <el-select
+              v-model="selectedDeclarerId"
+              placeholder="选择申报人"
+              size="small"
+              style="width: 200px"
+              @change="onDeclarerChange"
+            >
+              <el-option
+                v-for="d in store.declarers"
+                :key="d.declarant_id"
+                :label="d.name"
+                :value="d.declarant_id"
+              >
+                <span style="display: flex; align-items: center; gap: 6px">
+                  <el-tag size="small">用户ID:{{ d.declarant_id }}</el-tag>
+                  <span>{{ d.name }}</span>
+                </span>
+              </el-option>
+            </el-select>
+            <span class="banner-field">
+              <el-icon><User /></el-icon>
+              <span>申报人：{{ declarerName }}</span>
+            </span>
+            <span class="banner-divider"></span>
+            <span class="banner-field">
+              <el-icon><Clock /></el-icon>
+              <span>申报时间：{{ submitTime }}</span>
+            </span>
+          </div>
+          <div class="banner-right">
+            <el-button v-if="isOwnRecord" type="primary" @click="handleModify"
+              >修改申报</el-button
+            >
+            <el-button
+              v-if="isOwnRecord"
+              type="danger"
+              plain
+              @click="handleDelete"
+              >删除此申报</el-button
+            >
+          </div>
+        </div>
+
+        <!-- 日期目标banner -->
         <DateTargetBanner :date-info="store.dateInfo" />
 
         <AiQueryTextViewer v-if="store.aiQueryText" :text="store.aiQueryText" />
@@ -90,78 +143,42 @@
             :submitted="true"
           />
         </div>
+
+        <!-- 日收益分析副表 -->
+        <div class="v2-card" style="border-color: #f59e0b">
+          <div class="v2-card-header">
+            <div class="card-title">📊 日收益分析副表</div>
+          </div>
+          <DailyProfitSubTable
+            :hourly-results="profitAnalysisData.subHourlyResults"
+            :daily-summary="profitAnalysisData.subDailySummary"
+          />
+        </div>
       </template>
     </div>
 
-    <div class="right-panel" :class="{ collapsed: panelCollapsed }">
-      <div class="panel-header">
-        <h3>历史申报日期</h3>
-        <el-tag size="small" type="success"
-          >{{ store.historyDates.length }} 天</el-tag
-        >
-        <button class="collapse-btn" @click="panelCollapsed = !panelCollapsed">
-          ▶
-        </button>
-      </div>
-
-      <div class="year-list">
-        <div v-for="year in yearList" :key="year" class="year-item">
-          <div class="year-label" @click="toggleYear(year)">
-            <span>{{ year }}年</span>
-            <span class="expand-icon">{{
-              expandedYear === year ? "−" : "+"
-            }}</span>
-          </div>
-
-          <div v-show="expandedYear === year" class="month-list">
-            <div
-              v-for="month in 12"
-              :key="`${year}-${String(month).padStart(2, '0')}`"
-              class="month-item"
-            >
-              <div class="month-label" @click="toggleMonth(year, month)">
-                <span>{{ month }}月</span>
-                <span class="expand-icon">{{
-                  expandedMonth === `${year}-${String(month).padStart(2, "0")}`
-                    ? "−"
-                    : "+"
-                }}</span>
-              </div>
-
-              <div
-                v-show="
-                  expandedMonth === `${year}-${String(month).padStart(2, '0')}`
-                "
-                class="month-detail"
-              >
-                <el-calendar v-model="calendarDate" class="history-calendar">
-                  <template #date-cell="{ data }">
-                    <div
-                      class="cal-cell"
-                      :class="{
-                        'has-record': hasRecordByDate(data.date),
-                        'is-selected': selectedDate === formatCalendarDate(data.date),
-                      }"
-                      @click="selectFromCalendar(data.date)"
-                    >
-                      {{ data.day.split('-').pop() }}
-                      <span v-if="hasRecordByDate(data.date)" class="cal-dot">✓</span>
-                    </div>
-                  </template>
-                </el-calendar>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <DateSidebar
+      :model-value="selectedDate"
+      :max-month="maxMonth"
+      @update:model-value="handleDateSelect"
+      @collapse="panelCollapsed = $event"
+    >
+      <template #date-label="{ formattedDate }">
+        <span v-if="historyDateSet.has(formattedDate)" class="cal-dot">
+          {{ getDeclarerCount(formattedDate) }}人已报
+        </span>
+      </template>
+    </DateSidebar>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import { Loading, Clock } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
+
+import { useRouter } from "vue-router";
+import { User } from "@element-plus/icons-vue";
 
 import { useDailyDeclarationHistoryStore } from "@/store/dailyDeclarationHistory";
 
@@ -171,51 +188,161 @@ import QueryResultTable from "@/DailyDemandReportV2/components/QueryResultTable.
 import SelectedDatesTable from "@/DailyDemandReportV2/components/SelectedDatesTable.vue";
 import PriceComparisonTable from "@/DailyDemandReportV2/components/PriceComparisonTable.vue";
 import StrategyTableV2 from "@/DailyDemandReportV2/components/StrategyTableV2.vue";
+import DailyProfitSubTable from "@/DailyDemandReportV2/components/DailyProfitSubTable.vue";
+import DateSidebar from "@/components/DateSidebar.vue";
+import { mainTableDataApi, subTableDataApi } from "@/DailyDemandReportV2/api";
 
 const store = useDailyDeclarationHistoryStore();
 
-const calendarDate = ref(new Date());
-const panelCollapsed = ref(false);
-const loading = ref(false);
-const expandedYear = ref(null);
-const expandedMonth = ref(null);
-const selectedDate = ref("");
+const router = useRouter();
 
-const currentYear = new Date().getFullYear();
-const currentMonth = new Date().getMonth() + 1;
+const user = inject("user");
 
-const yearList = computed(() => {
-  const years = [];
-  for (let y = 2026; y <= currentYear; y++) {
-    years.push(y);
-  }
-  return years.reverse();
+const selectedDeclarerId = ref(null);
+
+const profitAnalysisData = ref({
+  hourlyResults: [],
+  dailySummary: {},
 });
 
-const historyDateSet = computed(() => new Set(store.historyDates));
+async function fetchProfitAnalysis() {
+  if (!store.currentDate || !selectedDeclarerId.value) {
+    return;
+  }
+  try {
+    const [mainResponse, subResponse] = await Promise.all([
+      mainTableDataApi(store.currentDate),
+      subTableDataApi(store.currentDate, selectedDeclarerId.value),
+    ]);
 
-function formatCalendarDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+    if (
+      mainResponse.data &&
+      mainResponse.data.success &&
+      mainResponse.data.data &&
+      subResponse.data &&
+      subResponse.data.success &&
+      subResponse.data.data
+    ) {
+      profitAnalysisData.value = {
+        ...mainResponse.data.data,
+        hourlyResults: mainResponse.data.data.hourlyResults,
+        dailySummary: mainResponse.data.data.dailySummary,
+        subHourlyResults: subResponse.data.data.hourlyResults,
+        subDailySummary: subResponse.data.data.dailySummary,
+      };
+    }
+  } catch (error) {
+    console.error("获取日收益分析数据失败:", error);
+  }
 }
 
-function hasRecordByDate(date) {
-  return historyDateSet.value.has(formatCalendarDate(date));
+const isOwnRecord = computed(() => {
+  return store.selectedDeclarer?.declarant_id === user.value?.id;
+});
+
+const declarerName = computed(() => {
+  return store.selectedDeclarer?.name || user.value?.name || "—";
+});
+
+const submitTime = computed(() => {
+  if (!store.record?.created_at) return "—";
+  const d = new Date(store.record.created_at);
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${mo}-${day} ${h}:${mi}`;
+});
+
+function handleModify() {
+  router.push({
+    path: "/daily-demand-report-v2",
+    query: { mode: "edit", date: store.currentDate },
+  });
 }
 
-function selectFromCalendar(date) {
-  const dateStr = formatCalendarDate(date);
-  if (!hasRecordByDate(date)) {
+async function onDeclarerChange(declarantId) {
+  const declarer = store.declarers.find((d) => d.declarant_id === declarantId);
+  if (!declarer) return;
+  store.selectedDeclarer = declarer;
+  loading.value = true;
+  try {
+    await store.fetchRecord(store.currentDate, declarantId);
+    await fetchProfitAnalysis();
+  } finally {
+    loading.value = false;
+  }
+}
+
+function handleDelete() {
+  ElMessageBox.confirm(
+    "确定要删除该日期的申报记录吗？此操作不可恢复。",
+    "确认删除",
+    {
+      confirmButtonText: "确认删除",
+      cancelButtonText: "取消",
+      type: "warning",
+      confirmButtonClass: "el-button--danger",
+    },
+  )
+    .then(async () => {
+      await store.deleteRecord(store.currentDate);
+      ElMessage.success("申报记录已删除");
+      store.record = null;
+      store.currentDate = "";
+      store.selectedDeclarer = null;
+      selectedDeclarerId.value = null;
+      await store.fetchAllDeclaredDates();
+    })
+    .catch(() => {});
+}
+
+const panelCollapsed = ref(false);
+const loading = ref(false);
+const selectedDate = ref("");
+
+const maxMonth = computed(() => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+});
+
+const historyDateSet = computed(() => {
+  const dates = store.allDeclaredDates.map((d) => d.declaration_date);
+  return new Set(dates);
+});
+
+function getDeclarerCount(dateStr) {
+  const item = store.allDeclaredDates.find(
+    (d) => d.declaration_date === dateStr,
+  );
+  return item ? item.declarer_count : 0;
+}
+
+function hasRecordByDate(dateStr) {
+  return historyDateSet.value.has(dateStr);
+}
+
+async function handleDateSelect(dateStr) {
+  if (!hasRecordByDate(dateStr)) {
     ElMessage.info("该日期暂无申报记录");
     return;
   }
   selectedDate.value = dateStr;
   loading.value = true;
-  store.fetchRecord(dateStr).finally(() => {
+  try {
+    const records = await store.fetchDeclarers(dateStr);
+    if (records && records.length > 0) {
+      const selfRecord = records.find((r) => r.declarant_id === user.value?.id);
+      const target = selfRecord || records[0];
+      store.selectedDeclarer = target;
+      selectedDeclarerId.value = target.declarant_id;
+      await store.fetchRecord(dateStr, target.declarant_id);
+      await fetchProfitAnalysis();
+    }
+  } finally {
     loading.value = false;
-  });
+  }
 }
 
 const selectedDateSet = computed(() => {
@@ -225,44 +352,25 @@ const selectedDateSet = computed(() => {
   return new Set(store.allSelectedDates.map((d) => d.date));
 });
 
-function toggleYear(year) {
-  if (expandedYear.value === year) {
-    expandedYear.value = null;
-    expandedMonth.value = null;
-  } else {
-    expandedYear.value = year;
-    expandedMonth.value = null;
-  }
-}
-
-function toggleMonth(year, month) {
-  const key = `${year}-${String(month).padStart(2, "0")}`;
-  if (expandedMonth.value === key) {
-    expandedMonth.value = null;
-  } else {
-    expandedYear.value = year;
-    expandedMonth.value = key;
-    calendarDate.value = new Date(year, month - 1, 1);
-  }
-}
-
 onMounted(async () => {
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
+  await store.fetchAllDeclaredDates();
 
-  expandedYear.value = currentYear;
-  const defaultMonth = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-  expandedMonth.value = defaultMonth;
-  calendarDate.value = new Date(currentYear, currentMonth - 1, 1);
-
-  await store.fetchHistoryDates();
-
-  if (store.historyDates.length > 0) {
-    const firstDate = store.historyDates[0];
+  if (store.allDeclaredDates.length > 0) {
+    const firstDate = store.allDeclaredDates[0].declaration_date;
     selectedDate.value = firstDate;
     loading.value = true;
     try {
-      await store.fetchRecord(firstDate);
+      const records = await store.fetchDeclarers(firstDate);
+      if (records && records.length > 0) {
+        const selfRecord = records.find(
+          (r) => r.declarant_id === user.value?.id,
+        );
+        const target = selfRecord || records[0];
+        store.selectedDeclarer = target;
+        selectedDeclarerId.value = target.declarant_id;
+        await store.fetchRecord(firstDate, target.declarant_id);
+        await fetchProfitAnalysis();
+      }
     } finally {
       loading.value = false;
     }
@@ -271,6 +379,46 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
+.record-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  margin-bottom: 16px;
+
+  .banner-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .banner-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #303133;
+
+    .el-icon {
+      font-size: 16px;
+      color: #1890ff;
+    }
+  }
+
+  .banner-divider {
+    width: 1px;
+    height: 20px;
+    background: #91d5ff;
+  }
+
+  .banner-right {
+    display: flex;
+    gap: 8px;
+  }
+}
 .history-layout {
   background: #fbfbfb;
   display: flex;
@@ -357,205 +505,6 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   padding: 80px 0;
-}
-
-.right-panel {
-  $panel-width: 450px;
-
-  width: $panel-width;
-  flex-shrink: 0;
-  position: fixed;
-  right: 0;
-  top: 60px;
-  height: calc(100vh - 60px);
-  background: #fff;
-  border-left: 1px solid #e8e8e8;
-  z-index: 1000;
-  overflow-y: auto;
-  transition:
-    transform 0.3s ease,
-    width 0.3s ease;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.06);
-
-  &.collapsed {
-    transform: translateX($panel-width - 20px);
-    width: 20px;
-  }
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-
-  h3 {
-    margin: 0;
-    font-size: 15px;
-    color: #303133;
-    font-weight: 600;
-  }
-}
-
-.collapse-btn {
-  margin-left: auto;
-  background: none;
-  border: none;
-  font-size: 14px;
-  color: #bfbfbf;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s;
-
-  &:hover {
-    color: #1890ff;
-    background: #f0f5ff;
-  }
-}
-
-.year-list {
-  padding: 8px 0;
-}
-
-.year-item {
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.year-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #303133;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
-    background: #f5f7fa;
-  }
-}
-
-.expand-icon {
-  font-size: 12px;
-  color: #bfbfbf;
-  width: 16px;
-  text-align: center;
-}
-
-.month-list {
-  padding-left: 0;
-}
-
-.month-item {
-  border-top: 1px solid #fafafa;
-}
-
-.month-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px 8px 28px;
-  font-size: 13px;
-  color: #595959;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
-    background: #f5f7fa;
-  }
-
-  &.active {
-    color: #1890ff;
-    font-weight: 600;
-  }
-}
-
-.month-detail {
-  padding: 4px 8px 12px 28px;
-}
-
-.history-calendar {
-  --el-calendar-border: none;
-  width: 100%;
-
-  :deep(.el-calendar__header) {
-    display: none;
-  }
-
-  :deep(.el-calendar-table) {
-    border: none;
-
-    .el-calendar-day {
-      padding: 2px;
-      height: auto;
-      min-height: 30px;
-      border: none;
-    }
-
-    .el-calendar-table__row {
-      &:not(:last-child) .el-calendar-day {
-        border-bottom: none;
-      }
-    }
-
-    td {
-      border: none;
-    }
-
-    td.is-today {
-      color: #1890ff;
-      font-weight: 600;
-    }
-  }
-}
-
-.cal-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 4px;
-  font-size: 11px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &.has-record {
-    color: #1890ff;
-    font-weight: 500;
-
-    .cal-dot {
-      color: #1890ff;
-    }
-  }
-
-  &.is-selected {
-    background: #1890ff;
-    color: #fff;
-    font-weight: 600;
-
-    .cal-dot {
-      color: #fff;
-    }
-
-    &:hover {
-      background: #40a9ff;
-    }
-  }
-
-  &:hover {
-    background: #f0f5ff;
-  }
-}
-
-.cal-dot {
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1;
 }
 
 .v2-card {
