@@ -1,24 +1,17 @@
 <template>
   <div class="date-info" v-if="dateInfo">
-    <div class="selected-date-display">
+    <span class="date-item selected-date-display">
       <i class="bi bi-calendar-event me-1"></i>
       {{ selectedDate }}
-    </div>
-
-    <div class="weekday">
+    </span>
+    <span class="date-item weekday-display">
       <i class="bi bi-calendar-week me-1"></i>
       {{ getWeekday(dateInfo.value) }}
-    </div>
-    <div
-      class="date-type"
-      :class="dateInfo.type"
-    >
-      <i
-        class="me-1"
-        :class="getDateTypeIcon(dateInfo.type)"
-      ></i>
+    </span>
+    <span class="date-item" :class="'date-type-' + dateInfo.type">
+      <i class="me-1" :class="getDateTypeIcon(dateInfo.type)"></i>
       {{ formatDateType(dateInfo.type) }}
-    </div>
+    </span>
   </div>
 </template>
 
@@ -26,12 +19,12 @@
 defineProps({
   dateInfo: {
     type: Object,
-    default: null
+    default: null,
   },
   selectedDate: {
     type: String,
-    default: ''
-  }
+    default: "",
+  },
 });
 
 // 获取星期几
@@ -66,50 +59,50 @@ const getDateTypeIcon = (type) => {
 <style scoped>
 .date-info {
   display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-  padding: 12px;
-  background-color: #f8fafc;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-}
+  gap: 12px;
 
-.selected-date-display {
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 0.95rem;
-}
+  .date-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
 
-.weekday {
-  display: flex;
-  align-items: center;
-  color: #475569;
-  font-size: 0.9rem;
-}
+    &.selected-date-display {
+      color: #1890ff;
+      font-weight: 600;
+      background: rgba(24, 144, 255, 0.1);
+      border: 1px solid rgba(24, 144, 255, 0.2);
+    }
 
-.date-type {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
+    &.weekday-display {
+      background: rgba(44, 111, 187, 0.1);
+      color: #2c6fbb;
+      font-weight: 500;
+      border: 1px solid rgba(44, 111, 187, 0.2);
+    }
 
-.date-type.weekday {
-  background-color: #e0f2fe;
-  color: #075985;
-}
+    &.date-type-weekday {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4caf50;
+      font-weight: 500;
+      border: 1px solid rgba(76, 175, 80, 0.2);
+    }
 
-.date-type.weekend {
-  background-color: #fef3c7;
-  color: #92400e;
-}
+    &.date-type-weekend {
+      background: rgba(156, 39, 176, 0.1);
+      color: #9c27b0;
+      font-weight: 500;
+      border: 1px solid rgba(156, 39, 176, 0.2);
+    }
 
-.date-type.holiday {
-  background-color: #dcfce7;
-  color: #166534;
+    &.date-type-holiday {
+      background: linear-gradient(135deg, #fff1f0, #ffccc7);
+      color: #cf1322;
+      font-weight: 500;
+      border: 1px solid rgba(244, 67, 54, 0.2);
+    }
+  }
 }
 </style>

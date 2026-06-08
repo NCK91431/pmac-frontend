@@ -14,13 +14,13 @@
     <template
       v-if="
         !previous_record_id &&
-        detail_result.load_stabilityindex &&
-        detail_result.predictaBility
+        detail_result?.load_stabilityindex &&
+        detail_result?.predictaBility
       "
     >
       <Analysis
-        :load_stabilityindex="detail_result.load_stabilityindex"
-        :predictaBility="detail_result.predictaBility"
+        :load_stabilityindex="detail_result?.load_stabilityindex"
+        :predictaBility="detail_result?.predictaBility"
         class="mb-4"
       />
     </template>
@@ -78,7 +78,7 @@
               :actual-data="compareData.sourseData"
               :prediction-data="compareData.predictionData"
               :similarDayLoad="compareData.similarDayLoad"
-              :unit="forecastStore.compare_baseinfo.unit"
+              :unit="forecastStore.compare_baseinfo?.unit"
             />
           </div>
         </div>
@@ -161,9 +161,9 @@ const user = inject("user"); //注入全局用户状态
 const recordId = ref(route.params.recordId || null);
 const selectedDate = ref(null);
 const compareData = computed(() => forecastStore.compare_data || {});
-const detail_result = computed(() => forecastStore.compare_baseinfo.result);
+const detail_result = computed(() => forecastStore.compare_baseinfo?.result);
 const previous_record_id = computed(
-  () => forecastStore.compare_baseinfo.previous_record_id,
+  () => forecastStore.compare_baseinfo?.previous_record_id,
 );
 const loading = ref(false);
 const error = ref(null);

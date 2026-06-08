@@ -37,6 +37,7 @@
         </div>
         <!--配置信息与负荷特性分析 -->
         <div class="detail-sections">
+          <!-- 历史记录详情模式： -->
           <template v-if="viewMode === 'detail'">
             <Analysis
               v-if="result.load_stabilityindex && result.predictaBility"
@@ -55,6 +56,7 @@
               :excel-info="record.excelInfo"
               :predict-id="record.id"
               :created-at="record.created_at"
+              analysis-mode="stability"
             />
             <div class="day-selector">
               <span class="selector-label">预测日选择：</span>
@@ -70,29 +72,10 @@
                 <i class="bi bi-graph-up"></i>
                 负荷预测结果
               </h3>
-              <div class="date-info" v-if="result.date?.value">
-                <span class="date-item selected-date-display">
-                  <i class="bi bi-calendar-event"></i>
-                  {{ result.date.value }}
-                </span>
-                <span class="date-item weekday-display">
-                  <i class="bi bi-calendar-week"></i>
-                  {{ getWeekday(result.date.value) }}
-                </span>
-                <span
-                  class="date-item"
-                  :class="'date-type-' + result.date.type"
-                >
-                  <i
-                    :class="{
-                      'bi-briefcase': result.date.type === 'weekday',
-                      'bi-emoji-sunglasses': result.date.type === 'weekend',
-                      'bi-balloon': result.date.type === 'holiday',
-                    }"
-                  ></i>
-                  {{ formatDateType(result.date.type) }}
-                </span>
-              </div>
+              <DateInfoDisplay
+                :date-info="result.date"
+                :selected-date="result.date?.value"
+              />
               <LoadChart
                 :loads="result.predictionData"
                 :date="result.date"
@@ -121,11 +104,19 @@
             </div>
           </template>
 
+          <!-- 回测分析模式： -->
           <template v-else>
             <Analysis
-              v-if="backtestCompareData"
-              :load_stabilityindex="result.load_stabilityindex"
-              :predictaBility="result.predictaBility"
+              v-if="
+                forecastStore.compare_baseinfo?.result?.load_stabilityindex &&
+                forecastStore.compare_baseinfo?.result?.predictaBility
+              "
+              :load_stabilityindex="
+                forecastStore.compare_baseinfo?.result?.load_stabilityindex
+              "
+              :predictaBility="
+                forecastStore.compare_baseinfo?.result?.predictaBility
+              "
               :mode="record.mode"
               :form-data="{
                 location: record.location,
@@ -141,6 +132,7 @@
               :created-at="record.created_at"
               :model-metrics="backtestCompareData?.modelMetrics"
               :daily-metrics="backtestCompareData?.dailyMetrics"
+              analysis-mode="metrics"
             />
             <div class="day-selector">
               <span class="selector-label">回测日期选择：</span>
@@ -153,17 +145,77 @@
                 value-format="YYYY-MM-DD"
                 :loading="backtestLoading"
               />
+              <DateInfoDisplay
+                :date-info="backtestCompareData?.date"
+                :selected-date="backtestSelectedDate"
+              />
             </div>
-            <CompareChart
-              v-if="backtestCompareData"
-              :actual-data="backtestCompareData.sourseData"
-              :prediction-data="backtestCompareData.predictionData"
-              :similarDayLoad="backtestCompareData.similarDayLoad"
-              :unit="record.unit"
-            />
+            <div class="section-block">
+              <h3 class="section-title">
+                <i class="bi bi-bar-chart me-2""></i>
+                负荷对比分析
+              </h3>
+              <CompareChart
+                v-if="backtestCompareData"
+                :actual-data="backtestCompareData.sourseData"
+                :prediction-data="backtestCompareData.predictionData"
+                :similarDayLoad="backtestCompareData.similarDayLoad"
+                :unit="forecastStore.compare_baseinfo?.unit"
+              />
+            </div>
+
+            <!-- 回测模式天气信息 -->
+            <div
+              v-if="backtestCompareData?.cityWeatherForecast?.length"
+              class="section-block"
+            >
+              <h3 class="section-title">
+                <i class="bi bi-cloud-sun"></i>
+                天气信息
+              </h3>
+              <div class="city-selector">
+                <el-select
+                  v-model="selectedCityIndex"
+                  placeholder="选择城市"
+                  style="width: 300px"
+                >
+                  <el-option
+                    v-for="(
+                      city, index
+                    ) in backtestCompareData.cityWeatherForecast"
+                    :key="index"
+                    :label="city.location"
+                    :value="index"
+                  />
+                </el-select>
+              </div>
+              <WeatherInfo
+                :weather-info="
+                  backtestCompareData.cityWeatherForecast[selectedCityIndex]
+                    ?.weatherInfo
+                "
+                horizontal
+              />
+              <div style="margin-top: 16px">
+                <WeatherChart
+                  :temperature-data="
+                    backtestCompareData.cityWeatherForecast[selectedCityIndex]
+                      ?.temperatureForecast
+                  "
+                  :irradiation-data="
+                    backtestCompareData.cityWeatherForecast[selectedCityIndex]
+                      ?.irradiationForecast
+                  "
+                />
+              </div>
+            </div>
           </template>
 
-          <div v-if="selectedCityWeather" class="section-block">
+          <!-- 历史记录详情模式天气信息 -->
+          <div
+            v-if="viewMode === 'detail' && selectedCityWeather"
+            class="section-block"
+          >
             <h3 class="section-title">
               <i class="bi bi-cloud-sun"></i>
               天气信息
@@ -233,7 +285,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch, inject } from "vue";
 import { useRouter } from "vue-router";
 import HistorySidebar from "./HistorySection/HistorySidebar.vue";
 import LoadChart from "./ResultSection/LoadChart.vue";
@@ -241,6 +293,8 @@ import WeatherChart from "./ResultSection/WeatherChart.vue";
 import WeatherInfo from "./ResultSection/WeatherInfo.vue";
 import Analysis from "./ConfigSection/components/Analysis.vue";
 import CompareChart from "./HistorySection/CompareChart.vue";
+import DateInfoDisplay from "./HistorySection/components/DateInfoDisplay.vue";
+
 import { ElMessage, ElMessageBox } from "element-plus";
 import { InfoFilled, FolderOpened } from "@element-plus/icons-vue";
 import request from "@/utils/request";
@@ -250,6 +304,7 @@ import { parseISO, addDays, isBefore, isAfter, format } from "date-fns";
 
 const forecastStore = useLoadForecastStore();
 const router = useRouter();
+const user = inject("user"); //注入全局用户状态
 
 const activeHistoryRecordId = computed(
   () => forecastStore.activeHistoryRecordId,
@@ -362,6 +417,7 @@ onMounted(() => {
 
 watch(activeHistoryRecordId, (newId) => {
   if (newId) {
+    viewMode.value = "detail";
     getRecordDetailById();
     selectedDay.value = "D+1";
   }
@@ -371,19 +427,31 @@ watch(selectedDay, () => {
   getRecordDetailById();
 });
 
-watch([viewMode, () => record.id], async ([newMode, recId]) => {
-  if (newMode === "backtest" && recId) {
-    if (!mergeData.value) {
-      await fetchBacktestMerge(recId);
-    }
+watch([viewMode, activeHistoryRecordId], async ([newMode, recId]) => {
+  if (!recId) return;
+
+  if (newMode === "backtest") {
+    await Promise.all([fetchBacktestMerge(recId), fetchRecordDetail(recId)]);
+  } else if (newMode === "detail") {
+    getRecordDetailById();
   }
 });
 
 watch(backtestSelectedDate, (newDt) => {
-  if (viewMode.value === "backtest" && record.id && newDt) {
-    fetchBacktestCompare(record.id, newDt);
+  if (viewMode.value === "backtest" && activeHistoryRecordId.value && newDt) {
+    fetchBacktestCompare(activeHistoryRecordId.value, newDt);
   }
 });
+
+async function fetchRecordDetail(record_id) {
+  if (!record_id) return;
+  try {
+    const response = await request.get(`/api/history/${record_id}/D+1`);
+    forecastStore.setCompareBaseinfo(response.data);
+  } catch (err) {
+    console.error("获取记录详情失败:", err);
+  }
+}
 
 async function fetchBacktestMerge(record_id) {
   if (!record_id) return;
@@ -391,6 +459,7 @@ async function fetchBacktestMerge(record_id) {
     const response = await request.get(`/api/history/merge/${record_id}`);
     if (response.data.success) {
       mergeData.value = response.data.result;
+      forecastStore.setCompareMerge(response.data.result);
       const range = response.data.result?.merge_range;
       if (range && range.length > 1) {
         backtestSelectedDate.value = range[1];
@@ -406,14 +475,30 @@ async function fetchBacktestCompare(record_id, selectDate) {
   if (!record_id || !selectDate) return;
   try {
     backtestLoading.value = true;
-    const userId = localStorage.getItem("user_id");
-    const response = await request.post(`/api/history/compare`, {
-      selectDate: selectDate,
-      recordId: Number(record_id),
-      userId: userId ? Number(userId) : 0,
-    });
+    const response = await request.post(
+      `/api/history/compare`,
+      {
+        selectDate: selectDate,
+        recordId: Number(record_id),
+        userId: user.value ? user.value.id : null,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
     if (response.data.success) {
       backtestCompareData.value = response.data.result;
+      forecastStore.setCompareData(response.data.result);
+      console.log("=== 回测数据结构 ===");
+      console.log("response.data.result:", response.data.result);
+      console.log("sourseData:", response.data.result?.sourseData);
+      console.log("predictionData:", response.data.result?.predictionData);
+      console.log(
+        "cityWeatherForecast:",
+        response.data.result?.cityWeatherForecast,
+      );
     }
   } catch (err) {
     console.error("backtest compare err:", err);
@@ -705,57 +790,6 @@ const saveMarkName = async () => {
     white-space: nowrap;
   }
 }
-
-.date-info {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-
-  .date-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-
-    &.selected-date-display {
-      color: #1890ff;
-      font-weight: 600;
-      background: rgba(24, 144, 255, 0.1);
-      border: 1px solid rgba(24, 144, 255, 0.2);
-    }
-
-    &.weekday-display {
-      background: rgba(44, 111, 187, 0.1);
-      color: #2c6fbb;
-      font-weight: 500;
-      border: 1px solid rgba(44, 111, 187, 0.2);
-    }
-
-    &.date-type-weekday {
-      background: rgba(76, 175, 80, 0.1);
-      color: #4caf50;
-      font-weight: 500;
-      border: 1px solid rgba(76, 175, 80, 0.2);
-    }
-
-    &.date-type-weekend {
-      background: rgba(156, 39, 176, 0.1);
-      color: #9c27b0;
-      font-weight: 500;
-      border: 1px solid rgba(156, 39, 176, 0.2);
-    }
-
-    &.date-type-holiday {
-      background: linear-gradient(135deg, #fff1f0, #ffccc7);
-      color: #cf1322;
-      font-weight: 500;
-      border: 1px solid rgba(244, 67, 54, 0.2);
-    }
-  }
-}
-
 .city-selector {
   margin-bottom: 16px;
 }
