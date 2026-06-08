@@ -1,6 +1,6 @@
 <template>
-    <div class="card-body">
-        <div class="weather-grid">
+    <div class="card-body" :class="{ 'is-horizontal': horizontal }">
+        <div class="weather-grid" :class="{ 'is-horizontal': horizontal }">
             <div class="weather-item">
                 <div class="weather-icon">
                     <i class="bi bi-thermometer-low"></i>
@@ -64,6 +64,10 @@ defineProps({
             wind_summary: "",
             wind_direction: "",
         }),
+    },
+    horizontal: {
+        type: Boolean,
+        default: false,
     },
 });
 </script>
@@ -183,6 +187,39 @@ defineProps({
     }
     .weather-value {
         font-size: 1rem;
+    }
+}
+
+.card-body.is-horizontal {
+    .weather-grid.is-horizontal {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+
+        .weather-item {
+            flex: 1;
+            min-width: 180px;
+            padding: 12px 16px;
+
+            .weather-icon {
+                width: 40px;
+                height: 40px;
+
+                i {
+                    font-size: 1.2rem;
+                }
+            }
+
+            .weather-details {
+                .weather-label {
+                    font-size: 0.8rem;
+                }
+
+                .weather-value {
+                    font-size: 0.95rem;
+                }
+            }
+        }
     }
 }
 

@@ -1,72 +1,139 @@
 <template>
-    <div class="loading-content">
-        <div
-            class="spinner-border text-primary"
-            role="status"
-            style="width: 4rem; height: 4rem"
-        >
-            <span class="visually-hidden">Loading...</span>
+  <div class="training-overlay">
+    <div class="training-body">
+      <div class="training-left">
+        <div class="spinner-wrap">
+          <div class="loading-spinner"></div>
         </div>
-        <div class="mt-4">
-            <h3 class="mb-3">{{ isContinue ? "预测中" : "模型训练中..." }}</h3>
-            <p class="text-muted">预测任务已提交，后台正在处理中</p>
-            <!-- 添加进度条 -->
-            <el-progress :percentage="progress" :stroke-width="15" striped />
-            <p class="text-muted">
-                <i class="fas fa-info-circle me-2"></i>
-                这可能需要几分钟时间，您可以继续浏览其他页面
-            </p>
+        <div class="training-text">模型训练中~</div>
+        <div class="training-progress">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" :style="{ width: progressPercent + '%' }"></div>
+          </div>
+          <span class="progress-text">{{ Math.round(progressPercent) }}%</span>
         </div>
+      </div>
+      <div class="training-right">
+        <div class="training-info">
+          <span class="info-label">进度信息：</span>
+          <span class="info-text" v-if="progressPercent < 50">正在加载数据...</span>
+          <span class="info-text" v-else-if="progressPercent < 80">模型训练中...</span>
+          <span class="info-text" v-else>即将完成...</span>
+        </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted } from "vue";
 
-import { useLoadForecastStore } from "@/store/load";
-const forecastStore = useLoadForecastStore();
-
-const isContinue = computed(() => forecastStore.isContinue);
-
-const progress = ref(0);
-let intervalId = null;
-
-const startProgress = () => {
-    const duration = 60000; // 总时长60秒
-    const totalSteps = 99; // 总共99步（0%到99%）
-    const intervalTime = Math.round(duration / totalSteps); // 每步间隔时间
-
-    progress.value = 0; // 重置为0%
-    let step = 0;
-
-    intervalId = setInterval(() => {
-        step += 1;
-        progress.value = step; // 直接设置整数百分比
-
-        if (step >= totalSteps) {
-            clearInterval(intervalId);
-        }
-    }, intervalTime);
-};
+const progressPercent = ref(0);
 
 onMounted(() => {
-    startProgress();
-});
-
-onBeforeUnmount(() => {
-    if (intervalId) clearInterval(intervalId);
+  const interval = setInterval(() => {
+    if (progressPercent.value < 95) {
+      progressPercent.value += Math.random() * 4;
+      if (progressPercent.value > 95) progressPercent.value = 95;
+    }
+  }, 500);
 });
 </script>
 
 <style lang="scss" scoped>
-.loading-content {
-    margin: 0 auto;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
-    padding: 30px;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
+.training-overlay {
+  margin-top: 20px;
+  padding: 24px 0;
+  border-top: 1px solid #eee;
+}
+
+.training-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.training-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+}
+
+.spinner-wrap {
+  margin-bottom: 12px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #2b6cb5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.training-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.training-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.progress-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #2b6cb5, #5a9fd4);
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: #2b6cb5;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+.training-right {
+  margin-top: 14px;
+}
+
+.training-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.info-text {
+  font-size: 0.82rem;
+  color: #2b6cb5;
 }
 </style>

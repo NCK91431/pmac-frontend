@@ -1,54 +1,60 @@
 <template>
-    <div class="load-table-wrapper">
-        <el-table
-            :data="getTableData()"
-            style="width: 100%"
-            border
-            :header-cell-style="{ background: '#f5f7fa', color: '#303133' }"
-        >
-            <el-table-column prop="title" label="时间" width="110" />
-            <el-table-column
-                v-for="time in headerData"
-                :key="time"
-                :prop="time"
-                :label="time"
-                width="72"
-            />
-        </el-table>
-    </div>
+  <div class="load-table-wrapper">
+    <el-table
+      :data="getTableData()"
+      style="width: 100%"
+      border
+      :header-cell-style="{ background: '#f5f7fa', color: '#303133' }"
+    >
+      <el-table-column prop="title" label="时间" width="auto" />
+      <el-table-column
+        v-for="time in headerData"
+        :key="time"
+        :prop="time"
+        :label="time"
+        width="72"
+      />
+    </el-table>
+  </div>
 </template>
 
 <script setup>
 const props = defineProps({
-    loads: Array,
-    headerData: Array,
-    similarDayLoad: {
-        type: Array,
-        default: () => [],
-    },
-    unit: String,
+  loads: Array,
+  headerData: Array,
+  similarDayLoad: {
+    type: Array,
+    default: () => [],
+  },
+  unit: String,
 });
 
 function getTableData() {
-    // 预测负荷
-    let row = {
-        title: `负荷值 (${props.unit})`,
-    };
-    const data = props.loads;
-    props.headerData.forEach((time, idx) => {
-        row[time] = data[idx];
-    });
-    // 同类型日负荷行
-    const row3 = {
-        title: "同类型日负荷",
-    };
-    const s_data = props.similarDayLoad;
+  // 预测负荷
+  let row = {
+    title: `负荷值 (${props.unit})`,
+  };
+  const data = props.loads;
+  props.headerData.forEach((time, idx) => {
+    row[time] = data[idx];
+  });
+  // 同类型日负荷行
+  const row3 = {
+    title: "同类型日负荷",
+  };
+  const s_data = props.similarDayLoad;
 
-    props.headerData.forEach((time, idx) => {
-        row3[time] = s_data[idx];
-    });
-    return [row, row3];
+  props.headerData.forEach((time, idx) => {
+    row3[time] = s_data[idx];
+  });
+  return [row, row3];
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.load-table-wrapper {
+  :deep(.el-table) {
+    font-size: 12px;
+  }
+}
+</style>

@@ -6,7 +6,6 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         // 来自 forecast.js
         continueData: null,
         isContinue: false,
-        activeTab: "upload",
 
         // 来自 loadpreformStore.js
         formData: {
@@ -23,7 +22,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         excelInfo: null,
 
         // 来自 loadpreStageStore.js
-        stage: -1, // -1:选择模式 0:初始状态 1:处理中 2:处理完成
+        stage: 0, // 0:模型配置 1:处理中 2:处理完成
         responseData: null,
         activeHistoryRecordId: null,
         activeHistoryRecord: null,
@@ -71,22 +70,10 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         setContinueData(data) {
             this.continueData = data;
             this.isContinue = true;
-            this.activeTab = "upload";
         },
         clearContinueData() {
             this.continueData = null;
             this.isContinue = false;
-        },
-        setActiveTab(tab) {
-            if (tab === "upload" || tab === "history") {
-                this.activeTab = tab;
-            }
-
-            if (tab == "upload") {
-                if (this.stage <= 0) {
-                    this.stage = -1;
-                }
-            }
         },
         setExcelInfo(excelInfo) {
             this.excelInfo = excelInfo;
@@ -124,7 +111,7 @@ export const useLoadForecastStore = defineStore("loadForecast", {
 
         // 预测流程控制
         setStageChooseMode() {
-            this.stage = -1;
+            this.stage = 0;
         },
         setStageZero() {
             this.stage = 0;
@@ -134,7 +121,20 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
         setCompleted(responseData) {
             this.stage = 2;
-            this.responseData = responseData;
+            const normalizedData = { ...responseData };
+            if (normalizedData.formData) {
+                if (typeof normalizedData.formData.location === "string") {
+                    try {
+                        normalizedData.formData.location = JSON.parse(normalizedData.formData.location);
+                    } catch {
+                        normalizedData.formData.location = [];
+                    }
+                }
+            }
+            this.responseData = {
+                ...normalizedData,
+                created_at: new Date().toISOString(),
+            };
             this.excelInfo = null;
         },
         resetStage() {
@@ -146,6 +146,10 @@ export const useLoadForecastStore = defineStore("loadForecast", {
         },
         set_activeHistoryRecord(node) {
             this.activeHistoryRecord = node;
+        },
+        clearActiveHistoryRecord() {
+            this.activeHistoryRecordId = null;
+            this.activeHistoryRecord = { id: null };
         },
         switchMode() {
             if (this.mode === "T") {

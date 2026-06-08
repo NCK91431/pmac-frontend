@@ -177,103 +177,107 @@
       </div>
       <!-- 负荷特性分析 -->
       <div class="col-md-6">
-        <!-- 负荷稳定性与波动性分析 -->
-        <div class="section-header">
-          <i class="bi bi-speedometer2"></i>
-          <span class="section-title">负荷稳定性与波动性分析</span>
-        </div>
-        <div class="metrics-grid">
-          <div
-            class="metric-item"
-            v-for="(value, key) in stabilityMetrics"
-            :key="key"
-          >
-            <div class="metric-icon" :class="getStabilityIcon(key)">
-              <i :class="getStabilityIconClass(key)"></i>
-            </div>
-            <div class="metric-content">
-              <div class="metric-name">
-                {{ getStabilityLabel(key) }}
+        <template v-if="analysisMode === 'stability'">
+          <!-- 负荷稳定性与波动性分析 -->
+          <div class="section-header">
+            <i class="bi bi-speedometer2"></i>
+            <span class="section-title">负荷稳定性与波动性分析</span>
+          </div>
+          <div class="metrics-grid">
+            <div
+              class="metric-item"
+              v-for="(value, key) in stabilityMetrics"
+              :key="key"
+            >
+              <div class="metric-icon" :class="getStabilityIcon(key)">
+                <i :class="getStabilityIconClass(key)"></i>
               </div>
-              <div class="metric-value">
-                {{ value.value }}
-              </div>
-              <div class="metric-description">
-                {{ value.level }}
+              <div class="metric-content">
+                <div class="metric-name">
+                  {{ getStabilityLabel(key) }}
+                </div>
+                <div class="metric-value">
+                  {{ value.value }}
+                </div>
+                <div class="metric-description">
+                  {{ value.level }}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <!-- 周期相关性分析 -->
-        <div class="section-header" style="margin-top: 15px">
-          <i class="bi bi-arrow-repeat"></i>
-          <span class="section-title">周期相关性分析</span>
-        </div>
-        <div class="periodicity-metrics">
-          <div
-            class="period-item"
-            v-for="(value, key) in periodicityMetrics"
-            :key="key"
-          >
-            <div class="preiod-title">
-              <div
-                class="period-icon"
-                :class="getPeriodStrengthClass(value.strength)"
-              >
-                <i :class="getPeriodIcon(key)"></i>
+          <!-- 周期相关性分析 -->
+          <div class="section-header" style="margin-top: 15px">
+            <i class="bi bi-arrow-repeat"></i>
+            <span class="section-title">周期相关性分析</span>
+          </div>
+          <div class="periodicity-metrics">
+            <div
+              class="period-item"
+              v-for="(value, key) in periodicityMetrics"
+              :key="key"
+            >
+              <div class="preiod-title">
+                <div
+                  class="period-icon"
+                  :class="getPeriodStrengthClass(value.strength)"
+                >
+                  <i :class="getPeriodIcon(key)"></i>
+                </div>
+                <div class="period-name">
+                  {{ getPeriodLabel(key) }}
+                </div>
               </div>
-              <div class="period-name">
-                {{ getPeriodLabel(key) }}
-              </div>
-            </div>
 
-            <div class="period-content">
-              <div class="period-value">
-                {{ value.periodicity }}
-              </div>
-              <div
-                class="period-strength"
-                :class="getPeriodStrengthClass(value.strength)"
-              >
-                {{ value.strength }}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div
-          class="section-header model-metrics-header"
-          style="margin-top: 15px"
-          v-if="modelMetrics || dailyMetrics"
-        >
-          <i class="bi bi-speedometer2"></i>
-          <span class="section-title">模型评估指标</span>
-        </div>
-        <div class="model-metrics-inline" v-if="modelMetrics || dailyMetrics">
-          <div class="metric-card first compact" v-if="modelMetrics?.WMAPE">
-            <div class="metric-icon compact">
-              <i class="bi bi-bar-chart-line"></i>
-            </div>
-            <div class="metric-content compact">
-              <div class="metric-label compact">总体误差</div>
-              <div class="metric-value compact">
-                <text>{{ modelMetrics.WMAPE }}</text>
-                <text class="unit">%</text>
+              <div class="period-content">
+                <div class="period-value">
+                  {{ value.periodicity }}
+                </div>
+                <div
+                  class="period-strength"
+                  :class="getPeriodStrengthClass(value.strength)"
+                >
+                  {{ value.strength }}
+                </div>
               </div>
             </div>
           </div>
-          <div class="metric-card second compact" v-if="dailyMetrics?.WMAPE">
-            <div class="metric-icon compact">
-              <i class="bi bi-calendar-day"></i>
+        </template>
+        <template v-else-if="analysisMode === 'metrics'">
+          <!-- 模型评估指标 -->
+          <div
+            class="section-header model-metrics-header"
+            v-if="modelMetrics || dailyMetrics"
+          >
+            <i class="bi bi-speedometer2"></i>
+            <span class="section-title">模型评估指标</span>
+          </div>
+          <div
+            class="metrics-grid"
+            v-if="modelMetrics || dailyMetrics"
+            style="margin-top: 12px"
+          >
+            <div class="metric-item" v-if="modelMetrics?.WMAPE">
+              <div class="metric-icon icon-overall">
+                <i class="bi bi-bar-chart-line"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-name">总体误差</div>
+                <div class="metric-value">{{ modelMetrics.WMAPE }}%</div>
+                <div class="metric-description">加权平均绝对百分比误差</div>
+              </div>
             </div>
-            <div class="metric-content compact">
-              <div class="metric-label compact">单日误差</div>
-              <div class="metric-value compact">
-                <text>{{ dailyMetrics.WMAPE }}</text>
-                <text class="unit">%</text>
+            <div class="metric-item" v-if="dailyMetrics?.WMAPE">
+              <div class="metric-icon icon-daily">
+                <i class="bi bi-calendar-day"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-name">单日误差</div>
+                <div class="metric-value">{{ dailyMetrics.WMAPE }}%</div>
+                <div class="metric-description">日度加权平均绝对百分比误差</div>
               </div>
             </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
   </div>
@@ -301,6 +305,10 @@ const props = defineProps({
   dailyMetrics: {
     type: Object,
     default: null,
+  },
+  analysisMode: {
+    type: String,
+    default: "stability",
   },
 });
 
@@ -710,6 +718,16 @@ const getPeriodStrengthClass = (strength) => {
     &.icon-variation {
       background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
       color: #2c3e50;
+    }
+
+    &.icon-overall {
+      background: linear-gradient(135deg, #52c234 0%, #061700 100%);
+      color: white;
+    }
+
+    &.icon-daily {
+      background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
+      color: white;
     }
   }
 
@@ -1145,55 +1163,6 @@ const getPeriodStrengthClass = (strength) => {
     .metric-icon {
       margin-right: 0;
       margin-bottom: 12px;
-    }
-  }
-}
-
-.model-metrics-inline {
-  display: flex;
-  gap: 15px;
-  margin-top: 12px;
-}
-
-.metric-card {
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: white;
-  min-width: 140px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  &.first {
-    background: linear-gradient(135deg, #52c234 0%, #061700 100%);
-  }
-
-  &.second {
-    background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
-  }
-
-  .metric-icon.compact {
-    font-size: 22px;
-    opacity: 0.9;
-  }
-
-  .metric-content.compact {
-    .metric-label.compact {
-      font-size: 11px;
-      opacity: 0.85;
-      margin-bottom: 2px;
-    }
-    .metric-value.compact {
-      font-size: 18px;
-      font-weight: 600;
-
-      text {
-        &:last-child {
-          font-size: 12px;
-          margin-left: 2px;
-          opacity: 0.8;
-        }
-      }
     }
   }
 }
