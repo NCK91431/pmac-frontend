@@ -8,5 +8,7 @@ export function useEditMode() {
 
   const editDate = computed(() => route.query.date || "");
 
-  return { isEditMode, editDate };
+  const editDeclarantId = computed(() => route.query.declarant_id || "");
+
+  return { isEditMode, editDate, editDeclarantId };
 }

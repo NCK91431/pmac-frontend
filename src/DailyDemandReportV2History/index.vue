@@ -141,6 +141,9 @@
             :adjusted-ratios="store.adjustedRatios"
             :readonly="true"
             :submitted="true"
+            :user-estimated-confirmed="store.load_forecast?.load_forecasting_method === 'manual'"
+            :price-forecast="store.price_forecast"
+            :load-forecast="store.load_forecast"
           />
         </div>
 
@@ -190,7 +193,7 @@ import PriceComparisonTable from "@/DailyDemandReportV2/components/PriceComparis
 import StrategyTableV2 from "@/DailyDemandReportV2/components/StrategyTableV2.vue";
 import DailyProfitSubTable from "@/DailyDemandReportV2/components/DailyProfitSubTable.vue";
 import DateSidebar from "@/components/DateSidebar.vue";
-import { mainTableDataApi, subTableDataApi } from "@/DailyDemandReportV2/api";
+import { subTableDataApi } from "@/DailyDemandReportV2/api";
 
 const store = useDailyDeclarationHistoryStore();
 
@@ -201,8 +204,8 @@ const user = inject("user");
 const selectedDeclarerId = ref(null);
 
 const profitAnalysisData = ref({
-  hourlyResults: [],
-  dailySummary: {},
+  subHourlyResults: [],
+  subDailySummary: {},
 });
 
 async function fetchProfitAnalysis() {
@@ -210,29 +213,19 @@ async function fetchProfitAnalysis() {
     return;
   }
   try {
-    const [mainResponse, subResponse] = await Promise.all([
-      mainTableDataApi(store.currentDate),
-      subTableDataApi(store.currentDate, selectedDeclarerId.value),
-    ]);
+    const subResponse = await subTableDataApi(
+      store.currentDate,
+      selectedDeclarerId.value,
+    );
 
-    if (
-      mainResponse.data &&
-      mainResponse.data.success &&
-      mainResponse.data.data &&
-      subResponse.data &&
-      subResponse.data.success &&
-      subResponse.data.data
-    ) {
+    if (subResponse.data && subResponse.data.success && subResponse.data.data) {
       profitAnalysisData.value = {
-        ...mainResponse.data.data,
-        hourlyResults: mainResponse.data.data.hourlyResults,
-        dailySummary: mainResponse.data.data.dailySummary,
         subHourlyResults: subResponse.data.data.hourlyResults,
         subDailySummary: subResponse.data.data.dailySummary,
       };
     }
   } catch (error) {
-    console.error("获取日收益分析数据失败:", error);
+    console.error("获取日收益分析副表数据失败:", error);
   }
 }
 
@@ -258,7 +251,11 @@ const submitTime = computed(() => {
 function handleModify() {
   router.push({
     path: "/daily-demand-report-v2",
-    query: { mode: "edit", date: store.currentDate },
+    query: {
+      mode: "edit",
+      date: store.currentDate,
+      declarant_id: store.selectedDeclarer?.declarant_id,
+    },
   });
 }
 

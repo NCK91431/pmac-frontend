@@ -36,26 +36,9 @@ export function useStepNavigation() {
     store.markStepCompleted(2)
     store.setCurrentStep(3)
 
-    const dates = store.allSelectedDates.map(d => d.date)
-
-    if (onProgress) onProgress('正在获取电价对比数据...')
-
-    const priceRes = await store.fetchPriceComparison(dates)
-    if (!priceRes.success) {
-      ElMessage.error('获取电价对比数据失败')
-      return false
-    }
-
     if (onProgress) onProgress('正在获取策略申报数据...')
 
-    const periods = priceRes.data?.periods || []
-    const spreadInfo = periods.map(p => ({
-      period: p.period,
-      spread_direction: p.spread_direction,
-      low_probability: p.low_probability
-    }))
-
-    const strategyRes = await store.fetchStrategyData(store.declarationDate, spreadInfo)
+    const strategyRes = await store.fetchStrategyData()
     if (!strategyRes.success) {
       ElMessage.error('获取策略申报数据失败')
       return false
@@ -80,11 +63,12 @@ export function useStepNavigation() {
   }
 
   function goBackToStep2() {
-    store.priceComparisonData = null
     store.strategyPeriods = []
     store.strategySummary = null
     store.adjustedRatios = []
     store.actualQuantities = {}
+    store.resetLoadForecast()
+    store.resetPriceForecast()
     store.unmarkStepCompleted(2)
     store.setCurrentStep(2)
   }

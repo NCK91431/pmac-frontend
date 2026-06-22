@@ -35,6 +35,45 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
   const adjustedRatios = ref([])
   const actualQuantities = ref({})
 
+ /* -------------------------------------------------- */
+  const load_forecast = ref({
+    load_forecasting_method: 'api',
+    manual_load_data: {},
+    api_load_data: {} //由 fetchStrategyData 接口返回
+  })
+  const price_forecast = ref({
+    price_forecasting_method: 'api',
+    manual_price_data: {},
+    api_price_data: {} //由 fetchStrategyData 接口返回
+  })
+ 
+  function setLoadForecast(key, value){
+    load_forecast.value[key] = value
+  }
+  function setPriceForecast(key, value){
+    price_forecast.value[key] = value
+  }
+ 
+
+  function resetLoadForecast(){
+    setLoadForecast('load_forecasting_method', 'api')
+    setLoadForecast('manual_load_data', {})
+    setLoadForecast('api_load_data', {})
+  }
+  function resetPriceForecast(){
+    setPriceForecast('price_forecasting_method', 'api')
+    // -> ! 绝对不能将manual_price_data设为空对象，因为manual_price_data是调用fetchPriceComparison生成的，不能手动修改
+    setPriceForecast("api_price_data", {})
+  }
+
+  const userEstimatedConfirmed = ref(false)
+  function setUserEstimatedConfirmed(confirmed) {
+    userEstimatedConfirmed.value = confirmed
+  }
+ /* -------------------------------------------------- */
+
+ 
+
   const allSelectedDates = computed(() => {
     const fromQuery = selectedDates.value.map(d => ({ ...d, isManual: false }))
     const fromManual = manualDates.value.map(d => ({ ...d, isManual: true }))
@@ -124,16 +163,26 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     const body = res.data
     if (body.success) {
       priceComparisonData.value = body.data
+      const spreadInfo = {};
+      (body.data?.periods || []).forEach(p => {
+        spreadInfo[p.period] = {
+          spread_direction: p.spread_direction,
+          low_probability: p.low_probability
+        };
+      });
+      setPriceForecast('manual_price_data', spreadInfo)
     }
     return body
   }
 
-  async function fetchStrategyData(declarationDate, spreadInfo) {
-    const res = await strategyDataApi(declarationDate, spreadInfo)
+  async function fetchStrategyData() {
+    const res = await strategyDataApi(declarationDate.value, price_forecast.value, load_forecast.value)
     const body = res.data
     if (body.success) {
       strategyPeriods.value = body.data
       strategySummary.value = body.summary
+      setPriceForecast('api_price_data', body.price_forecast.api_price_data)
+      setLoadForecast('api_load_data', body.load_forecast.api_load_data)
       const ratios = new Array(24)
       ;(body.data || []).forEach(p => {
         ratios[parseInt(p.period)] = p.declared_ratio
@@ -154,6 +203,8 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
       priceComparisonData: priceComparisonData.value,
       strategyPeriods: strategyPeriods.value,
       adjustedRatios: adjustedRatios.value,
+      price_forecast: price_forecast.value,
+      load_forecast: load_forecast.value,
     }
     const res = await submitApi(payload)
     return res.data
@@ -236,9 +287,21 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
       selectedDates.value = record.allSelectedDates.filter((d) => !d.isManual)
       manualDates.value = record.allSelectedDates.filter((d) => d.isManual)
     }
-    if (record.priceComparisonData) priceComparisonData.value = record.priceComparisonData
+    if (record.priceComparisonData) {
+      priceComparisonData.value = record.priceComparisonData
+      const spreadInfo = {};
+      (record.priceComparisonData.periods || []).forEach(p => {
+        spreadInfo[p.period] = {
+          spread_direction: p.spread_direction,
+          low_probability: p.low_probability
+        };
+      });
+      setPriceForecast('manual_price_data', spreadInfo)
+    }
     if (Array.isArray(record.strategyPeriods)) strategyPeriods.value = record.strategyPeriods
     if (Array.isArray(record.adjustedRatios)) adjustedRatios.value = record.adjustedRatios
+    if (record.price_forecast) price_forecast.value = record.price_forecast
+    if (record.load_forecast) load_forecast.value = record.load_forecast
   }
 
   function isStepCompleted(step) {
@@ -278,6 +341,9 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     adjustedRatios.value = []
     actualQuantities.value = {}
     declaredDates.value = []
+    resetLoadForecast()
+    resetPriceForecast()
+    setPriceForecast('manual_price_data', {})
   }
 
   return {
@@ -285,6 +351,10 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     declarationDate, dateInfo, weatherData, priceChartData, dispatchData,
     aiQueryText, queryResults, selectedDates, manualDates, allSelectedDates,
     priceComparisonData, strategyPeriods, strategySummary, adjustedRatios, actualQuantities,
+    price_forecast, load_forecast,
+    userEstimatedConfirmed,
+    setUserEstimatedConfirmed, 
+    setPriceForecast, setLoadForecast,
     setDeclarationDate, setDateInfo, setCurrentStep,
     isStepCompleted, markStepCompleted, unmarkStepCompleted, setSubmitted,
     fetchDateInfo, fetchPriceComparison, fetchStrategyData, submitDeclaration, sendAiQuery,

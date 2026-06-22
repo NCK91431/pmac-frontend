@@ -14,6 +14,19 @@
         ><span class="tag-pill node">价差</span> = 日前 −
         实时（数值，正数橙·负数绿）</span
       >
+      <el-button
+        size="small"
+        type="primary"
+        plain
+        @click="showPriceColumns = !showPriceColumns"
+        style="margin-left: auto"
+      >
+        <el-icon style="margin-right: 4px">
+          <Hide v-if="showPriceColumns" />
+          <View v-else />
+        </el-icon>
+        {{ showPriceColumns ? "隐藏电价列" : "显示电价列" }}
+      </el-button>
     </div>
 
     <div
@@ -43,24 +56,24 @@
         :header-cell-style="headerCellStyle"
         size="small"
         row-key="period"
-        :cell-style="{ padding: '5px 4px' }"
       >
-        <el-table-column fixed="left" label="时段" width="auto" align="center">
+        <el-table-column fixed="left" label="时段" width="80" align="center">
           <template #default="{ row }">
             <span class="pct-period">{{ row.period }}</span>
           </template>
         </el-table-column>
 
         <template v-for="d in tableDates" :key="d.date">
-          <el-table-column align="center" :min-width="165">
+          <el-table-column align="center" width="270">
             <template #header>
-              <span class="pct-date-header"
-                >📅 {{ d.date }} {{ d.weekday || "" }}</span
+              <span class="pct-date-header">
+                {{ d.date }} {{ d.weekday || "" }}</span
               >
             </template>
             <el-table-column
+              v-if="showPriceColumns"
               :label="hasDaySettlement(d.date) ? '日前结算' : '日前节点'"
-              :min-width="55"
+              width="90"
               align="center"
             >
               <template #default="{ row }">
@@ -70,8 +83,9 @@
               </template>
             </el-table-column>
             <el-table-column
+              v-if="showPriceColumns"
               :label="hasRtSettlement(d.date) ? '实时结算' : '实时节点'"
-              :min-width="55"
+              width="90"
               align="center"
             >
               <template #default="{ row }">
@@ -80,7 +94,12 @@
                 }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="价差" :min-width="55" align="center">
+            <el-table-column
+              label="价差"
+              width="105"
+              align="center"
+              :cell-style="(p) => spreadCellStyle(p, d.date)"
+            >
               <template #default="{ row }">
                 <span :class="getSpread(row, d.date).cls">{{
                   getSpread(row, d.date).val
@@ -92,14 +111,14 @@
 
         <el-table-column
           fixed="right"
-          label="价差方向"
-          width="auto"
+          label="低价方向"
+          width="100"
           align="center"
         >
           <template #default="{ row }">
             <span
               :class="
-                row.spread_direction === '日前高' ? 'spread-high' : 'spread-low'
+                row.spread_direction === '实时' ? 'spread-high' : 'spread-low'
               "
               >{{ row.spread_direction }}</span
             >
@@ -109,7 +128,7 @@
         <el-table-column
           fixed="right"
           label="日前低概率"
-          width="auto"
+          width="100"
           align="center"
         >
           <template #default="{ row }">
@@ -139,9 +158,9 @@
       >
         <span>📐</span>
         <span
-          ><strong>价差方向 & 日前低概率（最后两固定列）：</strong> 以 08:00
-          为例，4 个日期中有 3 个价差为「日前低」，所以价差方向 =
-          日前低，日前低概率 = 3÷4 = 75%。23:00 有 2/4 = 50%。</span
+          ><strong>低价方向 & 日前低概率（最后两固定列）：</strong> 以 08:00
+          为例，4 个日期中有 3 个价差为负（日前 < 实时），所以低价方向 =
+          「日前」，日前低概率 = 3÷4 = 75%。23:00 有 2/4 = 50%。</span
         >
       </div>
       <div
@@ -158,7 +177,7 @@
           价差方向、日前低概率（末两列，右固定）</span
         >
         <span
-          ><strong>流向策略表：</strong> 价差方向 → 策略表第8列, 日前低概率 →
+          ><strong>流向策略表：</strong> 低价方向 → 策略表第8列, 日前低概率 →
           策略表第9列</span
         >
       </div>
@@ -167,53 +186,62 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import { View, Hide } from "@element-plus/icons-vue";
+
+const showPriceColumns = ref(true);
 
 const props = defineProps({
   data: { type: Object, default: null },
 });
 
+// ── 表头配色方案 ──────────────────────────────────────────────
+// 日期列交替色：优雅蓝色系（正式·不深沉）
 const headerSchemes = [
-  { bg: "#e6f7ff", color: "#1890ff", subBg: "#e6f7ff" },
-  { bg: "#f6ffed", color: "#52c41a", subBg: "#f6ffed" },
-  { bg: "#fff7e6", color: "#fa8c16", subBg: "#fff7e6" },
+  { bg: "#5588D0", color: "#ffffff" },
+  { bg: "#3366AA", color: "#ffffff" },
 ];
 
-function headerCellStyle({ rowIndex, column }) {
+// 固定列（时段、价差方向、日前低概率）统一色 — 区别于日期交替列
+const fixedHeaderStyle = {
+  background: "#4276B8",
+  color: "#ffffff",
+  border: "1px solid #5A8ECC",
+};
+
+function headerCellStyle({ rowIndex, column, columnIndex }) {
   if (column.fixed) {
-    if (rowIndex === 0) {
-      return {
-        background: "#f5f7fa",
-        color: "#303133",
-        fontWeight: 600,
-        fontSize: "13px",
-        border: "1px solid #ebeef5",
-      };
-    }
     return {
-      background: "#f5f7fa",
-      fontSize: "11px",
-      fontWeight: 500,
-      border: "1px solid #ebeef5",
+      ...fixedHeaderStyle,
+      fontWeight: rowIndex === 0 ? 600 : 500,
+      fontSize: rowIndex === 0 ? "14px" : "13px",
     };
   }
 
   if (rowIndex === 0) {
-    const scheme = headerSchemes[column.no % 3];
+    // Row 0：日期表头，"时段"是固定列已提前返回
+    // columnIndex 1 = date1, 2 = date2, 3 = date3, 4 = date4
+    const scheme = headerSchemes[(columnIndex - 1) % 2];
     return {
       background: scheme.bg,
       color: scheme.color,
-      fontSize: "13px",
-      border: "1px solid #ebeef5",
+      fontWeight: 600,
+      fontSize: "16px",
+      border: "1px solid #5A8ECC",
     };
   }
 
-  const idx = column.no % 3;
+  // Row 1：子列，"时段"有 rowspan=2 不在此行出现
+  // 显示电价列时每3列一组(日前/实时/价差)，隐藏时每1列一组(仅价差)
+  const colsPerDate = showPriceColumns.value ? 3 : 1;
+  const groupIdx = Math.floor(columnIndex / colsPerDate);
+  const scheme = headerSchemes[groupIdx % 2];
   return {
-    background: headerSchemes[idx].subBg || headerSchemes[idx].bg,
-    fontSize: "11px",
+    background: scheme.bg,
+    color: "#ffffff",
+    fontSize: "13px",
     fontWeight: 500,
-    border: "1px solid #ebeef5",
+    border: "1px solid #5A8ECC",
   };
 }
 
@@ -266,13 +294,13 @@ const tableData = computed(() => {
         spread: price.spread,
       };
     });
-    let spreadDirection = "日前高";
+    let spreadDirection = "实时";
     if (p.spread_direction === true || p.spread_direction === "日前低") {
-      spreadDirection = "日前低";
+      spreadDirection = "日前";
     } else if (p.spread_direction === false) {
-      spreadDirection = "日前高";
+      spreadDirection = "实时";
     } else if (typeof p.spread_direction === "string") {
-      spreadDirection = p.spread_direction;
+      spreadDirection = p.spread_direction === "日前高" ? "实时" : "日前";
     }
     let lowProb = p.low_probability;
     if (typeof lowProb === "number") {
@@ -375,6 +403,22 @@ function getSpread(period, dateStr) {
     cls: v >= 0 ? "spread-num-positive" : "spread-num-negative",
   };
 }
+
+// 价差列单元格背景：负值为绿色
+function spreadCellStyle({ row, column }, dateStr) {
+  // 防御：不应用于固定列，防止 Element Plus v-if 列隐藏后 :cell-style 泄漏到固定右列
+  if (column?.fixed) return {};
+  const data = row.dates?.[dateStr];
+  if (
+    data &&
+    data.spread !== null &&
+    data.spread !== undefined &&
+    Number(data.spread) < 0
+  ) {
+    return { background: "#dcfce7" };
+  }
+  return {};
+}
 </script>
 
 <style scoped lang="scss">
@@ -421,30 +465,44 @@ function getSpread(period, dateStr) {
 }
 
 .price-table-wrapper {
-  overflow-x: auto;
   border: 1px solid #ebeef5;
   border-radius: 6px;
   margin: 0;
 
   :deep(.el-table) {
     border: none;
-    font-size: 12px;
+    font-size: 14px;
 
     th.el-table__cell {
       border: 1px solid #ebeef5;
-      padding: 5px 4px;
+      padding: 2px 3px;
     }
 
     td.el-table__cell {
       border: 1px solid #ebeef5;
-      padding: 5px 4px;
+      padding: 2px 3px;
       color: #606266;
+    }
+
+    // 单元格内容禁止换行
+    .cell {
+      white-space: nowrap;
+      word-break: keep-all;
     }
   }
 
-  :deep(.el-table__body) {
+  :deep(.el-table__body-wrapper) {
+    // 价差负值单元格背景色（CSS 方式，不依赖 :cell-style）
+    td.el-table__cell:has(.spread-num-negative) {
+      background: #dcfce7;
+    }
     tr:nth-child(even) td {
       background: #fafafa;
+    }
+
+    // 偶数行价差负值仍需绿色（覆盖斑马纹）
+    tr:nth-child(even) td:has(.spread-num-negative) {
+      background: #dcfce7;
     }
 
     tr:hover td {
@@ -453,10 +511,27 @@ function getSpread(period, dateStr) {
       border-bottom: 1px solid #1da3fd !important;
     }
 
+    // 保持负价差单元格 hover 时仍为绿色
+    tr:hover td:has(.spread-num-negative) {
+      background: #dcfce7 !important;
+    }
+
     tr:nth-child(even):hover td {
       background: #e6f7ff !important;
       border-top: 1px solid #1da3fd !important;
       border-bottom: 1px solid #1da3fd !important;
+    }
+
+    // 保持负价差单元格 hover 时仍为绿色（偶数行）
+    tr:nth-child(even):hover td:has(.spread-num-negative) {
+      background: #dcfce7 !important;
+    }
+  }
+
+  // 固定右列区域：防御性重置绿色背景，防止 :cell-style 泄漏
+  :deep(.el-table__fixed-body-wrapper) {
+    td.el-table__cell:has(.spread-num-negative) {
+      background: transparent !important;
     }
   }
 
@@ -472,6 +547,26 @@ function getSpread(period, dateStr) {
   :deep(.el-table__fixed-body-wrapper td) {
     border: 1px solid #ebeef5;
   }
+}
+
+// 滚动条美化
+:deep(.el-table__body-wrapper::-webkit-scrollbar) {
+  width: 8px;
+  height: 8px;
+}
+
+:deep(.el-table__body-wrapper::-webkit-scrollbar-thumb) {
+  background: #c1c8d6;
+  border-radius: 4px;
+}
+
+:deep(.el-table__body-wrapper::-webkit-scrollbar-thumb:hover) {
+  background: #a0aab8;
+}
+
+:deep(.el-table__body-wrapper::-webkit-scrollbar-track) {
+  background: #f0f2f5;
+  border-radius: 4px;
 }
 
 .pct {
@@ -491,58 +586,64 @@ function getSpread(period, dateStr) {
 }
 
 .spread {
+  // ── 价差方向标签（日前高 / 日前低）─ 优雅正式 ──
   &-low {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    background: #f6ffed;
-    color: #52c41a;
-    border: 1px solid #b7eb8f;
+    background: #f0f7f3;
+    color: #068244;
+    border: 1px solid #c5dcce;
     border-radius: 4px;
-    padding: 1px 8px;
-    font-size: 11px;
-    font-weight: 600;
+    padding: 1px 10px;
+    font-size: 14px;
+    font-weight: 500;
   }
 
   &-high {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    background: #fff7e6;
-    color: #fa8c16;
-    border: 1px solid #ffd591;
+    background: #fdf6ed;
+    color: #ea6f0b;
+    border: 1px solid #ead9bd;
     border-radius: 4px;
-    padding: 1px 8px;
-    font-size: 11px;
-    font-weight: 600;
+    padding: 1px 10px;
+    font-size: 14px;
+    font-weight: 500;
   }
 
+  // ── 价差数值（正数 / 负数）─ 优雅正式 ──
   &-num-positive {
     font-weight: 600;
-    font-size: 12px;
-    color: #fa8c16;
+    font-size: 16px;
+    color: #b07d44;
   }
 
   &-num-negative {
-    font-weight: 600;
-    font-size: 12px;
-    color: #52c41a;
+    font-weight: 700;
+    font-size: 16px;
+    color: #15803d;
   }
 }
 
+// 单元格样式：
 .price {
+  // 结算电价（主数据）
   &-val {
     font-weight: 400;
-    font-size: 11px;
-    color: #999;
+    font-size: 15px;
+    color: #1a365d;
   }
 
   &-fallback {
+    // 节点电价（降级备选）
     font-weight: 400;
-    font-size: 11px;
-    color: #999;
+    font-size: 15px;
+    color: #1a365d;
   }
 
+  // 无数据
   &-empty {
     color: #d9d9d9;
   }

@@ -17,6 +17,9 @@ export const useDailyDeclarationHistoryStore = defineStore('dailyDeclarationHist
   const strategyPeriods = computed(() => record.value?.strategyPeriods ?? [])
   const adjustedRatios = computed(() => record.value?.adjustedRatios ?? [])
 
+  const price_forecast = computed(() => record.value?.price_forecast ?? null)
+  const load_forecast = computed(() => record.value?.load_forecast ?? null)
+
   const strategySummary = computed(() => {
     return null
   })
@@ -65,6 +68,7 @@ export const useDailyDeclarationHistoryStore = defineStore('dailyDeclarationHist
     dateInfo, aiQueryText, queryResults,
     allSelectedDates, priceComparisonData,
     strategyPeriods, adjustedRatios,
+    price_forecast, load_forecast,
     strategySummary,
     fetchAllDeclaredDates, fetchDeclarers, fetchRecord, deleteRecord,
   }

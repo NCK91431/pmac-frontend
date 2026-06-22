@@ -9,10 +9,10 @@
         header-row-class-name="strategy-header"
         size="small"
         row-key="period"
-        show-summary
+        :show-summary="!isManualInputMode"
         :summary-method="summaryMethod"
       >
-        <el-table-column fixed="left" prop="period" min-width="55">
+        <el-table-column fixed="left" prop="period" width="60">
           <template #header>
             <div style="line-height: 1.3">时间</div>
           </template>
@@ -22,27 +22,56 @@
         </el-table-column>
         <el-table-column min-width="350">
           <template #header>
-            <div style="line-height: 1.3">合约电量</div>
+            <div
+              class="hydl-title"
+              @click="showContractDetails = !showContractDetails"
+            >
+              <span>合约电量</span>
+
+              <el-text size="small" type="primary">
+                <el-icon :size="14">
+                  <View v-if="!showContractDetails" />
+                  <Hide v-else />
+                </el-icon>
+                {{ showContractDetails ? "隐藏" : "查看" }}
+              </el-text>
+            </div>
           </template>
-          <el-table-column prop="contract_multi_day" min-width="70">
+          <el-table-column
+            v-if="showContractDetails"
+            prop="contract_multi_day"
+            min-width="70"
+          >
             <template #header>多日<br />合约电量</template>
             <template #default="scope">
               {{ formatNum(scope.row.contract_multi_day) }}
             </template>
           </el-table-column>
-          <el-table-column prop="contract_weekly" min-width="70">
+          <el-table-column
+            v-if="showContractDetails"
+            prop="contract_weekly"
+            min-width="70"
+          >
             <template #header>周<br />合约电量</template>
             <template #default="scope">
               {{ formatNum(scope.row.contract_weekly) }}
             </template>
           </el-table-column>
-          <el-table-column prop="contract_monthly" min-width="70">
+          <el-table-column
+            v-if="showContractDetails"
+            prop="contract_monthly"
+            min-width="70"
+          >
             <template #header>月度<br />合约电量</template>
             <template #default="scope">
               {{ formatNum(scope.row.contract_monthly) }}
             </template>
           </el-table-column>
-          <el-table-column prop="contract_yearly" min-width="70">
+          <el-table-column
+            v-if="showContractDetails"
+            prop="contract_yearly"
+            min-width="70"
+          >
             <template #header>年度<br />合约电量</template>
             <template #default="scope">
               {{ formatNum(scope.row.contract_yearly) }}
@@ -57,10 +86,20 @@
             </template>
           </el-table-column>
         </el-table-column>
-        <el-table-column prop="user_estimated" min-width="90">
+        <!-- （算法）用户评估电量 -->
+        <el-table-column prop="user_estimated" min-width="120">
           <template #header>
-            <div class="copy-header">
-              <div>用户评估<br />电量(MWh)</div>
+            <div
+              class="evaluation-column-header"
+              :class="{ active: userEstimatedMode === 'api' }"
+              @click="handleAlgorithmHeaderClick"
+            >
+              <div>
+                <el-icon v-if="userEstimatedMode === 'api'"
+                  ><CircleCheckFilled
+                /></el-icon>
+                算法评估电量<br />(MWh)
+              </div>
               <div
                 class="copy-header-btn"
                 @click.stop="copyColumnValues('user_estimated')"
@@ -73,56 +112,230 @@
             {{ formatNum(scope.row.user_estimated) }}
           </template>
         </el-table-column>
-        <el-table-column prop="spread_direction" min-width="70">
-          <template #header>价差<br />方向</template>
-          <template #default="scope">
-            <span v-if="scope.row.spread_direction" class="spread-low"
-              >日前低</span
-            >
-            <span v-else class="spread-high">日前高</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="spread_probability" min-width="70">
+        <!-- 人工评估电量（始终显示） -->
+        <el-table-column prop="manual_estimated" min-width="130">
           <template #header>
-            <div class="copy-header">
-              <div>日前低<br />概率</div>
+            <div class="manual-estimated-header">
               <div
-                class="copy-header-btn"
-                @click.stop="copyColumnValues('spread_probability')"
+                class="evaluation-column-header"
+                :class="{
+                  active: userEstimatedMode === 'manual',
+                  clickable: props.userEstimatedConfirmed,
+                  'not-clickable': !props.userEstimatedConfirmed,
+                }"
+                @click="handleManualHeaderClick"
               >
-                <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
+                <div>
+                  <el-icon v-if="userEstimatedMode === 'manual'"
+                    ><CircleCheckFilled
+                  /></el-icon>
+                  人工评估电量<br />(MWh)
+                </div>
               </div>
+              <!-- 已确认：复制 + 修改（仅 api 模式） -->
+              <template v-if="props.userEstimatedConfirmed">
+                <div class="header-actions">
+                  <div
+                    class="copy-header-btn"
+                    @click.stop="copyColumnValues('manual_user_estimated')"
+                  >
+                    <el-icon :size="12"><CopyDocument /></el-icon
+                    ><span>复制</span>
+                  </div>
+                  <div
+                    v-if="userEstimatedMode === 'api'"
+                    class="copy-header-btn"
+                    @click.stop="handleModifyManualEstimated"
+                  >
+                    <el-icon :size="12"><Edit /></el-icon><span>修改</span>
+                  </div>
+                </div>
+              </template>
+              <!-- 未确认（编辑态）：确认 + 一键清空 -->
+              <template v-else>
+                <div class="header-actions">
+                  <div
+                    class="copy-header-btn"
+                    :class="{ 'is-disabled': !canConfirmManual }"
+                    @click.stop="canConfirmManual && confirmManualEstimated()"
+                  >
+                    <el-icon :size="12"><CircleCheckFilled /></el-icon
+                    ><span>确认此人工评估电量</span>
+                  </div>
+                  <div
+                    class="copy-header-btn"
+                    @click.stop="handleClearManualEstimated"
+                  >
+                    <el-icon :size="12"><Delete /></el-icon
+                    ><span>一键清空</span>
+                  </div>
+                </div>
+              </template>
             </div>
           </template>
           <template #default="scope">
-            {{ formatPct(scope.row.spread_probability) }}
+            <template v-if="!props.userEstimatedConfirmed">
+              <el-input
+                :model-value="
+                  props.loadForecast?.manual_load_data?.[scope.row.period]
+                "
+                @update:model-value="
+                  (val) => handleManualInput(scope.row.period, val)
+                "
+                size="small"
+                placeholder="输入或粘贴"
+                @paste.prevent="
+                  scope.$index === 0 ? handlePasteOnFirstCell($event) : null
+                "
+              />
+            </template>
+            <template v-else>
+              {{
+                formatNum(
+                  props.loadForecast?.manual_load_data?.[scope.row.period],
+                )
+              }}
+            </template>
           </template>
         </el-table-column>
-        <el-table-column prop="plan_a" min-width="65">
+        <!-- 人工电价预测（表头切换） -->
+        <el-table-column v-if="!isManualInputMode" align="center">
+          <template #header>
+            <div
+              class="evaluation-column-header"
+              :class="{ active: priceForecastingMode === 'manual' }"
+              @click="onPriceForecastingModeChange('manual')"
+            >
+              <div>
+                <el-icon v-if="priceForecastingMode === 'manual'"
+                  ><CircleCheckFilled
+                /></el-icon>
+                人工电价预测<br />(元/MWh)
+              </div>
+            </div>
+          </template>
+
+          <!-- 低价方向 -->
+          <el-table-column prop="spread_direction" min-width="70">
+            <template #header>低价方向</template>
+            <template #default="scope">
+              <span v-if="scope.row.spread_direction" class="spread-low"
+                >日前</span
+              >
+              <span v-else class="spread-high">实时</span>
+            </template>
+          </el-table-column>
+          <!-- 日低价概率 -->
+          <el-table-column prop="spread_probability" min-width="70">
+            <template #header>
+              <div class="copy-header">
+                <div>日前低概率</div>
+                <div
+                  class="copy-header-btn"
+                  @click.stop="copyColumnValues('spread_probability')"
+                >
+                  <el-icon :size="12"><CopyDocument /></el-icon
+                  ><span>复制</span>
+                </div>
+              </div>
+            </template>
+            <template #default="scope">
+              {{ formatPct(scope.row.spread_probability) }}
+            </template>
+          </el-table-column>
+        </el-table-column>
+        <!-- 算法电价预测（表头切换） -->
+        <el-table-column v-if="!isManualInputMode" align="center">
+          <template #header>
+            <div
+              class="evaluation-column-header"
+              :class="{ active: priceForecastingMode === 'api' }"
+              @click="onPriceForecastingModeChange('api')"
+            >
+              <div>
+                <el-icon v-if="priceForecastingMode === 'api'"
+                  ><CircleCheckFilled
+                /></el-icon>
+                算法电价预测<br />(元/MWh)
+              </div>
+            </div>
+          </template>
+
+          <!-- 低价方向 -->
+          <el-table-column prop="api_spread_direction" min-width="70">
+            <template #header>低价方向</template>
+            <template #default="scope">
+              <span
+                v-if="scope.row.api_spread_direction === true"
+                class="spread-low"
+                >日前</span
+              >
+              <span
+                v-else-if="scope.row.api_spread_direction === false"
+                class="spread-high"
+                >实时</span
+              >
+              <span v-else class="no-data">—</span>
+            </template>
+          </el-table-column>
+          <!-- 日低价概率 -->
+          <el-table-column prop="api_spread_probability" min-width="70">
+            <template #header>
+              <div class="copy-header">
+                <div>日前低概率</div>
+                <div
+                  class="copy-header-btn"
+                  @click.stop="copyColumnValues('api_spread_probability')"
+                >
+                  <el-icon :size="12"><CopyDocument /></el-icon
+                  ><span>复制</span>
+                </div>
+              </div>
+            </template>
+            <template #default="scope">
+              {{ formatPct(scope.row.api_spread_probability) }}
+            </template>
+          </el-table-column>
+        </el-table-column>
+
+        <!-- 方案一 -->
+        <el-table-column v-if="!isManualInputMode" prop="plan_a" min-width="65">
           <template #header>方案一</template>
           <template #default="scope">
             {{ formatNum(scope.row.plan_a) }}
           </template>
         </el-table-column>
-        <el-table-column prop="suggested_adjust_ratio" min-width="65">
+        <el-table-column
+          v-if="!isManualInputMode"
+          prop="suggested_adjust_ratio"
+          min-width="65"
+        >
           <template #header>建议调整<br />比例</template>
           <template #default="scope">
             {{ scope.row.suggested_adjust_ratio }}
           </template>
         </el-table-column>
-        <el-table-column prop="plan_b" min-width="65">
+        <el-table-column v-if="!isManualInputMode" prop="plan_b" min-width="65">
           <template #header>方案二</template>
           <template #default="scope">
             {{ formatNum(scope.row.plan_b) }}
           </template>
         </el-table-column>
-        <el-table-column prop="declared_quantity" min-width="75">
+        <el-table-column
+          v-if="!isManualInputMode"
+          prop="declared_quantity"
+          min-width="75"
+        >
           <template #header>日前申报<br />电量</template>
           <template #default="scope">
             {{ formatNum(scope.row.declared_quantity) }}
           </template>
         </el-table-column>
-        <el-table-column prop="declared_ratio" min-width="65">
+        <el-table-column
+          v-if="!isManualInputMode"
+          prop="declared_ratio"
+          min-width="65"
+        >
           <template #header>申报<br />比例</template>
           <template #default="scope">
             <span class="pct-value">{{
@@ -130,7 +343,7 @@
             }}</span>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" width="130">
+        <el-table-column v-if="!isManualInputMode" fixed="right" width="130">
           <template #header>
             <div class="copy-header">
               <div>调整申报<br />比例</div>
@@ -185,7 +398,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" min-width="90">
+        <el-table-column prop="actual_load" fixed="right" min-width="90">
           <template #header>
             <div class="copy-header">
               <div>实际申报<br />电量(MWh)</div>
@@ -249,22 +462,10 @@
           默认比例: {{ defaultCount }}
         </span>
       </div>
-      <div style="display: flex; gap: 8px">
-        <!-- <span
-          style="
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 16px;
-            background: #52c41a;
-            color: #fff;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: default;
-          "
-        >
-          📋 一键复制结果
-        </span> -->
+      <div
+        style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"
+      >
+        <!-- 导出申报结果 -->
         <span
           style="
             display: inline-flex;
@@ -345,8 +546,12 @@
           = 可编辑列
         </span>
         <span>
-          <strong>数据来源：</strong> 合约电量 ×4 / 用户评估电量来自第三方API
-          &nbsp;|&nbsp; 价差方向/日前低概率从 Step 2 导入 &nbsp;|&nbsp;
+          <strong>数据来源：</strong> 合约电量 ×4 &nbsp;|&nbsp;
+          <template v-if="userEstimatedMode === 'api'"
+            >用户评估电量来自第三方 API</template
+          >
+          <template v-else>人工评估电量由用户粘贴输入</template>
+          &nbsp;|&nbsp; 低价方向/日前低概率从 Step 2 导入 &nbsp;|&nbsp;
           其余为公式自动计算
         </span>
       </div>
@@ -356,8 +561,17 @@
 
 <script setup>
 import { ref, computed, h } from "vue";
-import { Edit, CircleCheck, CopyDocument } from "@element-plus/icons-vue";
+import {
+  Edit,
+  Delete,
+  CircleCheckFilled,
+  CircleCheck,
+  CopyDocument,
+  View,
+  Hide,
+} from "@element-plus/icons-vue";
 import { ElMessageBox, ElMessage } from "element-plus";
+import Decimal from "decimal.js";
 import * as XLSX from "xlsx";
 
 const props = defineProps({
@@ -367,12 +581,37 @@ const props = defineProps({
   adjustedRatios: { type: Array, default: () => [] },
   readonly: { type: Boolean, default: false },
   submitted: { type: Boolean, default: false },
+  priceForecast: { type: Object, default: null },
+  loadForecast: { type: Object, default: null },
+  userEstimatedConfirmed: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["confirm-edit", "reset-all"]);
+const emit = defineEmits([
+  "confirm-edit",
+  "reset-all",
+  "confirm-manual-estimated",
+  "switch-load-forecast-mode",
+  "switch-price-forecast-mode",
+  "update-manual-estimated",
+  "modify-manual-estimated",
+]);
 
 const editingPeriod = ref(null);
 const editValue = ref(1);
+const showContractDetails = ref(false); // 是否显示4列合约电量详情
+
+// 从 props 派生的模式状态
+const userEstimatedMode = computed(
+  () => props.loadForecast?.load_forecasting_method,
+);
+const priceForecastingMode = computed(
+  () => props.priceForecast?.price_forecasting_method,
+);
+
+// 手动待确认态时隐藏部分列
+const isManualInputMode = computed(() => {
+  return userEstimatedMode.value === "manual" && !props.userEstimatedConfirmed;
+});
 
 const tableData = computed(() => {
   return props.periods || [];
@@ -386,6 +625,15 @@ const adjustedCount = computed(() => {
 const defaultCount = computed(() => {
   const total = (props.periods || []).length;
   return total - adjustedCount.value;
+});
+
+const canConfirmManual = computed(() => {
+  const values = props.loadForecast?.manual_load_data ?? {};
+  const keys = Object.keys(values);
+  if (keys.length !== 24) return false;
+  return Object.values(values).every(
+    (v) => v !== null && v !== "" && v !== undefined,
+  );
 });
 
 function formatNum(val) {
@@ -410,19 +658,90 @@ function getAdjustedRatioValue(period) {
   return periodData ? periodData.declared_ratio : 1;
 }
 
+function onPriceForecastingModeChange(mode) {
+  if (mode === priceForecastingMode.value) return; // 已经是该模式，不重复触发
+  emit("switch-price-forecast-mode", mode);
+  const label = mode === "api" ? "算法电价预测" : "人工电价预测";
+  ElMessage.success(`已成功切换到${label}模式`);
+}
+
+// 处理第一个输入框的粘贴事件 — 自动填充全部24行
+function handlePasteOnFirstCell(event) {
+  const pastedText = (event.clipboardData || window.clipboardData).getData(
+    "text",
+  );
+  const values = pastedText
+    .split(/[\n\r]+/)
+    .map((v) => v.trim())
+    .filter((v) => v !== "")
+    .map((v) => {
+      const num = parseFloat(v);
+      return isNaN(num) ? null : num;
+    })
+    .filter((v) => v !== null);
+
+  if (values.length === 0) return;
+
+  const newValues = {};
+  const periods = props.periods || [];
+  for (let i = 0; i < Math.min(periods.length, values.length); i++) {
+    newValues[periods[i].period] = values[i];
+  }
+  emit("update-manual-estimated", newValues);
+  event.preventDefault();
+}
+
+// 确认人工评估电量（仅本地确认，不触发后端请求）
+function confirmManualEstimated() {
+  if (!canConfirmManual.value) return;
+  emit("confirm-manual-estimated");
+}
+
+function getEstimatedValue(row) {
+  if (userEstimatedMode.value === "manual" && props.userEstimatedConfirmed) {
+    return props.loadForecast?.manual_load_data?.[row.period];
+  }
+  return row.user_estimated;
+}
+
+// 点击算法评估电量标题 — 切换到 API 模式并触发后端请求
+function handleAlgorithmHeaderClick() {
+  if (userEstimatedMode.value === "api") return;
+  emit("switch-load-forecast-mode", "api");
+  ElMessage.success("已成功切换到算法评估电量模式");
+}
+
+// 点击人工评估电量标题（仅已确认时可点击）— 切换到人工模式并触发后端请求
+function handleManualHeaderClick() {
+  if (!props.userEstimatedConfirmed) return;
+  emit("switch-load-forecast-mode", "manual");
+  ElMessage.success("已成功切换到人工评估电量模式");
+}
+
+// 一键清空人工评估电量（编辑态）
+function handleClearManualEstimated() {
+  emit("update-manual-estimated", {});
+}
+
+// 修改人工评估电量（确认态 → 编辑态）
+function handleModifyManualEstimated() {
+  emit("modify-manual-estimated");
+}
+
 function calculateActualLoad(row) {
-  const estimatedMwh = parseFloat(row.user_estimated);
-  const declaredQty = parseFloat(row.declared_quantity);
+  const estimatedMwh = getEstimatedValue(row);
+  const declaredQty = row.declared_quantity;
   const adjustedRatio = getAdjustedRatioValue(row.period);
   const originalRatio = row.declared_ratio;
 
   if (adjustedRatio === originalRatio) {
-    if (isNaN(declaredQty)) return "—";
+    if (declaredQty == null || isNaN(Number(declaredQty))) return "—";
     return formatNum(declaredQty);
   }
-  const ratioNum = parseFloat(adjustedRatio);
-  if (isNaN(estimatedMwh) || isNaN(ratioNum) || ratioNum === 0) return "—";
-  return formatNum(estimatedMwh * ratioNum);
+  if (estimatedMwh == null || adjustedRatio == null || adjustedRatio === 0)
+    return "—";
+  const result = new Decimal(estimatedMwh).mul(adjustedRatio).toFixed(2);
+  return result;
 }
 
 function isAdjusted(period) {
@@ -501,9 +820,17 @@ function copyColumnValues(type) {
       values = periods.map((p) => formatNum(p.user_estimated));
       label = "用户评估电量";
       break;
+    case "manual_user_estimated":
+      values = (props.periods || []).map((p) => formatNum(p.manual_estimated));
+      label = "人工评估电量";
+      break;
     case "spread_probability":
       values = periods.map((p) => formatPct(p.spread_probability));
       label = "日前低概率";
+      break;
+    case "api_spread_probability":
+      values = periods.map((p) => formatPct(p.api_spread_probability));
+      label = "算法日前低概率";
       break;
     case "adjusted_ratio":
       if (editingPeriod.value !== null) {
@@ -569,6 +896,7 @@ function styledCell(text, color) {
 function summaryMethod({ columns, data }) {
   const sums = [];
   columns.forEach((column, index) => {
+    const prop = column.property;
     if (index === 0) {
       sums[index] = h(
         "span",
@@ -577,52 +905,64 @@ function summaryMethod({ columns, data }) {
       );
       return;
     }
-    if (index >= 1 && index <= 4) {
+    // contract_multi_day / weekly / monthly / yearly
+    if (
+      [
+        "contract_multi_day",
+        "contract_weekly",
+        "contract_monthly",
+        "contract_yearly",
+      ].includes(prop)
+    ) {
       let total = 0;
       data.forEach((row) => {
-        const val = parseFloat(row[column.property]);
+        const val = parseFloat(row[prop]);
         if (!isNaN(val)) total += val;
       });
       sums[index] = styledCell(formatNum(total), "#000");
       return;
     }
-    if (index === 5) {
+    // user_estimated (always from third-party API)
+    if (prop === "user_estimated") {
       let total = 0;
       data.forEach((row) => {
-        const val = parseFloat(row[column.property]);
+        const val = parseFloat(row[prop]);
         if (!isNaN(val)) total += val;
       });
       sums[index] = styledCell(formatNum(total), "#52c41a");
       return;
     }
-    if (index === 6) {
+    // manual input column (no prop) — skip
+    if (!prop) {
+      sums[index] = "";
+      return;
+    }
+    // spread_direction / plan_a / plan_b
+    if (
+      ["spread_direction", "api_spread_direction", "plan_a", "plan_b"].includes(
+        prop,
+      )
+    ) {
       let total = 0;
       data.forEach((row) => {
-        const val = parseFloat(row[column.property]);
+        const val = parseFloat(row[prop]);
         if (!isNaN(val)) total += val;
       });
       sums[index] = styledCell(formatNum(total), "#000");
       return;
     }
-    if (index === 9 || index === 11) {
+    // declared_quantity (绿色)
+    if (prop === "declared_quantity") {
       let total = 0;
       data.forEach((row) => {
-        const val = parseFloat(row[column.property]);
-        if (!isNaN(val)) total += val;
-      });
-      sums[index] = styledCell(formatNum(total), "#000");
-      return;
-    }
-    if (index === 12) {
-      let total = 0;
-      data.forEach((row) => {
-        const val = parseFloat(row[column.property]);
+        const val = parseFloat(row[prop]);
         if (!isNaN(val)) total += val;
       });
       sums[index] = styledCell(formatNum(total), "#52c41a");
       return;
     }
-    if (index === 15) {
+    // actual_load
+    if (prop === "actual_load") {
       let total = 0;
       data.forEach((row) => {
         const val = parseFloat(calculateActualLoad(row));
@@ -637,10 +977,34 @@ function summaryMethod({ columns, data }) {
 }
 
 function cellStyle({ row, column, rowIndex, columnIndex }) {
-  if (rowIndex % 2 === 1) {
-    return { background: "#fafafa" };
+  const style = {};
+  // 根据当前评估电量模式高亮对应列
+  if (
+    userEstimatedMode.value === "api" &&
+    column.property === "user_estimated"
+  ) {
+    style.background = "#fff7e6";
+  } else if (
+    userEstimatedMode.value === "manual" &&
+    column.property === "manual_estimated"
+  ) {
+    style.background = "#fff7e6";
+  } else if (
+    priceForecastingMode.value === "manual" &&
+    (column.property === "spread_direction" ||
+      column.property === "spread_probability")
+  ) {
+    style.background = "#fff7e6";
+  } else if (
+    priceForecastingMode.value === "api" &&
+    (column.property === "api_spread_direction" ||
+      column.property === "api_spread_probability")
+  ) {
+    style.background = "#fff7e6";
+  } else if (rowIndex % 2 === 1) {
+    style.background = "#fafafa";
   }
-  return {};
+  return style;
 }
 
 defineExpose({
@@ -659,7 +1023,7 @@ defineExpose({
   border-radius: 6px;
 
   :deep(.el-table) {
-    font-size: 12px;
+    font-size: 16px;
     border: none;
 
     .el-table__cell {
@@ -847,9 +1211,9 @@ defineExpose({
 
 .spread-high {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 1px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
   color: #d46b08;
@@ -859,9 +1223,9 @@ defineExpose({
 
 .spread-low {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 1px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
   color: #389e0d;
@@ -871,7 +1235,7 @@ defineExpose({
 
 .pct-value {
   font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
-  font-size: 12px;
+  font-size: 16px;
   color: #666;
 }
 
@@ -898,6 +1262,16 @@ defineExpose({
   }
 }
 
+.hydl-title {
+  color: #303133;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
 .confirm-btn {
   display: inline-flex;
   align-items: center;
@@ -917,7 +1291,7 @@ defineExpose({
 
 .adjusted-val {
   font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
   padding: 0 2px;
 }
@@ -966,23 +1340,25 @@ defineExpose({
   gap: 8px;
 }
 
+// 实际申报电量
 .actual-load {
   &-default {
     font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
-    font-size: 12px;
+    font-size: 15px;
     color: #606266;
+    font-weight: 600;
   }
 
   &-up {
     font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 600;
     color: #d46b08;
   }
 
   &-down {
     font-family: "SF Mono", "Menlo", "Monaco", "Consolas", monospace;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 600;
     color: #5586e4;
   }
@@ -1015,5 +1391,87 @@ defineExpose({
   &:active {
     background: #bae7ff;
   }
+
+  &.is-disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// 电价预测切换表头
+.price-forecast-header {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8c8c8c;
+  background: #f5f7fa;
+  border: 1px solid #d9d9d9;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+  }
+
+  &.active {
+    color: #fff;
+    background: #1890ff;
+    border-color: #1890ff;
+  }
+}
+
+.no-data {
+  color: #d9d9d9;
+}
+
+// 评估电量列标题 — 可点击
+.evaluation-column-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  color: #8c8c8c;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #595959;
+  }
+
+  &.active {
+    color: #d46b08;
+    font-weight: 700;
+  }
+
+  &.not-clickable {
+    cursor: not-allowed;
+    color: #bfbfbf;
+
+    &:hover {
+      color: #bfbfbf;
+    }
+  }
+}
+
+.manual-estimated-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 </style>

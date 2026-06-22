@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { mainTableDataApi, dateInfoApi } from '@/DailyDemandReportV2/api'
+import { ref, computed } from 'vue'
+import { mainTableDataApi, dateInfoApi, confirmProfitDataApi, unconfirmProfitDataApi, confirmStatusApi } from '@/DailyDemandReportV2/api'
+import dayjs from 'dayjs'
 
 export const useDailyProfitStore = defineStore('dailyProfit', () => {
   const currentDate = ref('')
@@ -9,6 +10,67 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
   const dailySummary = ref({})
   const loading = ref(false)
 
+  // ====== 确认状态 ======
+  const confirmedDates = ref([])
+  const confirmedDatesSet = computed(() => new Set(confirmedDates.value))
+  const confirmLoading = ref(false)
+
+  /** 获取当月确认状态 */
+  async function fetchConfirmedDates(month) {
+    try {
+      const res = await confirmStatusApi(month)
+      if (res.data?.success) {
+        confirmedDates.value = res.data.confirmedDates || []
+      }
+    } catch (error) {
+      console.error('获取确认状态失败:', error)
+    }
+  }
+
+  /** 获取当前日期所在月的确认状态 */
+  async function fetchCurrentMonthConfirmedDates() {
+    if (!currentDate.value) return
+    const month = dayjs(currentDate.value).format('YYYY-MM')
+    await fetchConfirmedDates(month)
+  }
+
+  /** 确认数据 */
+  async function confirmData(date) {
+    confirmLoading.value = true
+    try {
+      const res = await confirmProfitDataApi(date)
+      if (res.data?.success) {
+        await fetchCurrentMonthConfirmedDates()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('确认数据失败:', error)
+      return false
+    } finally {
+      confirmLoading.value = false
+    }
+  }
+
+  /** 取消确认 */
+  async function unconfirmData(date) {
+    confirmLoading.value = true
+    try {
+      const res = await unconfirmProfitDataApi(date)
+      if (res.data?.success) {
+        await fetchCurrentMonthConfirmedDates()
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('取消确认失败:', error)
+      return false
+    } finally {
+      confirmLoading.value = false
+    }
+  }
+
+  // ====== 原有方法 ======
   async function fetchProfitData(date) {
     currentDate.value = date
     loading.value = true
@@ -45,6 +107,8 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     hourlyResults.value = []
     dailySummary.value = {}
     loading.value = false
+    confirmedDates.value = []
+    confirmLoading.value = false
   }
 
   return {
@@ -53,6 +117,15 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     hourlyResults,
     dailySummary,
     loading,
+    // 确认状态
+    confirmedDates,
+    confirmedDatesSet,
+    confirmLoading,
+    fetchConfirmedDates,
+    fetchCurrentMonthConfirmedDates,
+    confirmData,
+    unconfirmData,
+    // 原有方法
     fetchProfitData,
     fetchDateInfo,
     resetData,

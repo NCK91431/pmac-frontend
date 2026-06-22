@@ -49,7 +49,7 @@
         <el-table-column
           label="现货电量"
           prop="spotPower"
-          width="auto"
+          width="100"
           align="right"
           header-align="center"
         >
@@ -65,7 +65,7 @@
         <el-table-column
           label="实际用电量"
           prop="actualPower"
-          width="auto"
+          width="105"
           align="right"
           header-align="center"
         >
@@ -78,7 +78,7 @@
         <el-table-column
           label="用户评估用电量"
           prop="userEstimatedPower"
-          width="auto"
+          width="100"
           align="right"
           header-align="center"
         >
@@ -209,7 +209,7 @@
         <el-table-column
           label="现货电费"
           prop="spotFee"
-          width="auto"
+          width="105"
           align="right"
           header-align="center"
         >
@@ -219,7 +219,9 @@
             ></template
           >
           <template #default="{ row }">
-            <span class="fee-highlight">{{ formatNumber(row.spotFee) }}</span>
+            <span class="fee-highlight">{{
+              formatNumber(row.spotFee, 2)
+            }}</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -235,7 +237,7 @@
             ></template
           >
           <template #default="{ row }">
-            {{ formatNumber(row.spotUnitPrice) }}
+            {{ formatNumber(row.spotUnitPrice, 2) }}
           </template>
         </el-table-column>
         <el-table-column
@@ -270,6 +272,9 @@
           align="center"
           header-align="center"
         >
+          <template #header
+            ><span class="header-unit">申报预估低价方向</span></template
+          >
           <template #default="{ row }">
             <el-tag
               :type="
@@ -289,6 +294,9 @@
           align="center"
           header-align="center"
         >
+          <template #header
+            ><span class="header-unit">实际申报低价方向</span></template
+          >
           <template #default="{ row }">
             <el-tag
               :type="
@@ -310,6 +318,9 @@
           align="center"
           header-align="center"
         >
+          <template #header
+            ><span class="header-unit">实际低价方向</span></template
+          >
           <template #default="{ row }">
             <el-tag
               :type="
@@ -322,10 +333,12 @@
             </el-tag>
           </template>
         </el-table-column>
+        <!-- ==================== 电价方向分析（双层标题） ==================== -->
+        <!-- 申报价差捕获率 -->
         <el-table-column
           label="申报价差捕获率"
           prop="declaredSpreadCaptureRate"
-          width="auto"
+          width="110"
           align="right"
           header-align="center"
         >
@@ -339,14 +352,15 @@
                 'capture-low': row.declaredSpreadCaptureRate < 0,
               }"
             >
-              {{ formatNumber(row.declaredSpreadCaptureRate) }}
+              {{ formatNumber(row.declaredSpreadCaptureRate, 2) }}
             </span>
           </template>
         </el-table-column>
+        <!-- 实际价差捕获率 -->
         <el-table-column
           label="实际价差捕获率"
           prop="actualSpreadCaptureRate"
-          width="auto"
+          width="110"
           align="right"
           header-align="center"
         >
@@ -360,7 +374,7 @@
                 'capture-low': row.actualSpreadCaptureRate < 0,
               }"
             >
-              {{ formatNumber(row.actualSpreadCaptureRate) }}
+              {{ formatNumber(row.actualSpreadCaptureRate, 2) }}
             </span>
           </template>
         </el-table-column>
@@ -388,7 +402,7 @@ function headerCellStyle({ columnIndex, rowIndex }) {
       backgroundColor: "#0d3b2e",
       color: "#ffffff",
       fontWeight: 600,
-      fontSize: "12px",
+      fontSize: "16px",
       padding: "6px 4px",
       borderColor: "#1a5a48",
     };
@@ -407,15 +421,21 @@ function headerCellStyle({ columnIndex, rowIndex }) {
 function cellStyle({ column, row }) {
   return {
     padding: "5px 6px",
-    fontSize: "12px",
+    fontSize: "14px",
     fontFamily: '"JetBrains Mono", "Fira Code", "Consolas", monospace',
     borderColor: "#e8e8e8",
   };
 }
 
 /** 格式化数字 */
-function formatNumber(value) {
+function formatNumber(value, fractionDigits) {
   if (value === null || value === undefined || isNaN(value)) return "-";
+  if (fractionDigits !== undefined) {
+    return Number(value).toLocaleString("zh-CN", {
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    });
+  }
   return Number(value).toLocaleString("zh-CN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 6,
@@ -425,7 +445,7 @@ function formatNumber(value) {
 /** 格式化百分比 */
 function formatPercent(value) {
   if (value === null || value === undefined || isNaN(value)) return "-";
-  return (Number(value) * 100).toFixed(2) + "%";
+  return Math.round(Number(value) * 100) + "%";
 }
 
 /** 汇总行计算 */
@@ -436,14 +456,12 @@ function summaryMethod({ columns, data }) {
     const prop = column.property;
     if (!prop || !data.length) return "";
 
-    // 不需要汇总的字段（百分比/比率/价格/文本/方向）
+    // 不需要汇总的字段
     const nonSummable = [
       "midLongPositionRatio",
       "declarationRatio",
       "actualDeclarationRatio",
       "spreadProbability",
-      "declaredSpreadCaptureRate",
-      "actualSpreadCaptureRate",
       "dayAheadSettlementPrice",
       "realTimeSettlementPrice",
       "clearingPriceSpread",
@@ -454,6 +472,23 @@ function summaryMethod({ columns, data }) {
     ];
 
     if (nonSummable.includes(prop)) return "-";
+
+    // 价差捕获率合计：正数之和 / 绝对值总和
+    if (
+      prop === "declaredSpreadCaptureRate" ||
+      prop === "actualSpreadCaptureRate"
+    ) {
+      const values = data
+        .map((row) => Number(row[prop]))
+        .filter((v) => !isNaN(v));
+      if (values.length === 0) return "-";
+      const positiveSum = values
+        .filter((v) => v > 0)
+        .reduce((a, b) => a + b, 0);
+      const absSum = values.reduce((a, b) => a + Math.abs(b), 0);
+      if (absSum === 0) return "-";
+      return Math.round((positiveSum / absSum) * 100) + "%";
+    }
 
     // 电量类、电费类字段汇总
     const sum = data.reduce((acc, row) => {

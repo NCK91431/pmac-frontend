@@ -14,11 +14,13 @@ export function priceComparisonApi(dates) {
   return request.post(`${BASE}/price-comparison-table`, { dates })
 }
 
-export function strategyDataApi(declarationDate, priceSpreadInformation) {
-  return request.post(`${BASE}/strategy-data`, {
+export function strategyDataApi(declarationDate, priceForecast, loadForecast) {
+  const requestBody = {
     declaration_date: declarationDate,
-    price_spread_information: priceSpreadInformation
-  })
+    price_forecast: priceForecast,
+    load_forecast: loadForecast,
+  };
+  return request.post(`${BASE}/strategy-data`, requestBody)
 }
 
 export function submitApi(payload) {
@@ -110,4 +112,21 @@ export function monthlyProfitDataApi(month) {
 
 export function dateInfoApi(date) {
   return request.get('/api/auxiliaray_date_info', { params: { date } })
+}
+
+// ====== 日收益数据确认功能 ======
+export function confirmProfitDataApi(declarationDate) {
+  return request.post('/api/daily-profit/confirm', { declaration_date: declarationDate })
+}
+
+export function unconfirmProfitDataApi(declarationDate) {
+  return request.delete('/api/daily-profit/confirm', { data: { declaration_date: declarationDate } })
+}
+
+export function confirmStatusApi(month) {
+  return request.get('/api/daily-profit/confirm-status', { params: { month } })
+}
+
+export function monthlySummaryApi(month) {
+  return request.get('/api/daily-profit/monthly-summary', { params: { month } })
 }

@@ -73,15 +73,15 @@
             {{ formatMoney(monthlySummary.tradingProfit) }}
           </div>
         </div>
-        <div class="card card-deviation-total">
-          <div class="card-label">月度总偏差收益</div>
+        <div class="card card-spot-cost">
+          <div class="card-label">现货成本单价</div>
           <div
             class="card-value"
-            :class="{ negative: monthlySummary.totalDeviationProfit < 0 }"
+            :class="{ negative: monthlySummary.spotCostUnitPrice < 0 }"
           >
             {{
-              monthlySummary.totalDeviationProfit != null
-                ? formatMoney(monthlySummary.totalDeviationProfit)
+              monthlySummary.spotCostUnitPrice != null
+                ? formatMoney(monthlySummary.spotCostUnitPrice)
                 : "-"
             }}
           </div>
@@ -128,211 +128,205 @@
             header-align="center"
             min-width="180"
           >
+            <!-- 年度合约 -->
             <el-table-column
-              label="价差模式切换中长期部分"
-              align="center"
+              label="年度合约电量"
+              prop="yearlyContractPower"
+              width="105"
+              align="right"
               header-align="center"
             >
-              <!-- 年度合约 -->
-              <el-table-column
-                label="年度合约电量"
-                prop="yearlyContractPower"
-                width="105"
-                align="right"
-                header-align="center"
+              <template #header
+                ><span class="header-unit"
+                  >年度合约电量<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >年度合约电量<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="年度合约价格"
-                prop="yearlyContractPrice"
-                width="110"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="年度合约价格"
+              prop="yearlyContractPrice"
+              width="110"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >年度合约价格<br /><small>(元/MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >年度合约价格<br /><small>(元/MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="长协结算电费"
-                prop="yearlySettlementFee"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="长协结算电费"
+              prop="yearlySettlementFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >长协结算电费<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >长协结算电费<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <!-- 月度合约 -->
-              <el-table-column
-                label="月度合约电量"
-                prop="monthlyContractPower"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <!-- 月度合约 -->
+            <el-table-column
+              label="月度合约电量"
+              prop="monthlyContractPower"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >月度合约电量<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >月度合约电量<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="月度合约价格"
-                prop="monthlyContractPrice"
-                width="110"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="月度合约价格"
+              prop="monthlyContractPrice"
+              width="110"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >月度合约价格<br /><small>(元/MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >月度合约价格<br /><small>(元/MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="月度结算电费"
-                prop="monthlySettlementFee"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="月度结算电费"
+              prop="monthlySettlementFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >月度结算电费<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >月度结算电费<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <!-- 周合约 -->
-              <el-table-column
-                label="周合约电量"
-                prop="weeklyContractPower"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <!-- 周合约 -->
+            <el-table-column
+              label="周合约电量"
+              prop="weeklyContractPower"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >周合约电量<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >周合约电量<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="周合约价格"
-                prop="weeklyContractPrice"
-                width="110"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="周合约价格"
+              prop="weeklyContractPrice"
+              width="110"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >周合约价格<br /><small>(元/MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >周合约价格<br /><small>(元/MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="周结算电费"
-                prop="weeklySettlementFee"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="周结算电费"
+              prop="weeklySettlementFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >周结算电费<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >周结算电费<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <!-- 多日合约 -->
-              <el-table-column
-                label="多日合约电量"
-                prop="multiDayContractPower"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <!-- 多日合约 -->
+            <el-table-column
+              label="多日合约电量"
+              prop="multiDayContractPower"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >多日合约电量<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >多日合约电量<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="多日合约价格"
-                prop="multiDayContractPrice"
-                width="110"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="多日合约价格"
+              prop="multiDayContractPrice"
+              width="110"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >多日合约价格<br /><small>(元/MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >多日合约价格<br /><small>(元/MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="多日结算电费"
-                prop="multiDaySettlementFee"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="多日结算电费"
+              prop="multiDaySettlementFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >多日结算电费<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >多日结算电费<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <!-- 中长期合计 -->
-              <el-table-column
-                label="中长期合计电量"
-                prop="midLongTotalPower"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <!-- 中长期合计 -->
+            <el-table-column
+              label="中长期合计电量"
+              prop="midLongTotalPower"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >中长期合计<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >中长期合计<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="中长期平均价格"
-                prop="midLongAvgPrice"
-                width="110"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="中长期平均价格"
+              prop="midLongAvgPrice"
+              width="110"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >中长期均价<br /><small>(元/MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >中长期均价<br /><small>(元/MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="中长期合计电费"
-                prop="midLongTotalFee"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="中长期合计电费"
+              prop="midLongTotalFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >中长期合计<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >中长期合计<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
             </el-table-column>
           </el-table-column>
 
@@ -344,49 +338,43 @@
             min-width="120"
           >
             <el-table-column
-              label="日前市场"
-              align="center"
+              label="日前申报电量"
+              prop="dayAheadDeclaredPower"
+              width="105"
+              align="right"
               header-align="center"
             >
-              <el-table-column
-                label="日前申报电量"
-                prop="dayAheadDeclaredPower"
-                width="105"
-                align="right"
-                header-align="center"
+              <template #header
+                ><span class="header-unit"
+                  >日前申报电量<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >日前申报电量<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="日前结算电价"
-                prop="dayAheadSettlementPrice"
-                width="110"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="日前结算电价"
+              prop="dayAheadSettlementPrice"
+              width="110"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >日前结算电价<br /><small>(元/MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >日前结算电价<br /><small>(元/MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="日前产生电费"
-                prop="dayAheadFee"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="日前产生电费"
+              prop="dayAheadFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >日前产生电费<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >日前产生电费<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
             </el-table-column>
           </el-table-column>
 
@@ -398,49 +386,43 @@
             min-width="120"
           >
             <el-table-column
-              label="实时市场"
-              align="center"
+              label="实际用电量"
+              prop="actualPower"
+              width="105"
+              align="right"
               header-align="center"
             >
-              <el-table-column
-                label="实际用电量"
-                prop="actualPower"
-                width="105"
-                align="right"
-                header-align="center"
+              <template #header
+                ><span class="header-unit"
+                  >实际用电量<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >实际用电量<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="实时结算电价"
-                prop="realTimeSettlementPrice"
-                width="110"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="实时结算电价"
+              prop="realTimeSettlementPrice"
+              width="110"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >实时结算电价<br /><small>(元/MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >实时结算电价<br /><small>(元/MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="实时产生电费"
-                prop="realTimeFee"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="实时产生电费"
+              prop="realTimeFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >实时产生电费<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >实时产生电费<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
             </el-table-column>
           </el-table-column>
 
@@ -452,102 +434,96 @@
             min-width="180"
           >
             <el-table-column
-              label="偏差及转移收益"
-              align="center"
+              label="偏差电量"
+              prop="deviationPower"
+              width="105"
+              align="right"
               header-align="center"
             >
-              <el-table-column
-                label="偏差电量"
-                prop="deviationPower"
-                width="105"
-                align="right"
-                header-align="center"
+              <template #header
+                ><span class="header-unit"
+                  >偏差电量<br /><small>(MWh)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >偏差电量<br /><small>(MWh)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="偏差率"
-                prop="deviationRate"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="偏差率"
+              prop="deviationRate"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit">偏差率</span></template
               >
-                <template #header
-                  ><span class="header-unit">偏差率</span></template
-                >
-                <template #default="{ row }">
-                  {{ formatPercent(row.deviationRate) }}
-                </template>
-              </el-table-column>
-              <el-table-column
-                label="允许偏差收益"
-                prop="allowedDeviationProfit"
-                width="105"
-                align="right"
-                header-align="center"
+              <template #default="{ row }">
+                {{ formatPercent(row.deviationRate) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="允许偏差收益"
+              prop="allowedDeviationProfit"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >允许偏差收益<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >允许偏差收益<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="转移偏差收益"
-                prop="transferredDeviationProfit"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="转移偏差收益"
+              prop="transferredDeviationProfit"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >转移偏差收益<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >转移偏差收益<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="总偏差收益"
-                prop="totalDeviationProfit"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="总偏差收益"
+              prop="totalDeviationProfit"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >总偏差收益<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >总偏差收益<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="扣除金额"
-                prop="deductionAmount"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="扣除金额"
+              prop="deductionAmount"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >扣除金额<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >扣除金额<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="实际偏差收益"
-                prop="actualDeviationProfit"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="实际偏差收益"
+              prop="actualDeviationProfit"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >实际偏差收益<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >实际偏差收益<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
             </el-table-column>
           </el-table-column>
 
@@ -559,46 +535,44 @@
             header-align="center"
             min-width="120"
           >
-            <el-table-column label="汇总" align="center" header-align="center">
-              <el-table-column
-                label="绝对价格总成本"
-                prop="absolutePriceTotalFee"
-                width="115"
-                align="right"
-                header-align="center"
+            <el-table-column
+              label="绝对价格总成本"
+              prop="absolutePriceTotalFee"
+              width="115"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >绝对价格总成本<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >绝对价格总成本<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="售电收入"
-                prop="revenue"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="售电收入"
+              prop="revenue"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >售电收入<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >售电收入<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
-              <el-table-column
-                label="交易收益"
-                prop="tradingProfit"
-                width="105"
-                align="right"
-                header-align="center"
+            </el-table-column>
+            <el-table-column
+              label="交易收益"
+              prop="tradingProfit"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >交易收益<br /><small>(元)</small></span
+                ></template
               >
-                <template #header
-                  ><span class="header-unit"
-                    >交易收益<br /><small>(元)</small></span
-                  ></template
-                >
-              </el-table-column>
             </el-table-column>
           </el-table-column>
 
@@ -629,6 +603,26 @@
     <div v-if="loading" class="loading-overlay">
       <el-loading :fullscreen="false" />
     </div>
+
+    <!-- 数据不完整弹窗 -->
+    <el-dialog
+      v-model="missingDialogVisible"
+      title="数据不完整"
+      width="420px"
+      :close-on-click-modal="false"
+    >
+      <p class="missing-dialog-msg">
+        以下日期尚未确认数据，请前往日收益页面确认后再查看月度汇总
+      </p>
+      <ul class="missing-dialog-list">
+        <li v-for="date in missingDates" :key="date">{{ date }}</li>
+      </ul>
+      <template #footer>
+        <el-button type="primary" @click="missingDialogVisible = false"
+          >我知道了</el-button
+        >
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -637,7 +631,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import dayjs from "dayjs";
 import { Coin, DataLine, List } from "@element-plus/icons-vue";
-import { monthlyProfitDataApi } from "@/DailyDemandReportV2/api";
+import { monthlySummaryApi } from "@/DailyDemandReportV2/api";
 
 const router = useRouter();
 const currentMonth = ref("");
@@ -647,6 +641,10 @@ const monthlySummary = ref(null);
 const totalDays = ref(0);
 const loading = ref(false);
 const searched = ref(false);
+
+// 数据不完整弹窗
+const missingDialogVisible = ref(false);
+const missingDates = ref([]);
 
 function onMonthChange(e) {
   currentMonth.value = e.target.value;
@@ -665,12 +663,22 @@ async function fetchData() {
   }
   loading.value = true;
   searched.value = true;
+  // 重置弹窗状态
+  missingDialogVisible.value = false;
+  missingDates.value = [];
+  dailySummaries.value = [];
+  monthlySummary.value = null;
   try {
-    const res = await monthlyProfitDataApi(currentMonth.value);
+    const res = await monthlySummaryApi(currentMonth.value);
     if (res.data?.success && res.data.data) {
+      // 全部已确认，渲染数据
       dailySummaries.value = res.data.data.dailySummaries || [];
       monthlySummary.value = res.data.data.monthlySummary || null;
       totalDays.value = res.data.data.totalDays || 0;
+    } else if (res.data?.allConfirmed === false) {
+      // 有未确认的日期，弹出提示
+      missingDates.value = res.data.missingDates || [];
+      missingDialogVisible.value = true;
     }
   } catch (error) {
     console.error("获取月度收益数据失败:", error);
@@ -989,7 +997,7 @@ onMounted(() => {
   background: linear-gradient(135deg, #f6ffed, #f0f7ff);
 }
 
-.card-deviation-total {
+.card-spot-cost {
   background: linear-gradient(135deg, #fff7e6, #f0f7ff);
 }
 
@@ -1146,5 +1154,33 @@ onMounted(() => {
   justify-content: center;
   background: rgba(255, 255, 255, 0.6);
   z-index: 999;
+}
+
+/* 数据不完整弹窗样式 */
+.missing-dialog-msg {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.missing-dialog-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  li {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #fff7e6;
+    border: 1px solid #ffd591;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #d46b08;
+    font-weight: 500;
+  }
 }
 </style>

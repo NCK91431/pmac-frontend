@@ -145,6 +145,31 @@
         </div>
       </div>
 
+      <!-- 价差表（步骤2） -->
+      <div class="v2-card" style="border-color: #b7eb8f; margin-top: 16px">
+        <div
+          class="v2-card-header"
+          style="padding: 16px 20px 0; border-bottom: none"
+        >
+          <div class="card-title">
+            ⚡ 价差表
+            <span
+              class="v2-badge"
+              style="background: #722ed1; color: #fff; border: none"
+              >选中
+              {{ store.priceComparisonData?.dates?.length || 0 }}
+              天</span
+            >
+          </div>
+          <div class="price-header-hints">
+            <span>⬅ 时段固定</span>
+            <span>➡ 低价方向/概率固定</span>
+            <span>中间列可横向滚动</span>
+          </div>
+        </div>
+        <PriceComparisonTable :data="store.priceComparisonData" />
+      </div>
+
       <div v-if="!isStep2Readonly" class="step-nav">
         <el-button
           v-if="!isEditMode"
@@ -210,7 +235,7 @@
           </div>
           <div class="price-header-hints">
             <span>⬅ 时段固定</span>
-            <span>➡ 价差方向/概率固定</span>
+            <span>➡ 低价方向/概率固定</span>
             <span>中间列可横向滚动</span>
           </div>
         </div>
@@ -253,10 +278,22 @@
           :adjusted-ratios="store.adjustedRatios"
           :readonly="isStep3Readonly"
           :submitted="isStep3Submitted"
+          :load-forecast="store.load_forecast"
+          :price-forecast="store.price_forecast"
+          :user-estimated-confirmed="store.userEstimatedConfirmed"
           @confirm-edit="
             (payload) => store.setAdjustedRatio(payload.period, payload.ratio)
           "
           @reset-all="store.resetAdjustedRatios"
+          @confirm-manual-estimated="handleConfirmManualEstimated"
+          @switch-load-forecast-mode="handleSwitchLoadForecastMode"
+          @switch-price-forecast-mode="handleSwitchPriceForecastMode"
+          @update-manual-estimated="
+            (values) => store.setLoadForecast('manual_load_data', values)
+          "
+          @modify-manual-estimated="
+            () => store.setUserEstimatedConfirmed(false)
+          "
         />
       </div>
 
@@ -295,7 +332,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Loading } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
@@ -324,7 +361,7 @@ import "@/DailyDemandReportV2/styles/index.scss";
 
 const store = useDailyDeclarationV2Store();
 const router = useRouter();
-const { isEditMode, editDate } = useEditMode();
+const { isEditMode, editDate, editDeclarantId } = useEditMode();
 const strategyTableRef = ref(null);
 const { goToStep2, goToStep3, goBackToStep1, goBackToStep2 } =
   useStepNavigation();
@@ -351,6 +388,28 @@ const isStep3Submitted = computed(
 
 const selectedDateSet = computed(
   () => new Set(store.allSelectedDates.map((d) => d.date)),
+);
+
+// 监听已选中日期变化，自动获取价差表数据（步骤2实时预览，独立于步骤3）
+watch(
+  () => store.allSelectedDates,
+  async (dates) => {
+    if (dates && dates.length > 0) {
+      const dateList = dates.map((d) => d.date);
+      try {
+        const res = await store.fetchPriceComparison(dateList);
+        if (!res.success) {
+          store.priceComparisonData = null;
+        }
+      } catch (e) {
+        console.error("获取价差表数据失败", e);
+        store.priceComparisonData = null;
+      }
+    } else {
+      store.priceComparisonData = null;
+    }
+  },
+  { deep: true, immediate: true },
 );
 
 const confirmSummary = computed(() => ({
@@ -432,6 +491,27 @@ function buildPayload() {
   };
 }
 
+/*
+ * 确认手动输入的负荷预测数据 点击“确认此人工评估电量”
+ */
+function handleConfirmManualEstimated() {
+  store.setUserEstimatedConfirmed(true);
+}
+/*
+ * 切换负荷预测模式 选中标题“算法评估电量”- manual “人工评估电量” - api
+ */
+async function handleSwitchLoadForecastMode(mode) {
+  store.setLoadForecast("load_forecasting_method", mode);
+  await store.fetchStrategyData();
+}
+/*
+ * 切换电价预测模式 选中标题“算法电价预测”- manual “人工电价预测” - api
+ */
+async function handleSwitchPriceForecastMode(mode) {
+  store.setPriceForecast("price_forecasting_method", mode);
+  await store.fetchStrategyData();
+}
+
 function handleSubmit() {
   if (strategyTableRef.value?.hasUnconfirmedEdit) {
     ElMessageBox.alert(
@@ -460,6 +540,7 @@ async function handleConfirmSubmit() {
   if (result.success) {
     store.markStepCompleted(3);
     store.setSubmitted(true);
+    store.priceComparisonData = null;
     showSuccess.value = true;
   } else {
     ElMessage.error("提交失败");
@@ -480,7 +561,7 @@ onMounted(async () => {
   if (isEditMode.value && editDate.value) {
     store.setDeclarationDate(editDate.value);
     try {
-      const res = await historyDetailApi(editDate.value);
+      const res = await historyDetailApi(editDate.value, editDeclarantId.value);
       if (res.data.success && res.data.data) {
         store.prefillFromRecord(res.data.data);
         store.markStepCompleted(1);

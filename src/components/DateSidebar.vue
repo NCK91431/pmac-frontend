@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const props = defineProps({
   modelValue: {
@@ -102,7 +102,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue', 'collapse'])
+const emit = defineEmits(['update:modelValue', 'collapse', 'month-change'])
 
 const collapsed = ref(false)
 const calendarDate = ref(new Date())
@@ -117,6 +117,11 @@ expandedYear.value = currentYearVal
 const defaultMonth = `${currentYearVal}-${String(currentMonthVal).padStart(2, '0')}`
 expandedMonth.value = defaultMonth
 calendarDate.value = new Date(currentYearVal, currentMonthVal - 1, 1)
+
+// 挂载后通知父组件初始展开月份
+onMounted(() => {
+  emit('month-change', defaultMonth)
+})
 
 const yearList = computed(() => {
   const years = []
@@ -188,6 +193,8 @@ function toggleMonth(year, month) {
     expandedYear.value = year
     expandedMonth.value = key
     calendarDate.value = new Date(year, month - 1, 1)
+    // 展开新月份时通知父组件刷新确认状态
+    emit('month-change', key)
   }
 }
 
