@@ -932,6 +932,17 @@ function summaryMethod({ columns, data }) {
       sums[index] = styledCell(formatNum(total), "#52c41a");
       return;
     }
+    // manual_estimated (人工评估电量)
+    if (prop === "manual_estimated") {
+      let total = 0;
+      const manualData = props.loadForecast?.manual_load_data ?? {};
+      Object.values(manualData).forEach((val) => {
+        const num = parseFloat(val);
+        if (!isNaN(num)) total += num;
+      });
+      sums[index] = styledCell(formatNum(total), "#000");
+      return;
+    }
     // manual input column (no prop) — skip
     if (!prop) {
       sums[index] = "";

@@ -29,6 +29,5 @@ coverage
 .superpowers/
 .worktrees/
 *.tsbuildinfo
+.public/
 新需求文档
-
-public/

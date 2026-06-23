@@ -45,11 +45,14 @@
               >中长期合计电量<br /><small>(MWh)</small></span
             ></template
           >
+          <template #default="{ row }">
+            {{ formatNumber(row.midLongTotalPower, 2) }}
+          </template>
         </el-table-column>
         <el-table-column
           label="现货电量"
           prop="spotPower"
-          width="100"
+          width="auto"
           align="right"
           header-align="center"
         >
@@ -59,13 +62,15 @@
             ></template
           >
           <template #default="{ row }">
-            <span class="fee-highlight">{{ formatNumber(row.spotPower) }}</span>
+            <span class="fee-highlight">{{
+              formatNumber(row.spotPower, 2)
+            }}</span>
           </template>
         </el-table-column>
         <el-table-column
           label="实际用电量"
           prop="actualPower"
-          width="105"
+          width="auto"
           align="right"
           header-align="center"
         >
@@ -74,11 +79,14 @@
               >实际用电量<br /><small>(MWh)</small></span
             ></template
           >
+          <template #default="{ row }">
+            {{ formatNumber(row.actualPower, 2) }}
+          </template>
         </el-table-column>
         <el-table-column
           label="用户评估用电量"
           prop="userEstimatedPower"
-          width="100"
+          width="auto"
           align="right"
           header-align="center"
         >
@@ -186,7 +194,7 @@
         <el-table-column
           label="出清价差价"
           prop="clearingPriceSpread"
-          width="auto"
+          width="100"
           align="right"
           header-align="center"
         >
@@ -256,6 +264,32 @@
             }}</span>
           </template>
         </el-table-column>
+      </el-table-column>
+
+      <!-- ==================== 交易收益 ==================== -->
+      <el-table-column
+        label="交易收益"
+        prop="tradingProfit"
+        width="120"
+        align="right"
+        header-align="center"
+      >
+        <template #header
+          ><span class="header-unit"
+            >交易收益<br /><small>(元)</small></span
+          ></template
+        >
+        <template #default="{ row }">
+          <span
+            :class="{
+              'profit-positive': row.tradingProfit >= 0,
+              'profit-negative': row.tradingProfit < 0,
+            }"
+            class="trading-profit"
+          >
+            {{ formatNumber(row.tradingProfit, 2) }}
+          </span>
+        </template>
       </el-table-column>
 
       <!-- ==================== 电价方向分析（单层标题） ==================== -->
@@ -496,6 +530,8 @@ function summaryMethod({ columns, data }) {
       return acc + (isNaN(val) ? 0 : val);
     }, 0);
 
+    if (prop === "spotFee" || prop === "tradingProfit")
+      return formatNumber(sum, 2);
     return formatNumber(sum);
   });
 }
@@ -504,13 +540,11 @@ function summaryMethod({ columns, data }) {
 <style scoped>
 .daily-profit-sub-table {
   overflow: hidden;
-  border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   background: #fff;
 }
 
 :deep(.el-table) {
-  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -611,6 +645,18 @@ function summaryMethod({ columns, data }) {
 .fee-highlight {
   color: #0d3b2e;
   font-weight: 600;
+}
+
+.profit-positive {
+  color: #16a34a;
+}
+
+.profit-negative {
+  color: #dc2626;
+}
+
+.trading-profit {
+  font-weight: 700;
 }
 
 :deep(.el-table__body-wrapper::-webkit-scrollbar) {

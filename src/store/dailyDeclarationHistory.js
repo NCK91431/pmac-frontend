@@ -21,7 +21,8 @@ export const useDailyDeclarationHistoryStore = defineStore('dailyDeclarationHist
   const load_forecast = computed(() => record.value?.load_forecast ?? null)
 
   const strategySummary = computed(() => {
-    return null
+    const periods = record.value?.strategyPeriods ?? []
+    return { total_periods: periods.length }
   })
 
   async function fetchAllDeclaredDates() {

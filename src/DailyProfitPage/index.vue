@@ -39,12 +39,21 @@
           <template v-if="store.currentDate && !store.loading">
             <template v-if="isConfirmed">
               <span class="confirmed-label">已确认</span>
-              <el-button size="small" @click="handleUnconfirm" :loading="store.confirmLoading">
+              <el-button
+                size="small"
+                @click="handleUnconfirm"
+                :loading="store.confirmLoading"
+              >
                 取消确认
               </el-button>
             </template>
             <template v-else>
-              <el-button type="primary" size="small" @click="handleConfirm" :loading="store.confirmLoading">
+              <el-button
+                type="primary"
+                size="small"
+                @click="handleConfirm"
+                :loading="store.confirmLoading"
+              >
                 确认数据
               </el-button>
             </template>
@@ -61,6 +70,29 @@
           :daily-summary="store.dailySummary"
         />
       </template>
+
+      <!-- 收益分析副表：独立于主表数据，有日期且有申报人时即展示 -->
+      <div v-if="store.currentDate" class="sub-section">
+        <template v-if="declarers.length > 0">
+          <DeclarerSelector
+            v-model="selectedDeclarerId"
+            :declarers="declarers"
+            :declarer-name="declarerName"
+            :total-count="declarers.length"
+            :show-submit-time="false"
+            :show-actions="false"
+            @change="onDeclarerChange"
+          />
+          <DailyProfitSubTable
+            :hourly-results="subHourlyResults"
+            :daily-summary="subDailySummary"
+          />
+        </template>
+        <el-empty
+          v-else-if="!store.loading"
+          description="该日期暂无申报记录，无法查看收益分析副表"
+        />
+      </div>
 
       <template v-else-if="!store.loading && !store.currentDate">
         <div class="empty-state initial-state">
@@ -89,8 +121,14 @@
       @month-change="store.fetchConfirmedDates"
     >
       <template #date-label="{ formattedDate }">
-        <span v-if="store.confirmedDatesSet.has(formattedDate)" class="cal-dot confirmed">✓</span>
-        <span v-else-if="formattedDate <= maxDate" class="cal-dot unconfirmed">未确认</span>
+        <span
+          v-if="store.confirmedDatesSet.has(formattedDate)"
+          class="cal-dot confirmed"
+          >✓</span
+        >
+        <span v-else-if="formattedDate <= maxDate" class="cal-dot unconfirmed"
+          >未确认</span
+        >
       </template>
     </DateSidebar>
 
@@ -111,13 +149,19 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from "vue";
+import { ref, watch, onMounted, computed, inject } from "vue";
 import dayjs from "dayjs";
 import { Coin, DataLine, List } from "@element-plus/icons-vue";
 import { useDailyProfitStore } from "@/store/dailyProfit";
 import DateSidebar from "@/components/DateSidebar.vue";
 import DateTargetBanner from "@/DailyDemandReportV2/components/DateTargetBanner.vue";
 import DailyProfitMainTable from "@/DailyDemandReportV2/components/DailyProfitMainTable.vue";
+import DailyProfitSubTable from "@/DailyDemandReportV2/components/DailyProfitSubTable.vue";
+import DeclarerSelector from "@/components/DeclarerSelector.vue";
+import {
+  subTableDataApi,
+  historyDeclarersApi,
+} from "@/DailyDemandReportV2/api";
 import { ElMessage } from "element-plus";
 
 const store = useDailyProfitStore();
@@ -126,6 +170,81 @@ const today = dayjs();
 const maxMonth = today.format("YYYY-MM");
 const maxDate = today.subtract(5, "day").format("YYYY-MM-DD");
 const panelCollapsed = ref(false);
+
+const user = inject("user");
+
+// 申报人选择 & 副表数据
+const declarers = ref([]);
+const selectedDeclarerId = ref(null);
+const selectedDeclarer = ref(null);
+const subHourlyResults = ref([]);
+const subDailySummary = ref({});
+
+const declarerName = computed(() => {
+  if (selectedDeclarer.value) return selectedDeclarer.value.name;
+  return user.value?.name || "—";
+});
+
+async function fetchDeclarers(date) {
+  try {
+    const res = await historyDeclarersApi(date);
+    console.log("[fetchDeclarers] response:", res.data);
+    if (res.data?.success && Array.isArray(res.data.data?.records)) {
+      declarers.value = res.data.data.records;
+      console.log("[fetchDeclarers] 申报人列表:", declarers.value);
+      if (declarers.value.length > 0) {
+        // 优先选中当前用户，否则选第一个
+        const selfRecord = declarers.value.find(
+          (r) => r.declarant_id === user.value?.id,
+        );
+        const target = selfRecord || declarers.value[0];
+        selectedDeclarer.value = target;
+        selectedDeclarerId.value = target.declarant_id;
+        await fetchProfitAnalysis(date, target.declarant_id);
+      }
+    } else {
+      console.warn("[fetchDeclarers] 接口返回异常或无数据:", res.data);
+    }
+  } catch (error) {
+    console.error("[fetchDeclarers] 获取申报人列表失败:", error);
+  }
+}
+
+async function fetchProfitAnalysis(date, declarantId) {
+  try {
+    const res = await subTableDataApi(date, declarantId);
+    if (res.data?.success && res.data.data) {
+      subHourlyResults.value = res.data.data.hourlyResults || [];
+      subDailySummary.value = res.data.data.dailySummary || {};
+      // 将主表的交易收益合并到副表数据中（按时段匹配）
+      mergeTradingProfit();
+    }
+  } catch (error) {
+    console.error("获取日收益分析副表数据失败:", error);
+  }
+}
+
+/** 从主表数据中提取 tradingProfit，按 period 合并到副表 */
+function mergeTradingProfit() {
+  if (!subHourlyResults.value.length || !store.hourlyResults.length) return;
+  const mainMap = new Map(
+    store.hourlyResults.map((r) => [r.period, r.tradingProfit]),
+  );
+  subHourlyResults.value.forEach((row) => {
+    const profit = mainMap.get(row.period);
+    if (profit !== undefined) {
+      row.tradingProfit = profit;
+    }
+  });
+}
+
+function onDeclarerChange(declarantId) {
+  const target = declarers.value.find((d) => d.declarant_id === declarantId);
+  if (target) {
+    selectedDeclarer.value = target;
+    fetchProfitAnalysis(store.currentDate, declarantId);
+  }
+}
 
 // 取消确认弹窗
 const unconfirmDialogVisible = ref(false);
@@ -168,11 +287,29 @@ watch(
   () => store.currentDate,
   async (newDate) => {
     if (newDate) {
+      // 重置副表状态
+      declarers.value = [];
+      selectedDeclarerId.value = null;
+      selectedDeclarer.value = null;
+      subHourlyResults.value = [];
+      subDailySummary.value = {};
+
       await Promise.all([
         store.fetchProfitData(newDate),
         store.fetchDateInfo(newDate),
+        fetchDeclarers(newDate),
       ]);
       // 月份切换的确认状态刷新已由 DateSidebar 的 @month-change 事件处理
+    }
+  },
+);
+
+// 主表数据就绪后，重新合并交易收益到副表（处理竞态条件）
+watch(
+  () => store.hourlyResults,
+  (newResults) => {
+    if (newResults.length > 0 && subHourlyResults.value.length > 0) {
+      mergeTradingProfit();
     }
   },
 );
@@ -316,6 +453,38 @@ onMounted(() => {
 .date-banner {
   padding-left: 24px;
   padding-right: 24px;
+}
+
+.sub-section {
+  margin-top: 16px;
+}
+
+.v2-card {
+  background: #fff;
+
+  overflow: hidden;
+
+  &.sub-card {
+    // border-color: #f59e0b;
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .empty-state {

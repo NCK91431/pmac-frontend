@@ -29,53 +29,18 @@
       <!-- 有记录状态 -->
       <template v-else>
         <!-- 基本信息与功能banner -->
-        <div class="record-banner">
-          <div class="banner-left">
-            <span class="banner-field">
-              共{{ store.declarers.length }}人申报此目标日期
-            </span>
-            <el-select
-              v-model="selectedDeclarerId"
-              placeholder="选择申报人"
-              size="small"
-              style="width: 200px"
-              @change="onDeclarerChange"
-            >
-              <el-option
-                v-for="d in store.declarers"
-                :key="d.declarant_id"
-                :label="d.name"
-                :value="d.declarant_id"
-              >
-                <span style="display: flex; align-items: center; gap: 6px">
-                  <el-tag size="small">用户ID:{{ d.declarant_id }}</el-tag>
-                  <span>{{ d.name }}</span>
-                </span>
-              </el-option>
-            </el-select>
-            <span class="banner-field">
-              <el-icon><User /></el-icon>
-              <span>申报人：{{ declarerName }}</span>
-            </span>
-            <span class="banner-divider"></span>
-            <span class="banner-field">
-              <el-icon><Clock /></el-icon>
-              <span>申报时间：{{ submitTime }}</span>
-            </span>
-          </div>
-          <div class="banner-right">
-            <el-button v-if="isOwnRecord" type="primary" @click="handleModify"
-              >修改申报</el-button
-            >
-            <el-button
-              v-if="isOwnRecord"
-              type="danger"
-              plain
-              @click="handleDelete"
-              >删除此申报</el-button
-            >
-          </div>
-        </div>
+        <DeclarerSelector
+          v-model="selectedDeclarerId"
+          :declarers="store.declarers"
+          :declarer-name="declarerName"
+          :submit-time="submitTime"
+          :total-count="store.declarers.length"
+          :show-actions="true"
+          :is-own-record="isOwnRecord"
+          @change="onDeclarerChange"
+          @modify="handleModify"
+          @delete="handleDelete"
+        />
 
         <!-- 日期目标banner -->
         <DateTargetBanner :date-info="store.dateInfo" />
@@ -141,20 +106,11 @@
             :adjusted-ratios="store.adjustedRatios"
             :readonly="true"
             :submitted="true"
-            :user-estimated-confirmed="store.load_forecast?.load_forecasting_method === 'manual'"
+            :user-estimated-confirmed="
+              store.load_forecast?.load_forecasting_method === 'manual'
+            "
             :price-forecast="store.price_forecast"
             :load-forecast="store.load_forecast"
-          />
-        </div>
-
-        <!-- 日收益分析副表 -->
-        <div class="v2-card" style="border-color: #f59e0b">
-          <div class="v2-card-header">
-            <div class="card-title">📊 日收益分析副表</div>
-          </div>
-          <DailyProfitSubTable
-            :hourly-results="profitAnalysisData.subHourlyResults"
-            :daily-summary="profitAnalysisData.subDailySummary"
           />
         </div>
       </template>
@@ -181,8 +137,6 @@ import { Loading, Clock } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 import { useRouter } from "vue-router";
-import { User } from "@element-plus/icons-vue";
-
 import { useDailyDeclarationHistoryStore } from "@/store/dailyDeclarationHistory";
 
 import DateTargetBanner from "@/DailyDemandReportV2/components/DateTargetBanner.vue";
@@ -191,9 +145,8 @@ import QueryResultTable from "@/DailyDemandReportV2/components/QueryResultTable.
 import SelectedDatesTable from "@/DailyDemandReportV2/components/SelectedDatesTable.vue";
 import PriceComparisonTable from "@/DailyDemandReportV2/components/PriceComparisonTable.vue";
 import StrategyTableV2 from "@/DailyDemandReportV2/components/StrategyTableV2.vue";
-import DailyProfitSubTable from "@/DailyDemandReportV2/components/DailyProfitSubTable.vue";
 import DateSidebar from "@/components/DateSidebar.vue";
-import { subTableDataApi } from "@/DailyDemandReportV2/api";
+import DeclarerSelector from "@/components/DeclarerSelector.vue";
 
 const store = useDailyDeclarationHistoryStore();
 
@@ -202,32 +155,6 @@ const router = useRouter();
 const user = inject("user");
 
 const selectedDeclarerId = ref(null);
-
-const profitAnalysisData = ref({
-  subHourlyResults: [],
-  subDailySummary: {},
-});
-
-async function fetchProfitAnalysis() {
-  if (!store.currentDate || !selectedDeclarerId.value) {
-    return;
-  }
-  try {
-    const subResponse = await subTableDataApi(
-      store.currentDate,
-      selectedDeclarerId.value,
-    );
-
-    if (subResponse.data && subResponse.data.success && subResponse.data.data) {
-      profitAnalysisData.value = {
-        subHourlyResults: subResponse.data.data.hourlyResults,
-        subDailySummary: subResponse.data.data.dailySummary,
-      };
-    }
-  } catch (error) {
-    console.error("获取日收益分析副表数据失败:", error);
-  }
-}
 
 const isOwnRecord = computed(() => {
   return store.selectedDeclarer?.declarant_id === user.value?.id;
@@ -266,7 +193,6 @@ async function onDeclarerChange(declarantId) {
   loading.value = true;
   try {
     await store.fetchRecord(store.currentDate, declarantId);
-    await fetchProfitAnalysis();
   } finally {
     loading.value = false;
   }
@@ -335,7 +261,6 @@ async function handleDateSelect(dateStr) {
       store.selectedDeclarer = target;
       selectedDeclarerId.value = target.declarant_id;
       await store.fetchRecord(dateStr, target.declarant_id);
-      await fetchProfitAnalysis();
     }
   } finally {
     loading.value = false;
@@ -366,7 +291,6 @@ onMounted(async () => {
         store.selectedDeclarer = target;
         selectedDeclarerId.value = target.declarant_id;
         await store.fetchRecord(firstDate, target.declarant_id);
-        await fetchProfitAnalysis();
       }
     } finally {
       loading.value = false;
@@ -376,46 +300,6 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-.record-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  background: linear-gradient(135deg, #f0f5ff 0%, #e6f7ff 100%);
-  border: 1px solid #91d5ff;
-  border-radius: 8px;
-  margin-bottom: 16px;
-
-  .banner-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .banner-field {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: #303133;
-
-    .el-icon {
-      font-size: 16px;
-      color: #1890ff;
-    }
-  }
-
-  .banner-divider {
-    width: 1px;
-    height: 20px;
-    background: #91d5ff;
-  }
-
-  .banner-right {
-    display: flex;
-    gap: 8px;
-  }
-}
 .history-layout {
   background: #fbfbfb;
   display: flex;
