@@ -385,7 +385,7 @@
                   size="small"
                   :precision="2"
                   :min="0.01"
-                  :max="2"
+                  :max="3.5"
                   :step="0.01"
                 ></el-input-number>
                 <div
