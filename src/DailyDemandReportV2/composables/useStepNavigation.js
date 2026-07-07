@@ -58,6 +58,11 @@ export function useStepNavigation() {
     store.strategySummary = null
     store.adjustedRatios = []
     store.actualQuantities = {}
+    store.resetLoadForecast()
+    store.setPriceForecast('price_forecasting_method', 'api')
+    store.setPriceForecast("api_price_data",{})
+    store.setPriceForecast('manual_price_data', {})
+    store.setUserEstimatedConfirmed(false)
     store.unmarkStepCompleted(1)
     store.setCurrentStep(1)
   }
@@ -67,9 +72,8 @@ export function useStepNavigation() {
     store.strategySummary = null
     store.adjustedRatios = []
     store.actualQuantities = {}
-    store.resetLoadForecast()
-    store.resetPriceForecast()
     store.unmarkStepCompleted(2)
+    store.unmarkStepCompleted(3)
     store.setCurrentStep(2)
   }
 

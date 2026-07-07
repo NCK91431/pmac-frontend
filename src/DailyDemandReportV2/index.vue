@@ -488,6 +488,8 @@ function buildPayload() {
     priceComparisonData: store.priceComparisonData,
     strategyPeriods: store.strategyPeriods,
     adjustedRatios: store.adjustedRatios,
+    price_forecast: store.price_forecast,
+    load_forecast: store.load_forecast,
   };
 }
 
@@ -541,6 +543,8 @@ async function handleConfirmSubmit() {
     store.markStepCompleted(3);
     store.setSubmitted(true);
     store.priceComparisonData = null;
+    store.selectedDates = [];
+    store.manualDates = [];
     showSuccess.value = true;
   } else {
     ElMessage.error("提交失败");

@@ -354,7 +354,7 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     price_forecast, load_forecast,
     userEstimatedConfirmed,
     setUserEstimatedConfirmed, 
-    setPriceForecast, setLoadForecast,
+    setPriceForecast, setLoadForecast, resetLoadForecast, resetPriceForecast,
     setDeclarationDate, setDateInfo, setCurrentStep,
     isStepCompleted, markStepCompleted, unmarkStepCompleted, setSubmitted,
     fetchDateInfo, fetchPriceComparison, fetchStrategyData, submitDeclaration, sendAiQuery,

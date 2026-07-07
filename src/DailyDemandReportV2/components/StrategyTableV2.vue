@@ -600,6 +600,12 @@ const editingPeriod = ref(null);
 const editValue = ref(1);
 const showContractDetails = ref(false); // 是否显示4列合约电量详情
 
+function handleManualInput(period, val) {
+  const newValues = { ...(props.loadForecast?.manual_load_data || {}) };
+  newValues[period] = val;
+  emit("update-manual-estimated", newValues);
+}
+
 // 从 props 派生的模式状态
 const userEstimatedMode = computed(
   () => props.loadForecast?.load_forecasting_method,

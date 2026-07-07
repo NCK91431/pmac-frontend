@@ -346,6 +346,43 @@
       </el-table-column>
     </el-table-column>
 
+    <!-- ==================== 峰谷平衡 ==================== -->
+    <el-table-column
+      label="峰谷平衡"
+      align="center"
+      header-align="center"
+      min-width="150"
+    >
+      <!-- 峰谷电量 -->
+      <el-table-column
+        label="峰谷电量"
+        prop="peakValleyPower"
+        width="100"
+        align="right"
+        header-align="center"
+      >
+        <template #header
+          ><span class="header-unit"
+            >峰谷电量<br /><small>(MWh)</small></span
+          ></template
+        >
+      </el-table-column>
+      <!-- 峰谷电费 -->
+      <el-table-column
+        label="峰谷电费"
+        prop="peakValleyFee"
+        width="100"
+        align="right"
+        header-align="center"
+      >
+        <template #header
+          ><span class="header-unit"
+            >峰谷电费<br /><small>(元)</small></span
+          ></template
+        >
+      </el-table-column>
+    </el-table-column>
+
     <!-- ==================== 偏差转移收益 ==================== -->
     <el-table-column
       label="偏差转移收益"
@@ -501,6 +538,7 @@
         <span class="fee-positive">{{ formatNumber(row.revenue) }}</span>
       </template>
     </el-table-column>
+    <!-- 交易收益 -->
     <el-table-column
       label="交易收益"
       prop="tradingProfit"
@@ -523,6 +561,26 @@
           class="trading-profit"
         >
           {{ formatNumber(row.tradingProfit) }}
+        </span>
+      </template>
+    </el-table-column>
+    <!-- 峰谷综合收益 -->
+    <el-table-column
+      label="峰谷综合收益"
+      prop="peakValleyComprehensiveProfit"
+      width="110"
+      align="right"
+      header-align="center"
+      fixed="right"
+    >
+      <template #default="{ row }">
+        <span
+          :class="{
+            'positive-value': row.peakValleyComprehensiveProfit >= 0,
+            'negative-value': row.peakValleyComprehensiveProfit < 0,
+          }"
+        >
+          {{ formatNumber(row.peakValleyComprehensiveProfit) }}
         </span>
       </template>
     </el-table-column>
@@ -631,7 +689,7 @@ function summaryMethod({ columns, data }) {
     const prop = column.property;
     if (!prop || !data.length) return "";
 
-    // 求和类字段
+    // 求和类字段（直接从后端 dailySummary 取，不在前端计算）
     const summableFields = [
       "yearlyContractPower", // 年度合约电量
       "yearlySettlementFee", // 长协结算电费
@@ -646,6 +704,8 @@ function summaryMethod({ columns, data }) {
       "dayAheadDeclaredPower", // 日前申报电量
       "dayAheadFee", // 日前产生电费
       "actualPower", // 实际用电量
+      "peakValleyPower", // 峰谷电量
+      "peakValleyFee", // 峰谷电费
       "realTimeFee", // 实时产生电费
       "deviationPower", // 偏差电量
       "allowedDeviationProfit", // 允许偏差收益
@@ -656,40 +716,33 @@ function summaryMethod({ columns, data }) {
       "absolutePriceTotalFee", // 绝对价格模式总成本电费
       "revenue", // 售电收入
       "tradingProfit", // 交易收益
+      "peakValleyComprehensiveProfit", // 峰谷综合收益
       "spotPower", // 现货电量
       "spotFee", // 现货电费
     ];
 
-    // 求均值类字段（价格/比率）
-    const averageFields = [
-      "yearlyContractPrice", // 年度合约平均价格
-      "monthlyContractPrice", // 月度合约平均价格
-      "weeklyContractPrice", // 周合约平均价格
-      "multiDayContractPrice", // 多日合约平均价格
-      "midLongAvgPrice", // 中长期平均价格均值
-      "dayAheadSettlementPrice", // 日前结算电价均值
-      "realTimeSettlementPrice", // 实时结算电价均值
-      "deviationRate", // 偏差率均值
+    // 价格/比率类字段（直接从后端 dailySummary 取，不在前端计算）
+    const summaryFields = [
+      "yearlyContractPrice", // 年度合约价格
+      "monthlyContractPrice", // 月度合约价格
+      "weeklyContractPrice", // 周合约价格
+      "multiDayContractPrice", // 多日合约价格
+      "midLongAvgPrice", // 中长期平均价格
+      "dayAheadSettlementPrice", // 日前结算电价
+      "realTimeSettlementPrice", // 实时结算电价
+      "deviationRate", // 偏差率
     ];
 
-    if (summableFields.includes(prop)) {
-      const sum = data.reduce((acc, row) => {
-        const val = Number(row[prop]);
-        return acc + (isNaN(val) ? 0 : val);
-      }, 0);
-      return formatNumber(sum);
+    if (summaryFields.includes(prop)) {
+      const val = props.dailySummary[prop];
+      if (prop === "deviationRate") {
+        return formatPercent(val);
+      }
+      return formatNumber(val);
     }
 
-    if (averageFields.includes(prop)) {
-      const total = data.reduce((acc, row) => {
-        const val = Number(row[prop]);
-        return acc + (isNaN(val) ? 0 : val);
-      }, 0);
-      const avg = total / count;
-      if (prop === "deviationRate") {
-        return formatPercent(avg);
-      }
-      return formatNumber(avg);
+    if (summableFields.includes(prop)) {
+      return formatNumber(props.dailySummary[prop]);
     }
 
     // 其他非汇总字段（如 ratio 类）显示 '-'

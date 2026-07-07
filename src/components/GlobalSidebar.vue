@@ -42,7 +42,7 @@
               </div>
               <div v-show="!collapsedModules[module]" class="nav-children">
                 <div
-                  v-for="child in config.children"
+                  v-for="child in getVisibleChildren(config)"
                   :key="child.title"
                   class="nav-child-item"
                   :class="{
@@ -81,7 +81,20 @@ const canAccessModule = (config) => {
     return true;
   }
   const userRole = user.value?.role;
+  // internal 和 temporary 角色均可访问标记为 internal 的模块
+  if (config.permission === "internal") {
+    return userRole === "internal" || userRole === "temporary";
+  }
   return userRole === config.permission;
+};
+
+const getVisibleChildren = (config) => {
+  const userRole = user.value?.role;
+  if (userRole === "temporary") {
+    // temporary 角色只显示有 temporaryAccess 标记的子菜单
+    return config.children.filter((child) => child.temporaryAccess);
+  }
+  return config.children;
 };
 
 const initCollapsed = () => {

@@ -258,6 +258,7 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
+                temporaryAccess: true,
                 breadcrumb: { title: "月度需求申报", icon: "bi bi-sun" },
             },
         },
@@ -268,6 +269,7 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
+                temporaryAccess: true,
                 breadcrumb: { title: "日前用电侧申报V2", icon: "bi bi-clock-history" },
             },
         },
@@ -278,6 +280,7 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
+                temporaryAccess: true,
                 breadcrumb: {
                     title: "历史日前申报查询",
                     icon: "bi bi-clock-history",
@@ -292,6 +295,7 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
+                temporaryAccess: true,
                 breadcrumb: { title: "每日收益", icon: "bi bi-graph-up" },
             },
         },
@@ -302,6 +306,7 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
+                temporaryAccess: true,
                 breadcrumb: { title: "月度收益", icon: "bi bi-graph-up" },
             },
         },
@@ -386,14 +391,14 @@ const sidebarMenuConfig = {
         permission: "internal",
         children: [
             // { title: "日前交易申报", route: "/daily-demand-report" },
-            { title: "日前用电侧申报V2", route: "/daily-demand-report-v2" },
-            { title: "历史日前申报查询", route: "/daily-demand-report-v2/history" },
-            { title: "每日收益", route: "/daily-profit" },
-            { title: "月度收益", route: "/daily-profit/monthly" },
+            { title: "日前用电侧申报V2", route: "/daily-demand-report-v2", temporaryAccess: true },
+            { title: "历史日前申报查询", route: "/daily-demand-report-v2/history", temporaryAccess: true },
+            { title: "每日收益", route: "/daily-profit", temporaryAccess: true },
+            { title: "月度收益", route: "/daily-profit/monthly", temporaryAccess: true },
             // { title: "历史申报", route: "/daily-demand-report/history" },
             // { title: "收益分析", route: "/daily-demand-report/history/daily-revenue-analysis" },
             { title: "用户均价配置", route: "/user-price-config" },
-            { title: "月度需求申报", route: "/monthly-demand-report" },
+            { title: "月度需求申报", route: "/monthly-demand-report", temporaryAccess: true },
         ]
     }
 };
@@ -412,8 +417,12 @@ router.beforeEach((to, from, next) => {
         }
 
         if (to.meta.permission === "internal" && userInfo.role !== "internal") {
-            next({ name: "home" });
-            return;
+            if (userInfo.role === "temporary" && to.meta.temporaryAccess) {
+                // temporary 角色仅可访问特定内部页面
+            } else {
+                next({ name: "home" });
+                return;
+            }
         }
 
         if (to.meta.permission === "admin" && userInfo.role !== "admin") {

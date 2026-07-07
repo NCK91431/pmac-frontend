@@ -12,7 +12,7 @@ import i18n from "./locales"; // 导入 i18n 配置
 
 // 动态设置标题和favicon
 const isTrina = import.meta.env.VITE_COMPANY === 'trina';
-document.title = isTrina ? '天合富家' : 'Pilot 星火平台';
+document.title = isTrina ? '星火平台' : 'Pilot 星火平台';
 
 // 动态设置favicon
 const favicon = document.querySelector('link[rel="icon"]');

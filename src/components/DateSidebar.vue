@@ -145,7 +145,7 @@ function isMonthDisabled(year, month) {
 function isDateDisabled(date) {
   if (!props.maxDate) return false
   const dateStr = formatCalendarDate(date)
-  return dateStr >= props.maxDate
+  return dateStr > props.maxDate
 }
 
 function formatCalendarDate(date) {

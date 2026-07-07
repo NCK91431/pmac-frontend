@@ -4,13 +4,10 @@
       <!-- 公司Logo -->
       <div class="logo-section">
         <img
+          v-if="!isTrina"
           class="company-logo"
           :style="{ width: isTrina ? '120px' : '70px' }"
-          :src="
-            isTrina
-              ? 'https://pmac.leyi.host/downloads/trina/trina-logo.png'
-              : 'https://pmac.leyi.host/downloads/pmac/pilot-logo.png'
-          "
+          src="https://pmac.leyi.host/downloads/pmac/pilot-logo.png"
           alt="公司Logo"
         />
         <div class="platform-title">

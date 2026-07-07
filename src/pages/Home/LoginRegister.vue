@@ -3,11 +3,8 @@
     <div class="login-card">
       <div class="logo-section">
         <img
-          :src="
-            isTrina
-              ? 'https://pmac.leyi.host/downloads/trina/trina-logo.png'
-              : 'https://i.postimg.cc/7ZfS8FNx/pilot-logo.png'
-          "
+          v-if="!isTrina"
+          src="https://i.postimg.cc/7ZfS8FNx/pilot-logo.png"
           alt="Logo"
         />
       </div>

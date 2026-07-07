@@ -94,6 +94,49 @@
         />
       </div>
 
+      <!-- 回溯收益分析：2026-06-17 及之后的日期展示 -->
+      <template
+        v-if="store.currentDate && store.currentDate >= '2026-06-17' && declarers.length > 0"
+      >
+        <div class="backtest-section" v-loading="backtestLoading">
+          <div class="backtest-header">
+            <h3>回溯收益分析</h3>
+            <span class="backtest-subtitle">基于不同的预测组合模拟收益</span>
+          </div>
+          <el-tabs
+            v-model="activeScenario"
+            v-if="backtestScenarios.length > 0"
+            type="border-card"
+          >
+            <el-tab-pane
+              v-for="(scenario, idx) in backtestScenarios"
+              :key="idx"
+              :label="scenario.name"
+              :name="String(idx)"
+            >
+              <el-collapse v-model="activeStrategyPanels">
+                <el-collapse-item title="申报策略表" name="strategy">
+                  <BacktestStrategyTable
+                    :periods="scenario.strategy_periods"
+                    :load-method="scenario.load_method"
+                    :price-method="scenario.price_method"
+                  />
+                </el-collapse-item>
+              </el-collapse>
+              <h4 class="scenario-section-title">收益明细</h4>
+              <DailyProfitMainTable
+                :hourly-results="scenario.hourly_results"
+                :daily-summary="scenario.daily_summary"
+              />
+            </el-tab-pane>
+          </el-tabs>
+          <el-empty
+            v-else-if="!backtestLoading"
+            description="暂无回溯数据"
+          />
+        </div>
+      </template>
+
       <template v-else-if="!store.loading && !store.currentDate">
         <div class="empty-state initial-state">
           <div class="initial-state-content">
@@ -161,7 +204,9 @@ import DeclarerSelector from "@/components/DeclarerSelector.vue";
 import {
   subTableDataApi,
   historyDeclarersApi,
+  backtestProfitApi,
 } from "@/DailyDemandReportV2/api";
+import BacktestStrategyTable from "./components/BacktestStrategyTable.vue";
 import { ElMessage } from "element-plus";
 
 const store = useDailyProfitStore();
@@ -179,6 +224,12 @@ const selectedDeclarerId = ref(null);
 const selectedDeclarer = ref(null);
 const subHourlyResults = ref([]);
 const subDailySummary = ref({});
+
+// 回溯收益
+const backtestScenarios = ref([]);
+const activeScenario = ref("0");
+const backtestLoading = ref(false);
+const activeStrategyPanels = ref([]); // 申报策略表默认折叠
 
 const declarerName = computed(() => {
   if (selectedDeclarer.value) return selectedDeclarer.value.name;
@@ -200,7 +251,10 @@ async function fetchDeclarers(date) {
         const target = selfRecord || declarers.value[0];
         selectedDeclarer.value = target;
         selectedDeclarerId.value = target.declarant_id;
-        await fetchProfitAnalysis(date, target.declarant_id);
+        await Promise.all([
+          fetchProfitAnalysis(date, target.declarant_id),
+          fetchBacktestData(date, target.declarant_id),
+        ]);
       }
     } else {
       console.warn("[fetchDeclarers] 接口返回异常或无数据:", res.data);
@@ -224,6 +278,28 @@ async function fetchProfitAnalysis(date, declarantId) {
   }
 }
 
+async function fetchBacktestData(date, declarantId) {
+  if (date < '2026-06-17') {
+    backtestScenarios.value = [];
+    return;
+  }
+  backtestLoading.value = true;
+  try {
+    const res = await backtestProfitApi(date, declarantId);
+    if (res.data?.success && res.data.data?.scenarios) {
+      backtestScenarios.value = res.data.data.scenarios;
+      activeScenario.value = "0";
+    } else {
+      backtestScenarios.value = [];
+    }
+  } catch (error) {
+    console.error("获取回溯收益数据失败:", error);
+    backtestScenarios.value = [];
+  } finally {
+    backtestLoading.value = false;
+  }
+}
+
 /** 从主表数据中提取 tradingProfit，按 period 合并到副表 */
 function mergeTradingProfit() {
   if (!subHourlyResults.value.length || !store.hourlyResults.length) return;
@@ -243,6 +319,7 @@ function onDeclarerChange(declarantId) {
   if (target) {
     selectedDeclarer.value = target;
     fetchProfitAnalysis(store.currentDate, declarantId);
+    fetchBacktestData(store.currentDate, declarantId);
   }
 }
 
@@ -546,6 +623,46 @@ onMounted(() => {
   &.unconfirmed {
     color: #bfbfbf;
     font-weight: 400;
+  }
+}
+
+/* 回溯收益分析区域 */
+.backtest-section {
+  margin-top: 20px;
+  padding: 0 24px 24px;
+  border-top: 1px solid #f0f0f0;
+
+  .backtest-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 16px 0;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a365d;
+    }
+
+    .backtest-subtitle {
+      font-size: 12px;
+      color: #8c8c8c;
+    }
+  }
+
+  .scenario-section-title {
+    margin: 16px 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #303133;
+    padding-left: 8px;
+    border-left: 3px solid #1890ff;
+    line-height: 1.4;
+  }
+
+  .el-tabs {
+    margin-top: 8px;
   }
 }
 </style>

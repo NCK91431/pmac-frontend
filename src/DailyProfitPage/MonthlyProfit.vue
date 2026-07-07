@@ -58,21 +58,50 @@
     <template v-if="!loading">
       <!-- 概要统计卡片 -->
       <div v-if="monthlySummary" class="summary-cards">
+        <!-- 月度售电收入 -->
         <div class="card card-revenue">
           <div class="card-label">月度售电收入</div>
           <div class="card-value">
-            {{ formatMoney(monthlySummary.revenue) }}
+            {{ formatMoney(monthlySummary.revenue) }}<unit>元</unit>
           </div>
         </div>
+        <!-- 峰谷综合收益 -->
+        <div class="card card-deviation-actual">
+          <div class="card-label">峰谷综合收益</div>
+          <div
+            class="card-value"
+            :class="{
+              negative: monthlySummary.peakValleyComprehensiveProfit < 0,
+            }"
+          >
+            {{ formatMoney(monthlySummary.peakValleyComprehensiveProfit)
+            }}<unit>元</unit>
+          </div>
+        </div>
+
+        <!-- 月度交易收益 -->
         <div class="card card-trading">
           <div class="card-label">月度交易收益</div>
           <div
             class="card-value"
             :class="{ negative: monthlySummary.tradingProfit < 0 }"
           >
-            {{ formatMoney(monthlySummary.tradingProfit) }}
+            {{ formatMoney(monthlySummary.tradingProfit) }}<unit>元</unit>
           </div>
         </div>
+        <!-- 月度实际偏差收益 -->
+        <div class="card card-deviation-actual">
+          <div class="card-label">月度实际偏差收益</div>
+          <div
+            class="card-value"
+            :class="{ negative: monthlySummary.actualDeviationProfit < 0 }"
+          >
+            {{ formatMoney(monthlySummary.actualDeviationProfit)
+            }}<unit>元</unit>
+          </div>
+        </div>
+
+        <!-- 现货成本单价 -->
         <div class="card card-spot-cost">
           <div class="card-label">现货成本单价</div>
           <div
@@ -83,16 +112,79 @@
               monthlySummary.spotCostUnitPrice != null
                 ? formatMoney(monthlySummary.spotCostUnitPrice)
                 : "-"
-            }}
+            }}<unit>元/Mwh</unit>
           </div>
         </div>
-        <div class="card card-deviation-actual">
-          <div class="card-label">月度实际偏差收益</div>
+
+        <!-- 日前结算均价-->
+        <div class="card card-spot-cost">
+          <div class="card-label">日前结算均价</div>
           <div
             class="card-value"
-            :class="{ negative: monthlySummary.actualDeviationProfit < 0 }"
+            :class="{ negative: monthlySummary.dayAheadSettlementPrice < 0 }"
           >
-            {{ formatMoney(monthlySummary.actualDeviationProfit) }}
+            {{ formatMoney(monthlySummary.dayAheadSettlementPrice)
+            }}<unit>元/Mwh</unit>
+          </div>
+        </div>
+
+        <!-- 实际用电量 -->
+        <div class="card card-revenue">
+          <div class="card-label">实际用电量</div>
+          <div class="card-value">
+            {{ formatMoney(monthlySummary.actualPower) }}<unit>MWh</unit>
+          </div>
+        </div>
+
+        <!-- 峰谷电费 -->
+        <div class="card card-deviation-actual">
+          <div class="card-label">峰谷电费</div>
+          <div
+            class="card-value"
+            :class="{
+              negative: monthlySummary.peakValleyFee < 0,
+            }"
+          >
+            {{ formatMoney(monthlySummary.peakValleyFee) }}<unit>元</unit>
+          </div>
+        </div>
+        <!-- 日前产生电费 -->
+        <div class="card card-spot-cost">
+          <div class="card-label">日前电费合计</div>
+          <div
+            class="card-value"
+            :class="{ negative: monthlySummary.dayAheadFee < 0 }"
+          >
+            {{ formatMoney(monthlySummary.dayAheadFee) }}<unit>元</unit>
+          </div>
+        </div>
+        <!-- 实时产生电费 -->
+        <div class="card card-spot-cost">
+          <div class="card-label">实时电费合计</div>
+          <div
+            class="card-value"
+            :class="{ negative: monthlySummary.realTimeFee < 0 }"
+          >
+            {{ formatMoney(monthlySummary.realTimeFee) }}<unit>元</unit>
+          </div>
+        </div>
+        <!-- 转移偏差收益 -->
+        <div class="card card-deviation-actual">
+          <div class="card-label">转移偏差收益</div>
+          <div
+            class="card-value"
+            :class="{ negative: monthlySummary.transferredDeviationProfit < 0 }"
+          >
+            {{ formatMoney(monthlySummary.transferredDeviationProfit)
+            }}<unit>元</unit>
+          </div>
+        </div>
+
+        <!-- 中长期合计电量 -->
+        <div class="card card-revenue">
+          <div class="card-label">中长期合计电量</div>
+          <div class="card-value">
+            {{ formatMoney(monthlySummary.midLongTotalPower) }}<unit>MWh</unit>
           </div>
         </div>
       </div>
@@ -298,7 +390,7 @@
             >
               <template #header
                 ><span class="header-unit"
-                  >中长期合计<br /><small>(MWh)</small></span
+                  >中长期合计电量<br /><small>(MWh)</small></span
                 ></template
               >
             </el-table-column>
@@ -324,7 +416,7 @@
             >
               <template #header
                 ><span class="header-unit"
-                  >中长期合计<br /><small>(元)</small></span
+                  >中长期合计电费<br /><small>(元)</small></span
                 ></template
               >
             </el-table-column>
@@ -421,6 +513,41 @@
               <template #header
                 ><span class="header-unit"
                   >实时产生电费<br /><small>(元)</small></span
+                ></template
+              >
+            </el-table-column>
+          </el-table-column>
+
+          <!-- 峰谷平衡 -->
+          <el-table-column
+            label="峰谷平衡"
+            align="center"
+            header-align="center"
+            min-width="180"
+          >
+            <el-table-column
+              label="峰谷电量"
+              prop="peakValleyPower"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >峰谷电量<br /><small>(MWh)</small></span
+                ></template
+              >
+            </el-table-column>
+            <el-table-column
+              label="峰谷电费"
+              prop="peakValleyFee"
+              width="105"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >峰谷电费<br /><small>(元)</small></span
                 ></template
               >
             </el-table-column>
@@ -574,6 +701,19 @@
                 ></template
               >
             </el-table-column>
+            <el-table-column
+              label="峰谷综合收益"
+              prop="peakValleyComprehensiveProfit"
+              width="115"
+              align="right"
+              header-align="center"
+            >
+              <template #header
+                ><span class="header-unit"
+                  >峰谷综合收益<br /><small>(元)</small></span
+                ></template
+              >
+            </el-table-column>
           </el-table-column>
 
           <!-- 操作列（固定右） -->
@@ -635,7 +775,7 @@ import { monthlySummaryApi } from "@/DailyDemandReportV2/api";
 
 const router = useRouter();
 const currentMonth = ref("");
-const maxMonth = dayjs().subtract(1, "month").format("YYYY-MM");
+const maxMonth = dayjs().format("YYYY-MM");
 const dailySummaries = ref([]);
 const monthlySummary = ref(null);
 const totalDays = ref(0);
@@ -725,74 +865,22 @@ function cellStyle({ column }) {
 }
 
 /** 汇总行计算（与 DailyProfitMainTable 一致） */
-function summaryMethod({ columns, data }) {
-  const count = data.length || 1;
-
+function summaryMethod({ columns }) {
   return columns.map((column, index) => {
     if (index === 0) {
       return "合计";
     }
 
     const prop = column.property;
-    if (!prop || !data.length) return "";
+    if (!prop) return "";
 
-    // 求和类字段
-    const summableFields = [
-      "yearlyContractPower",
-      "yearlySettlementFee",
-      "monthlyContractPower",
-      "monthlySettlementFee",
-      "weeklyContractPower",
-      "weeklySettlementFee",
-      "multiDayContractPower",
-      "multiDaySettlementFee",
-      "midLongTotalPower",
-      "midLongTotalFee",
-      "dayAheadDeclaredPower",
-      "dayAheadFee",
-      "actualPower",
-      "realTimeFee",
-      "deviationPower",
-      "allowedDeviationProfit",
-      "transferredDeviationProfit",
-      "totalDeviationProfit",
-      "deductionAmount",
-      "actualDeviationProfit",
-      "absolutePriceTotalFee",
-      "revenue",
-      "tradingProfit",
-    ];
-
-    // 求均值类字段（价格/比率）
-    const averageFields = [
-      "yearlyContractPrice",
-      "monthlyContractPrice",
-      "weeklyContractPrice",
-      "multiDayContractPrice",
-      "midLongAvgPrice",
-      "dayAheadSettlementPrice",
-      "realTimeSettlementPrice",
-      "deviationRate",
-    ];
-
-    if (summableFields.includes(prop)) {
-      const sum = data.reduce((acc, row) => {
-        const val = Number(row[prop]);
-        return acc + (isNaN(val) ? 0 : val);
-      }, 0);
-      return formatMoney(sum);
-    }
-
-    if (averageFields.includes(prop)) {
-      const total = data.reduce((acc, row) => {
-        const val = Number(row[prop]);
-        return acc + (isNaN(val) ? 0 : val);
-      }, 0);
-      const avg = total / count;
+    // 所有汇总字段都从 monthlySummary 取
+    if (prop in (monthlySummary.value || {})) {
+      const val = monthlySummary.value[prop];
       if (prop === "deviationRate") {
-        return formatPercent(avg);
+        return formatPercent(val);
       }
-      return formatMoney(avg);
+      return formatMoney(val);
     }
 
     return "-";
@@ -978,15 +1066,17 @@ onMounted(() => {
 /* 卡片 */
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin: 0 16px 16px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  row-gap: 8px;
+  margin: 0 16px 12px;
 }
 
 .card {
-  padding: 12px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
   border: 1px solid #d6e8ff;
+  margin-bottom: 0;
 }
 
 .card-revenue {
@@ -1020,6 +1110,14 @@ onMounted(() => {
   &.negative {
     color: #ff4d4f;
   }
+}
+
+unit {
+  font-size: 11px;
+  font-weight: 600;
+  color: #999;
+  font-style: italic;
+  margin-left: 6px;
 }
 
 /* 表格 */

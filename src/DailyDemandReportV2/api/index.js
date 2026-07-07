@@ -130,3 +130,9 @@ export function confirmStatusApi(month) {
 export function monthlySummaryApi(month) {
   return request.get('/api/daily-profit/monthly-summary', { params: { month } })
 }
+
+export function backtestProfitApi(date, declarantId) {
+  return request.get(`${BASE}/backtest-profit`, {
+    params: { date, declarant_id: declarantId },
+  })
+}
