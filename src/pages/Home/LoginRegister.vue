@@ -98,6 +98,12 @@
             {{ loading ? "处理中..." : isRegister ? "注册" : "登录" }}
           </el-button>
 
+          <!-- Token过期提示 -->
+          <div v-if="expiredMessage" class="expired-message">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ expiredMessage }}
+          </div>
+
           <!-- 错误信息 -->
           <div v-if="errorMessage" class="error-message">
             <i class="bi bi-exclamation-circle me-2"></i>
@@ -125,13 +131,14 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, onUnmounted } from "vue";
+import { ref, computed, inject, onMounted, onUnmounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import request from "@/utils/request";
 
 const updateUser = inject("updateUser");
 const router = useRouter();
+const route = useRoute();
 const isTrina = import.meta.env.VITE_COMPANY == "trina";
 
 // 表单数据
@@ -152,6 +159,7 @@ let countdownTimer = null;
 const toggleMode = () => {
   isRegister.value = !isRegister.value;
   errorMessage.value = "";
+  expiredMessage.value = "";
   formData.value.phone = "";
   formData.value.code = "";
 
@@ -188,6 +196,15 @@ const formRules = {
 const loginForm = ref(null);
 const loading = ref(false);
 const errorMessage = ref("");
+const expiredMessage = ref("");
+
+// 检查是否因token过期被重定向回来
+onMounted(() => {
+  if (route.query.expired === "1") {
+    expiredMessage.value = "您的登录已过期，请重新登录";
+    ElMessage.warning("登录已过期，请重新登录");
+  }
+});
 
 // 发送验证码
 const sendVerificationCode = async () => {
@@ -250,6 +267,7 @@ const handleSubmit = async () => {
 
     loading.value = true;
     errorMessage.value = "";
+    expiredMessage.value = "";
 
     if (isRegister.value) {
       await handleRegister();
@@ -465,6 +483,23 @@ onUnmounted(() => {
 
     &:active {
       transform: translateY(1px);
+    }
+  }
+
+  .expired-message {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #fffbe6;
+    border: 1px solid #ffe58f;
+    border-radius: 8px;
+    color: #ad8b00;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+
+    i {
+      font-size: 18px;
+      color: #faad14;
     }
   }
 

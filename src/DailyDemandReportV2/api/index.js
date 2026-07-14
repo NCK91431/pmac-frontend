@@ -96,8 +96,12 @@ export function profitAnalysisApi(date, declarantId) {
   return request.get(`${BASE}/profit-analysis`, { params: { date, declarant_id: declarantId } })
 }
 
-export function mainTableDataApi(date) {
-  return request.get(`${BASE}/getDailyProfitMainTableData`, { params: { date } })
+export function mainTableDataApi(date, declarantId) {
+  const params = { date }
+  if (declarantId != null) {
+    params.declarant_id = declarantId
+  }
+  return request.get(`${BASE}/getDailyProfitMainTableData`, { params })
 }
 
 export function subTableDataApi(date, declarantId) {
@@ -135,4 +139,8 @@ export function backtestProfitApi(date, declarantId) {
   return request.get(`${BASE}/backtest-profit`, {
     params: { date, declarant_id: declarantId },
   })
+}
+
+export function hkdDeclarationApi(date) {
+  return request.get(`${BASE}/hkd-declaration`, { params: { date } })
 }

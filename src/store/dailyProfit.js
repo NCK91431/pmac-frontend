@@ -1,14 +1,51 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { mainTableDataApi, dateInfoApi, confirmProfitDataApi, unconfirmProfitDataApi, confirmStatusApi } from '@/DailyDemandReportV2/api'
+import { mainTableDataApi, dateInfoApi, confirmProfitDataApi, unconfirmProfitDataApi, confirmStatusApi, backtestProfitApi } from '@/DailyDemandReportV2/api'
 import dayjs from 'dayjs'
 
 export const useDailyProfitStore = defineStore('dailyProfit', () => {
   const currentDate = ref('')
   const dateInfo = ref(null)
-  const hourlyResults = ref([])
-  const dailySummary = ref({})
-  const loading = ref(false)
+  const activeTab = ref('profitQuery')  // 导航选项卡：profitQuery / profitAnalysis / backtest
+
+  const loading = ref(false) 
+
+  // ====== 收益查询 ======
+  const hourlyResults = ref([]) //收益查询表格数据
+  const dailySummary = ref({}) //收益查询表格摘要数据
+
+  // ====== 收益分析 ======
+  const subProfitTableData = ref([]) //收益分析表格数据
+  const subProfitTableSummary = ref({}) //收益分析表格摘要数据
+
+  // ====== 申报人相关 ======
+  const declarers = ref([])
+  const selectedDeclarerId = ref(null)
+  const selectedDeclarer = ref(null)
+
+  // ====== 回溯收益分析 ======
+  const backtestScenarios = ref([])   // 回溯方案列表，每个方案包含一组预测组合下的模拟收益数据
+  const activeScenario = ref("0")     // 当前选中的回溯方案索引（字符串），对应 el-tabs 的 v-model
+  const activeStrategyPanels = ref([]) // 申报策略表中已展开的面板，对应 el-collapse 的 v-model
+
+  async function fetchBacktestData(date, declarantId) {
+    if (date < '2026-05-23') {
+      backtestScenarios.value = []
+      return
+    }
+    try {
+      const res = await backtestProfitApi(date, declarantId)
+      if (res.data?.success && res.data.data?.scenarios) {
+        backtestScenarios.value = res.data.data.scenarios
+        activeScenario.value = '0'
+      } else {
+        backtestScenarios.value = []
+      }
+    } catch (error) {
+      console.error('获取回溯收益数据失败:', error)
+      backtestScenarios.value = []
+    }
+  }
 
   // ====== 确认状态 ======
   const confirmedDates = ref([])
@@ -107,8 +144,15 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     hourlyResults.value = []
     dailySummary.value = {}
     loading.value = false
+    activeTab.value = 'profitQuery'
     confirmedDates.value = []
     confirmLoading.value = false
+    declarers.value = []
+    selectedDeclarerId.value = null
+    selectedDeclarer.value = null
+    backtestScenarios.value = []
+    activeScenario.value = '0'
+    activeStrategyPanels.value = []
   }
 
   return {
@@ -117,6 +161,18 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     hourlyResults,
     dailySummary,
     loading,
+    activeTab,
+    subProfitTableData,
+    subProfitTableSummary,
+    // 申报人
+    declarers,
+    selectedDeclarerId,
+    selectedDeclarer,
+    // 回溯收益分析
+    backtestScenarios,
+    activeScenario,
+    activeStrategyPanels,
+    fetchBacktestData,
     // 确认状态
     confirmedDates,
     confirmedDatesSet,

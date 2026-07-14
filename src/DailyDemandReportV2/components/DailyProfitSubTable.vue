@@ -42,7 +42,7 @@
         >
           <template #header
             ><span class="header-unit"
-              >中长期合计电量<br /><small>(MWh)</small></span
+              >中长期合计<br />电量 <small>(MWh)</small></span
             ></template
           >
           <template #default="{ row }">
@@ -92,7 +92,7 @@
         >
           <template #header
             ><span class="header-unit"
-              >用户评估用电量<br /><small>(MWh)</small></span
+              >用户评估<br />电量 <small>(MWh)</small></span
             ></template
           >
         </el-table-column>
@@ -113,11 +113,11 @@
           label="中长期仓位比例"
           prop="midLongPositionRatio"
           width="auto"
-          align="right"
+          align="center"
           header-align="center"
         >
           <template #header
-            ><span class="header-unit">中长期仓位比例</span></template
+            ><span class="header-unit">中长期<br />仓位比例</span></template
           >
           <template #default="{ row }">
             <span
@@ -134,7 +134,7 @@
           label="申报比例"
           prop="declarationRatio"
           width="auto"
-          align="right"
+          align="center"
           header-align="center"
         >
           <template #header><span class="header-unit">申报比例</span></template>
@@ -148,7 +148,7 @@
           label="实际申报比例"
           prop="actualDeclarationRatio"
           width="auto"
-          align="right"
+          align="center"
           header-align="center"
         >
           <template #header
@@ -235,7 +235,7 @@
         <el-table-column
           label="现货单价"
           prop="spotUnitPrice"
-          width="auto"
+          width="100"
           align="right"
           header-align="center"
         >
@@ -251,12 +251,12 @@
         <el-table-column
           label="日前低概率"
           prop="spreadProbability"
-          width="auto"
+          width="55"
           align="right"
           header-align="center"
         >
           <template #header
-            ><span class="header-unit">日前低概率</span></template
+            ><span class="header-unit">日前低<br />概率</span></template
           >
           <template #default="{ row }">
             <span class="probability-badge">{{
@@ -436,7 +436,7 @@ function headerCellStyle({ columnIndex, rowIndex }) {
       backgroundColor: "#0d3b2e",
       color: "#ffffff",
       fontWeight: 600,
-      fontSize: "16px",
+      fontSize: "13px",
       padding: "6px 4px",
       borderColor: "#1a5a48",
     };
@@ -530,7 +530,13 @@ function summaryMethod({ columns, data }) {
       return acc + (isNaN(val) ? 0 : val);
     }, 0);
 
-    if (prop === "spotFee" || prop === "tradingProfit")
+    if (
+      prop === "midLongTotalPower" ||
+      prop === "spotPower" ||
+      prop === "actualPower" ||
+      prop === "spotFee" ||
+      prop === "tradingProfit"
+    )
       return formatNumber(sum, 2);
     return formatNumber(sum);
   });
@@ -557,8 +563,15 @@ function summaryMethod({ columns, data }) {
 }
 
 :deep(.el-table .el-table__body-wrapper tbody tr:hover > td) {
-  background-color: #ecfdf5 !important;
+  background-color: #d1fae5 !important;
   cursor: default;
+  border-top: 1px solid #6ee7b7 !important;
+  border-bottom: 1px solid #6ee7b7 !important;
+  border-right: 1px solid #6ee7b7 !important;
+}
+
+:deep(.el-table .el-table__body-wrapper tbody tr:hover > td:first-child) {
+  border-left: 3px solid #059669 !important;
 }
 
 :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
@@ -566,7 +579,19 @@ function summaryMethod({ columns, data }) {
 }
 
 :deep(.el-table--striped .el-table__body tr.el-table__row--striped:hover td) {
-  background-color: #ecfdf5 !important;
+  background-color: #d1fae5 !important;
+  border-top: 1px solid #6ee7b7 !important;
+  border-bottom: 1px solid #6ee7b7 !important;
+  border-right: 1px solid #6ee7b7 !important;
+}
+
+:deep(
+  .el-table--striped
+    .el-table__body
+    tr.el-table__row--striped:hover
+    td:first-child
+) {
+  border-left: 3px solid #059669 !important;
 }
 
 :deep(.el-table .el-table__footer-wrapper td) {

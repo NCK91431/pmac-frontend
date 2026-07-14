@@ -72,6 +72,8 @@ export function useStepNavigation() {
     store.strategySummary = null
     store.adjustedRatios = []
     store.actualQuantities = {}
+    store.hkd_declaration = null
+    store.strategy_provider = 'pilot'
     store.unmarkStepCompleted(2)
     store.unmarkStepCompleted(3)
     store.setCurrentStep(2)

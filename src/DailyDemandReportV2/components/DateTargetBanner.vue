@@ -3,26 +3,26 @@
     <span class="dtb-label">🎯 申报目标日期</span>
     <span class="dtb-divider"></span>
     <div class="dtb-items">
-      <span class="dtb-item"
-        ><span class="dtb-k">📆</span
-        ><span class="dtb-v">{{ dateInfo.date }}</span></span
-      >
       <span class="dtb-item">
-        <span class="dtb-k">星期</span>
-        <span class="dtb-v">{{ dateInfo.day_of_the_week }}</span>
-        <span :class="weekdayBadgeClass">{{ weekdayBadgeText }}</span>
+        <span class="dtb-k">📆</span>
+        <span class="dtb-v" style="margin-left: 4px">{{ dateInfo.date }}</span>
       </span>
       <span class="dtb-item">
-        <span class="dtb-k">类型</span>
-        <span class="dtb-v">{{ dateInfo.date_type }}</span>
-        <span v-if="dateInfo.date_type === '节假日'" class="dtb-badge holiday"
+        <span class="dtb-v">{{ dateInfo.day_of_the_week }}</span>
+      </span>
+      <span class="dtb-item">
+        <span :class="weekdayBadgeClass"
+          >{{ dateInfo.date_type
+          }}{{
+            dateInfo.holiday_name ? ` (${dateInfo.holiday_name}) ` : ""
+          }}</span
+        >
+        <span
+          v-if="dateInfo.date_type?.includes('节假日')"
+          class="dtb-badge holiday"
           >休</span
         >
       </span>
-      <span class="dtb-item"
-        ><span class="dtb-k">节假日</span
-        ><span class="dtb-v">{{ dateInfo.holiday_name || "-" }}</span></span
-      >
       <span class="dtb-item"
         ><span class="dtb-k">🌡️</span
         ><span class="dtb-v">{{ tempText }}</span></span
@@ -79,7 +79,7 @@ const tempText = computed(() => {
   border: 1px solid #91d5ff;
   border-radius: 8px;
   padding: 10px 18px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   flex-wrap: wrap;
 
   .dtb-label {
@@ -107,7 +107,7 @@ const tempText = computed(() => {
       display: flex;
       align-items: center;
       gap: 3px;
-      font-size: 12px;
+      font-size: 14px;
       color: #303133;
       white-space: nowrap;
 
@@ -124,11 +124,10 @@ const tempText = computed(() => {
   }
 
   .dtb-badge {
-    font-size: 10px;
-    padding: 0 7px;
+    font-size: 14px;
+    padding: 1px 8px;
     border-radius: 3px;
     font-weight: 500;
-    line-height: 18px;
     margin-left: 2px;
 
     &.holiday {

@@ -35,11 +35,24 @@ service.interceptors.request.use(
 service.interceptors.response.use(
     (response) => {
         // 返回完整的响应对象，而不是response.data
-        return response; // 关键修改：返回整个响应对象
+        return response;
     },
     (error) => {
         // 统一处理错误
         console.error("API Error:", error.response?.data || error.message);
+
+        // 处理token过期
+        if (
+            error.response?.status === 401 &&
+            error.response?.data?.code === "TOKEN_EXPIRED"
+        ) {
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("userInfo");
+            // 跳转到登录页，并携带当前页面路径用于登录后跳回
+            const currentPath = window.location.pathname;
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}&expired=1`;
+        }
+
         return Promise.reject(error);
     },
 );

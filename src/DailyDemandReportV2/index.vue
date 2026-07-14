@@ -244,17 +244,39 @@
 
       <!-- 策略申报表 -->
       <div class="v2-card" style="border-color: #1d39c4">
-        <div
-          class="v2-card-header"
-          style="padding: 16px 20px 0; border-bottom: none"
-        >
+        <div class="v2-card-header">
           <div class="card-title">
             📋 日前用电侧申报策略表
-            <span
+            <!-- <span
               class="v2-badge"
               style="background: #1d39c4; color: #fff; border: none"
               >16列 · 双表头</span
+            > -->
+            <template v-if="store.hkd_declaration">
+              <span class="hkd-fetched-label">
+                <el-icon :size="16"><CircleCheckFilled /></el-icon>
+                已成功获取AI申报建议
+              </span>
+            </template>
+            <el-button
+              v-else
+              @click="fetchHkdDeclaration"
+              size="small"
+              :icon="MagicStick"
+              >获取AI申报建议</el-button
             >
+            <span class="strategy-label">
+              <el-icon :size="16"><Lightning /></el-icon>
+              选择申报策略提供方：
+            </span>
+            <el-radio-group
+              :model-value="store.strategy_provider"
+              @change="onProviderChange"
+              size="default"
+            >
+              <el-radio-button value="pilot">派诺方</el-radio-button>
+              <el-radio-button value="hkd">华科方</el-radio-button>
+            </el-radio-group>
           </div>
           <div
             style="
@@ -281,6 +303,8 @@
           :load-forecast="store.load_forecast"
           :price-forecast="store.price_forecast"
           :user-estimated-confirmed="store.userEstimatedConfirmed"
+          :strategy-provider="store.strategy_provider"
+          :hkd-declaration="store.hkd_declaration"
           @confirm-edit="
             (payload) => store.setAdjustedRatio(payload.period, payload.ratio)
           "
@@ -294,6 +318,7 @@
           @modify-manual-estimated="
             () => store.setUserEstimatedConfirmed(false)
           "
+          @batch-set-ratios="handleBatchSetRatios"
         />
       </div>
 
@@ -334,10 +359,19 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Loading } from "@element-plus/icons-vue";
+import {
+  Loading,
+  Lightning,
+  CircleCheckFilled,
+  MagicStick,
+} from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import { useEditMode } from "@/DailyDemandReportV2/composables/useEditMode";
-import { historyDetailApi, updateHistoryApi } from "@/DailyDemandReportV2/api";
+import {
+  historyDetailApi,
+  updateHistoryApi,
+  hkdDeclarationApi,
+} from "@/DailyDemandReportV2/api";
 
 import { useDailyDeclarationV2Store } from "@/store/dailyDeclarationV2";
 import { useStepNavigation } from "@/DailyDemandReportV2/composables/useStepNavigation";
@@ -412,13 +446,87 @@ watch(
   { deep: true, immediate: true },
 );
 
-const confirmSummary = computed(() => ({
-  declarationDate: store.declarationDate,
-  dateCount: store.allSelectedDates.length,
-  totalQuantity: store.strategyPeriods
-    .reduce((sum, p) => sum + (Number(p.declared_quantity) || 0), 0)
-    .toFixed(2),
-}));
+const confirmSummary = computed(() => {
+  const periods = store.strategyPeriods;
+  const provider = store.strategy_provider;
+  const adjustedRatios = store.adjustedRatios;
+  const loadForecast = store.load_forecast;
+  const userEstimatedConfirmed = store.userEstimatedConfirmed;
+  const hkdDeclaration = store.hkd_declaration;
+
+  let total = 0;
+
+  periods.forEach((row) => {
+    const period = row.period;
+    const idx = parseInt(period);
+    let rowVal = 0;
+
+    /* 获取调整后的申报比例 */
+    let adjustedRatio = adjustedRatios?.[idx];
+    if (adjustedRatio === null || adjustedRatio === undefined) {
+      if (provider === "hkd") {
+        const hkdRatio = hkdDeclaration?.points?.[period]?.hkd_declared_ratio;
+        adjustedRatio = hkdRatio ?? row.declared_ratio;
+      } else {
+        adjustedRatio = row.declared_ratio;
+      }
+    }
+
+    if (provider === "hkd") {
+      const hkdRatio = row.hkd_declared_ratio;
+      if (adjustedRatio === hkdRatio) {
+        if (row.hkd_declared_quantity != null) {
+          rowVal = Number(row.hkd_declared_quantity);
+        }
+      } else {
+        if (
+          row.hkd_user_estimated != null &&
+          adjustedRatio != null &&
+          adjustedRatio !== 0
+        ) {
+          rowVal = Number(row.hkd_user_estimated) * adjustedRatio;
+        }
+      }
+    } else {
+      /* 获取评估电量 */
+      let estimatedMwh;
+      if (
+        loadForecast?.load_forecasting_method === "manual" &&
+        userEstimatedConfirmed
+      ) {
+        estimatedMwh = loadForecast?.manual_load_data?.[period];
+      } else {
+        estimatedMwh = row.user_estimated;
+      }
+
+      const declaredQty = row.declared_quantity;
+      const originalRatio = row.declared_ratio;
+
+      if (adjustedRatio === originalRatio) {
+        if (declaredQty != null && !isNaN(Number(declaredQty))) {
+          rowVal = Number(declaredQty);
+        }
+      } else {
+        if (
+          estimatedMwh != null &&
+          adjustedRatio != null &&
+          adjustedRatio !== 0
+        ) {
+          rowVal = Number(estimatedMwh) * adjustedRatio;
+        }
+      }
+    }
+
+    /* 每行先四舍五入到2位小数再累加，与表格合计行保持一致 */
+    total += Math.round(rowVal * 100) / 100;
+  });
+
+  return {
+    declarationDate: store.declarationDate,
+    dateCount: store.allSelectedDates.length,
+    totalQuantity: total.toFixed(2),
+  };
+});
 
 function handleSwitchStep(step) {
   if (step === store.currentStep) return;
@@ -443,7 +551,11 @@ async function handleGoToStep3() {
 
   if (!success) {
     ElMessage.error("进入申报步骤失败");
+    return;
   }
+
+  // 进入步骤 3 后自动拉取 AI 申报建议
+  fetchHkdDeclaration();
 }
 
 function handleBackToStep1WithWarning() {
@@ -478,6 +590,64 @@ function handleBackToStep2WithWarning() {
     .catch(() => {});
 }
 
+async function fetchHkdDeclaration() {
+  if (!store.declarationDate) {
+    ElMessage.warning("请先选择申报日期");
+    return;
+  }
+  try {
+    const res = await hkdDeclarationApi(store.declarationDate);
+    const body = res.data;
+    if (body.code === 0 || body.success) {
+      store.hkd_declaration = body.data;
+      ElMessage.success("获取AI申报建议成功");
+    } else {
+      ElMessage.error(body.message || "获取AI申报建议失败");
+    }
+  } catch (err) {
+    console.error("获取AI申报建议失败:", err);
+    ElMessage.error("获取AI申报建议失败，请检查网络连接");
+  }
+}
+
+async function onProviderChange(val) {
+  const isHkdMode = val === "hkd";
+  const msg = isHkdMode
+    ? "确认选中AI申报建议将会重置调整申报比例列中所填入的所有内容"
+    : "确认切回派诺方将重置调整申报比例列中所填入的所有内容";
+
+  try {
+    await ElMessageBox.confirm(msg, "确认切换", {
+      confirmButtonText: "确认",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+
+    store.strategy_provider = val;
+
+    const ratiosByPeriod = {};
+    (store.strategyPeriods || []).forEach((p) => {
+      ratiosByPeriod[p.period] = isHkdMode
+        ? (store.hkd_declaration?.points?.[p.period]?.hkd_declared_ratio ??
+          p.declared_ratio)
+        : p.declared_ratio;
+    });
+
+    if (strategyTableRef.value?.batchSetRatios) {
+      strategyTableRef.value.batchSetRatios(ratiosByPeriod);
+    }
+    ElMessage.success(`已切换至${isHkdMode ? "华科方" : "派诺方"}`);
+  } catch {
+    // 用户取消，不修改 store.strategy_provider
+  }
+}
+
+function handleBatchSetRatios(ratiosByPeriod) {
+  Object.entries(ratiosByPeriod).forEach(([period, ratio]) => {
+    store.setAdjustedRatio(period, ratio);
+  });
+}
+
 function buildPayload() {
   return {
     declaration_date: store.declarationDate,
@@ -490,6 +660,8 @@ function buildPayload() {
     adjustedRatios: store.adjustedRatios,
     price_forecast: store.price_forecast,
     load_forecast: store.load_forecast,
+    hkd_declaration: store.hkd_declaration,
+    strategy_provider: store.strategy_provider,
   };
 }
 
@@ -600,5 +772,37 @@ onMounted(async () => {
   color: #666;
   border-color: #d9d9d9;
   background: #fff;
+}
+
+/* 策略提供方选择 */
+.strategy-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  letter-spacing: 0.3px;
+  user-select: none;
+  margin-left: 4px;
+}
+
+.hkd-fetched-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #67c23a;
+  background: #f0f9eb;
+  padding: 5px 12px;
+  border-radius: 20px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+:deep(.el-radio-button__inner) {
+  font-size: 13px;
+  padding: 8px 16px;
 }
 </style>

@@ -1,560 +1,683 @@
 <template>
-  <div class="card-body" style="padding: 8px 0 20px">
-    <div class="strategy-table-wrapper">
-      <el-table
-        :data="tableData"
-        border
-        style="width: 100%"
-        :cell-style="cellStyle"
-        header-row-class-name="strategy-header"
-        size="small"
-        row-key="period"
-        :show-summary="!isManualInputMode"
-        :summary-method="summaryMethod"
-      >
-        <el-table-column fixed="left" prop="period" width="60">
-          <template #header>
-            <div style="line-height: 1.3">时间</div>
-          </template>
-          <template #default="scope">
-            {{ scope.row.period }}
-          </template>
-        </el-table-column>
-        <el-table-column min-width="350">
-          <template #header>
-            <div
-              class="hydl-title"
-              @click="showContractDetails = !showContractDetails"
-            >
-              <span>合约电量</span>
+  <div class="strategy-table-wrapper">
+    <el-table
+      :data="tableData"
+      border
+      style="width: 100%"
+      :cell-style="cellStyle"
+      header-row-class-name="strategy-header"
+      size="small"
+      row-key="period"
+      :show-summary="!isManualInputMode"
+      :summary-method="summaryMethod"
+    >
+      <el-table-column fixed="left" prop="period" width="60">
+        <template #header>
+          <div style="line-height: 1.3">时间</div>
+        </template>
+        <template #default="scope">
+          {{ scope.row.period }}
+        </template>
+      </el-table-column>
+      <el-table-column min-width="350">
+        <template #header>
+          <div
+            class="hydl-title"
+            @click="showContractDetails = !showContractDetails"
+          >
+            <span>合约电量</span>
 
-              <el-text size="small" type="primary">
-                <el-icon :size="14">
-                  <View v-if="!showContractDetails" />
-                  <Hide v-else />
-                </el-icon>
-                {{ showContractDetails ? "隐藏" : "查看" }}
-              </el-text>
-            </div>
+            <el-text size="small" type="primary">
+              <el-icon :size="14">
+                <View v-if="!showContractDetails" />
+                <Hide v-else />
+              </el-icon>
+              {{ showContractDetails ? "隐藏" : "查看" }}
+            </el-text>
+          </div>
+        </template>
+        <el-table-column
+          v-if="showContractDetails"
+          prop="contract_multi_day"
+          min-width="70"
+        >
+          <template #header>多日<br />合约电量</template>
+          <template #default="scope">
+            {{ formatNum(scope.row.contract_multi_day) }}
           </template>
-          <el-table-column
-            v-if="showContractDetails"
-            prop="contract_multi_day"
-            min-width="70"
-          >
-            <template #header>多日<br />合约电量</template>
-            <template #default="scope">
-              {{ formatNum(scope.row.contract_multi_day) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            v-if="showContractDetails"
-            prop="contract_weekly"
-            min-width="70"
-          >
-            <template #header>周<br />合约电量</template>
-            <template #default="scope">
-              {{ formatNum(scope.row.contract_weekly) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            v-if="showContractDetails"
-            prop="contract_monthly"
-            min-width="70"
-          >
-            <template #header>月度<br />合约电量</template>
-            <template #default="scope">
-              {{ formatNum(scope.row.contract_monthly) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            v-if="showContractDetails"
-            prop="contract_yearly"
-            min-width="70"
-          >
-            <template #header>年度<br />合约电量</template>
-            <template #default="scope">
-              {{ formatNum(scope.row.contract_yearly) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="contract_long_term" min-width="70">
-            <template #header>中长期<br />合约电量</template>
-            <template #default="scope">
-              <span style="font-weight: 600; color: #1d39c4">{{
-                formatNum(scope.row.contract_long_term)
-              }}</span>
-            </template>
-          </el-table-column>
         </el-table-column>
-        <!-- （算法）用户评估电量 -->
-        <el-table-column prop="user_estimated" min-width="120">
-          <template #header>
+        <el-table-column
+          v-if="showContractDetails"
+          prop="contract_weekly"
+          min-width="70"
+        >
+          <template #header>周<br />合约电量</template>
+          <template #default="scope">
+            {{ formatNum(scope.row.contract_weekly) }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          v-if="showContractDetails"
+          prop="contract_monthly"
+          min-width="70"
+        >
+          <template #header>月度<br />合约电量</template>
+          <template #default="scope">
+            {{ formatNum(scope.row.contract_monthly) }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          v-if="showContractDetails"
+          prop="contract_yearly"
+          min-width="70"
+        >
+          <template #header>年度<br />合约电量</template>
+          <template #default="scope">
+            {{ formatNum(scope.row.contract_yearly) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="contract_long_term" min-width="70">
+          <template #header>中长期<br />合约电量</template>
+          <template #default="scope">
+            <span style="font-weight: 600; color: #1d39c4">{{
+              formatNum(scope.row.contract_long_term)
+            }}</span>
+          </template>
+        </el-table-column>
+      </el-table-column>
+      <!-- （算法）用户评估电量 -->
+      <el-table-column prop="user_estimated" min-width="120">
+        <template #header>
+          <div
+            class="evaluation-column-header"
+            :class="{
+              active:
+                userEstimatedMode === 'api' && props.strategyProvider !== 'hkd',
+              'not-clickable': props.strategyProvider === 'hkd',
+            }"
+            @click="handleAlgorithmHeaderClick"
+          >
+            <div>
+              <el-icon
+                v-if="
+                  userEstimatedMode === 'api' &&
+                  props.strategyProvider !== 'hkd'
+                "
+                ><CircleCheckFilled
+              /></el-icon>
+              算法评估电量<br />(MWh)
+            </div>
+            <div
+              class="copy-header-btn"
+              @click.stop="copyColumnValues('user_estimated')"
+            >
+              <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
+            </div>
+          </div>
+        </template>
+        <template #default="scope">
+          {{ formatNum(scope.row.user_estimated) }}
+        </template>
+      </el-table-column>
+      <!-- 人工评估电量（始终显示） -->
+      <el-table-column prop="manual_estimated" min-width="130">
+        <template #header>
+          <div class="manual-estimated-header">
             <div
               class="evaluation-column-header"
-              :class="{ active: userEstimatedMode === 'api' }"
-              @click="handleAlgorithmHeaderClick"
+              :class="{
+                active:
+                  userEstimatedMode === 'manual' &&
+                  props.strategyProvider !== 'hkd',
+                clickable: props.userEstimatedConfirmed,
+                'not-clickable':
+                  !props.userEstimatedConfirmed ||
+                  props.strategyProvider === 'hkd',
+              }"
+              @click="handleManualHeaderClick"
             >
               <div>
-                <el-icon v-if="userEstimatedMode === 'api'"
+                <el-icon
+                  v-if="
+                    userEstimatedMode === 'manual' &&
+                    props.strategyProvider !== 'hkd'
+                  "
                   ><CircleCheckFilled
                 /></el-icon>
-                算法评估电量<br />(MWh)
+                人工评估电量<br />(MWh)
               </div>
+            </div>
+            <!-- 已确认：复制 + 修改（仅 api 模式） -->
+            <template v-if="props.userEstimatedConfirmed">
+              <div class="header-actions">
+                <div
+                  class="copy-header-btn"
+                  @click.stop="copyColumnValues('manual_user_estimated')"
+                >
+                  <el-icon :size="12"><CopyDocument /></el-icon
+                  ><span>复制</span>
+                </div>
+                <div
+                  v-if="userEstimatedMode === 'api'"
+                  class="copy-header-btn"
+                  @click.stop="handleModifyManualEstimated"
+                >
+                  <el-icon :size="12"><Edit /></el-icon><span>修改</span>
+                </div>
+              </div>
+            </template>
+            <!-- 未确认（编辑态）：确认 + 一键清空 -->
+            <template v-else>
+              <div class="header-actions">
+                <div
+                  class="copy-header-btn"
+                  :class="{ 'is-disabled': !canConfirmManual }"
+                  @click.stop="canConfirmManual && confirmManualEstimated()"
+                >
+                  <el-icon :size="12"><CircleCheckFilled /></el-icon
+                  ><span>确认此人工评估电量</span>
+                </div>
+                <div
+                  class="copy-header-btn"
+                  @click.stop="handleClearManualEstimated"
+                >
+                  <el-icon :size="12"><Delete /></el-icon><span>一键清空</span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+        <template #default="scope">
+          <template v-if="!props.userEstimatedConfirmed">
+            <el-input
+              :model-value="
+                props.loadForecast?.manual_load_data?.[scope.row.period]
+              "
+              @update:model-value="
+                (val) => handleManualInput(scope.row.period, val)
+              "
+              size="small"
+              placeholder="输入或粘贴"
+              @paste.prevent="
+                scope.$index === 0 ? handlePasteOnFirstCell($event) : null
+              "
+            />
+          </template>
+          <template v-else>
+            {{
+              formatNum(
+                props.loadForecast?.manual_load_data?.[scope.row.period],
+              )
+            }}
+          </template>
+        </template>
+      </el-table-column>
+      <!-- 人工电价预测（表头切换） -->
+      <el-table-column v-if="!isManualInputMode" align="center">
+        <template #header>
+          <div
+            class="evaluation-column-header"
+            :class="{
+              active:
+                priceForecastingMode === 'manual' &&
+                props.strategyProvider !== 'hkd',
+              'not-clickable': props.strategyProvider === 'hkd',
+            }"
+            @click="onPriceForecastingModeChange('manual')"
+          >
+            <div>
+              <el-icon
+                v-if="
+                  priceForecastingMode === 'manual' &&
+                  props.strategyProvider !== 'hkd'
+                "
+                ><CircleCheckFilled
+              /></el-icon>
+              人工电价预测<br />(元/MWh)
+            </div>
+          </div>
+        </template>
+
+        <!-- 低价方向 -->
+        <el-table-column prop="spread_direction" min-width="70">
+          <template #header>低价方向</template>
+          <template #default="scope">
+            <span v-if="scope.row.spread_direction" class="spread-low"
+              >日前</span
+            >
+            <span v-else class="spread-high">实时</span>
+          </template>
+        </el-table-column>
+        <!-- 日低价概率 -->
+        <el-table-column prop="spread_probability" min-width="70">
+          <template #header>
+            <div class="copy-header">
+              <div>日前低概率</div>
               <div
                 class="copy-header-btn"
-                @click.stop="copyColumnValues('user_estimated')"
+                @click.stop="copyColumnValues('spread_probability')"
               >
                 <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
               </div>
             </div>
           </template>
           <template #default="scope">
-            {{ formatNum(scope.row.user_estimated) }}
+            {{ formatPct(scope.row.spread_probability) }}
           </template>
         </el-table-column>
-        <!-- 人工评估电量（始终显示） -->
-        <el-table-column prop="manual_estimated" min-width="130">
+      </el-table-column>
+      <!-- 算法电价预测（表头切换） -->
+      <el-table-column v-if="!isManualInputMode" align="center">
+        <template #header>
+          <div
+            class="evaluation-column-header"
+            :class="{
+              active:
+                priceForecastingMode === 'api' &&
+                props.strategyProvider !== 'hkd',
+              'not-clickable': props.strategyProvider === 'hkd',
+            }"
+            @click="onPriceForecastingModeChange('api')"
+          >
+            <div>
+              <el-icon
+                v-if="
+                  priceForecastingMode === 'api' &&
+                  props.strategyProvider !== 'hkd'
+                "
+                ><CircleCheckFilled
+              /></el-icon>
+              算法电价预测<br />(元/MWh)
+            </div>
+          </div>
+        </template>
+
+        <!-- 低价方向 -->
+        <el-table-column prop="api_spread_direction" min-width="70">
+          <template #header>低价方向</template>
+          <template #default="scope">
+            <span
+              v-if="scope.row.api_spread_direction === true"
+              class="spread-low"
+              >日前</span
+            >
+            <span
+              v-else-if="scope.row.api_spread_direction === false"
+              class="spread-high"
+              >实时</span
+            >
+            <span v-else class="no-data">—</span>
+          </template>
+        </el-table-column>
+        <!-- 日低价概率 -->
+        <el-table-column prop="api_spread_probability" min-width="70">
           <template #header>
-            <div class="manual-estimated-header">
+            <div class="copy-header">
+              <div>日前低概率</div>
               <div
-                class="evaluation-column-header"
-                :class="{
-                  active: userEstimatedMode === 'manual',
-                  clickable: props.userEstimatedConfirmed,
-                  'not-clickable': !props.userEstimatedConfirmed,
-                }"
-                @click="handleManualHeaderClick"
+                class="copy-header-btn"
+                @click.stop="copyColumnValues('api_spread_probability')"
               >
-                <div>
-                  <el-icon v-if="userEstimatedMode === 'manual'"
-                    ><CircleCheckFilled
-                  /></el-icon>
-                  人工评估电量<br />(MWh)
-                </div>
+                <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
               </div>
-              <!-- 已确认：复制 + 修改（仅 api 模式） -->
-              <template v-if="props.userEstimatedConfirmed">
-                <div class="header-actions">
-                  <div
-                    class="copy-header-btn"
-                    @click.stop="copyColumnValues('manual_user_estimated')"
-                  >
-                    <el-icon :size="12"><CopyDocument /></el-icon
-                    ><span>复制</span>
-                  </div>
-                  <div
-                    v-if="userEstimatedMode === 'api'"
-                    class="copy-header-btn"
-                    @click.stop="handleModifyManualEstimated"
-                  >
-                    <el-icon :size="12"><Edit /></el-icon><span>修改</span>
-                  </div>
-                </div>
-              </template>
-              <!-- 未确认（编辑态）：确认 + 一键清空 -->
-              <template v-else>
-                <div class="header-actions">
-                  <div
-                    class="copy-header-btn"
-                    :class="{ 'is-disabled': !canConfirmManual }"
-                    @click.stop="canConfirmManual && confirmManualEstimated()"
-                  >
-                    <el-icon :size="12"><CircleCheckFilled /></el-icon
-                    ><span>确认此人工评估电量</span>
-                  </div>
-                  <div
-                    class="copy-header-btn"
-                    @click.stop="handleClearManualEstimated"
-                  >
-                    <el-icon :size="12"><Delete /></el-icon
-                    ><span>一键清空</span>
-                  </div>
-                </div>
-              </template>
             </div>
           </template>
           <template #default="scope">
-            <template v-if="!props.userEstimatedConfirmed">
-              <el-input
-                :model-value="
-                  props.loadForecast?.manual_load_data?.[scope.row.period]
-                "
-                @update:model-value="
-                  (val) => handleManualInput(scope.row.period, val)
-                "
-                size="small"
-                placeholder="输入或粘贴"
-                @paste.prevent="
-                  scope.$index === 0 ? handlePasteOnFirstCell($event) : null
-                "
-              />
-            </template>
-            <template v-else>
-              {{
-                formatNum(
-                  props.loadForecast?.manual_load_data?.[scope.row.period],
-                )
-              }}
-            </template>
+            {{ formatPct(scope.row.api_spread_probability) }}
           </template>
         </el-table-column>
-        <!-- 人工电价预测（表头切换） -->
-        <el-table-column v-if="!isManualInputMode" align="center">
+      </el-table-column>
+
+      <!-- 方案一 -->
+      <el-table-column v-if="!isManualInputMode" prop="plan_a" min-width="65">
+        <template #header>方案一</template>
+        <template #default="scope">
+          {{ formatNum(scope.row.plan_a) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        v-if="!isManualInputMode"
+        prop="suggested_adjust_ratio"
+        min-width="65"
+      >
+        <template #header>建议调整<br />比例</template>
+        <template #default="scope">
+          {{ scope.row.suggested_adjust_ratio }}
+        </template>
+      </el-table-column>
+
+      <!-- 方案二 -->
+      <el-table-column v-if="!isManualInputMode" prop="plan_b" min-width="65">
+        <template #header>方案二</template>
+        <template #default="scope">
+          {{ formatNum(scope.row.plan_b) }}
+        </template>
+      </el-table-column>
+
+      <!-- 日前申报电量 -->
+      <el-table-column
+        v-if="!isManualInputMode"
+        prop="declared_quantity"
+        min-width="75"
+      >
+        <template #header>日前申报<br />电量</template>
+        <template #default="scope">
+          {{ formatNum(scope.row.declared_quantity) }}
+        </template>
+      </el-table-column>
+
+      <!-- 申报比例 -->
+      <el-table-column
+        v-if="!isManualInputMode"
+        prop="declared_ratio"
+        min-width="65"
+      >
+        <template #header>申报<br />比例</template>
+        <template #default="scope">
+          <span class="pct-value">{{
+            formatDeclaredRatio(scope.row.declared_ratio)
+          }}</span>
+        </template>
+      </el-table-column>
+
+      <!-- AI申报建议 -->
+      <el-table-column
+        v-if="props.hkdDeclaration && !isManualInputMode"
+        min-width="280"
+      >
+        <template #header>
+          <div
+            class="evaluation-column-header"
+            :class="{ active: props.strategyProvider === 'hkd' }"
+          >
+            <el-icon v-if="props.strategyProvider === 'hkd'"
+              ><CircleCheckFilled
+            /></el-icon>
+            AI申报建议
+          </div>
+        </template>
+
+        <el-table-column prop="hkd_user_estimated" min-width="90">
           <template #header>
             <div
               class="evaluation-column-header"
-              :class="{ active: priceForecastingMode === 'manual' }"
-              @click="onPriceForecastingModeChange('manual')"
+              :class="{ active: props.strategyProvider === 'hkd' }"
             >
-              <div>
-                <el-icon v-if="priceForecastingMode === 'manual'"
-                  ><CircleCheckFilled
-                /></el-icon>
-                人工电价预测<br />(元/MWh)
-              </div>
+              AI预估<br />用电量
             </div>
           </template>
-
-          <!-- 低价方向 -->
-          <el-table-column prop="spread_direction" min-width="70">
-            <template #header>低价方向</template>
-            <template #default="scope">
-              <span v-if="scope.row.spread_direction" class="spread-low"
-                >日前</span
-              >
-              <span v-else class="spread-high">实时</span>
-            </template>
-          </el-table-column>
-          <!-- 日低价概率 -->
-          <el-table-column prop="spread_probability" min-width="70">
-            <template #header>
-              <div class="copy-header">
-                <div>日前低概率</div>
-                <div
-                  class="copy-header-btn"
-                  @click.stop="copyColumnValues('spread_probability')"
-                >
-                  <el-icon :size="12"><CopyDocument /></el-icon
-                  ><span>复制</span>
-                </div>
-              </div>
-            </template>
-            <template #default="scope">
-              {{ formatPct(scope.row.spread_probability) }}
-            </template>
-          </el-table-column>
+          <template #default="scope">
+            {{ formatNum(scope.row.hkd_user_estimated) }}
+          </template>
         </el-table-column>
-        <!-- 算法电价预测（表头切换） -->
-        <el-table-column v-if="!isManualInputMode" align="center">
+
+        <el-table-column prop="hkd_spread_direction" min-width="70">
           <template #header>
             <div
               class="evaluation-column-header"
-              :class="{ active: priceForecastingMode === 'api' }"
-              @click="onPriceForecastingModeChange('api')"
+              :class="{ active: props.strategyProvider === 'hkd' }"
             >
-              <div>
-                <el-icon v-if="priceForecastingMode === 'api'"
-                  ><CircleCheckFilled
-                /></el-icon>
-                算法电价预测<br />(元/MWh)
-              </div>
+              AI低价<br />方向
             </div>
           </template>
-
-          <!-- 低价方向 -->
-          <el-table-column prop="api_spread_direction" min-width="70">
-            <template #header>低价方向</template>
-            <template #default="scope">
-              <span
-                v-if="scope.row.api_spread_direction === true"
-                class="spread-low"
-                >日前</span
-              >
-              <span
-                v-else-if="scope.row.api_spread_direction === false"
-                class="spread-high"
-                >实时</span
-              >
-              <span v-else class="no-data">—</span>
-            </template>
-          </el-table-column>
-          <!-- 日低价概率 -->
-          <el-table-column prop="api_spread_probability" min-width="70">
-            <template #header>
-              <div class="copy-header">
-                <div>日前低概率</div>
-                <div
-                  class="copy-header-btn"
-                  @click.stop="copyColumnValues('api_spread_probability')"
-                >
-                  <el-icon :size="12"><CopyDocument /></el-icon
-                  ><span>复制</span>
-                </div>
-              </div>
-            </template>
-            <template #default="scope">
-              {{ formatPct(scope.row.api_spread_probability) }}
-            </template>
-          </el-table-column>
+          <template #default="scope">
+            <span
+              v-if="scope.row.hkd_spread_direction === true"
+              class="spread-low"
+              >日前</span
+            >
+            <span
+              v-else-if="scope.row.hkd_spread_direction === false"
+              class="spread-high"
+              >实时</span
+            >
+            <span v-else class="no-data">—</span>
+          </template>
         </el-table-column>
 
-        <!-- 方案一 -->
-        <el-table-column v-if="!isManualInputMode" prop="plan_a" min-width="65">
-          <template #header>方案一</template>
+        <el-table-column prop="hkd_declared_quantity" min-width="90">
+          <template #header>
+            <div
+              class="evaluation-column-header"
+              :class="{ active: props.strategyProvider === 'hkd' }"
+            >
+              AI申报<br />电量
+            </div>
+          </template>
           <template #default="scope">
-            {{ formatNum(scope.row.plan_a) }}
+            {{ formatNum(scope.row.hkd_declared_quantity) }}
           </template>
         </el-table-column>
-        <el-table-column
-          v-if="!isManualInputMode"
-          prop="suggested_adjust_ratio"
-          min-width="65"
-        >
-          <template #header>建议调整<br />比例</template>
-          <template #default="scope">
-            {{ scope.row.suggested_adjust_ratio }}
+
+        <el-table-column prop="hkd_declared_ratio" min-width="70">
+          <template #header>
+            <div
+              class="evaluation-column-header"
+              :class="{ active: props.strategyProvider === 'hkd' }"
+            >
+              AI申报<br />比例
+            </div>
           </template>
-        </el-table-column>
-        <el-table-column v-if="!isManualInputMode" prop="plan_b" min-width="65">
-          <template #header>方案二</template>
-          <template #default="scope">
-            {{ formatNum(scope.row.plan_b) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          v-if="!isManualInputMode"
-          prop="declared_quantity"
-          min-width="75"
-        >
-          <template #header>日前申报<br />电量</template>
-          <template #default="scope">
-            {{ formatNum(scope.row.declared_quantity) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          v-if="!isManualInputMode"
-          prop="declared_ratio"
-          min-width="65"
-        >
-          <template #header>申报<br />比例</template>
           <template #default="scope">
             <span class="pct-value">{{
-              formatDeclaredRatio(scope.row.declared_ratio)
+              formatDeclaredRatio(scope.row.hkd_declared_ratio)
             }}</span>
           </template>
         </el-table-column>
-        <el-table-column v-if="!isManualInputMode" fixed="right" width="130">
-          <template #header>
-            <div class="copy-header">
-              <div>调整申报<br />比例</div>
-              <div
-                class="copy-header-btn"
-                @click.stop="copyColumnValues('adjusted_ratio')"
-              >
-                <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
-              </div>
-            </div>
-          </template>
-          <template #default="scope">
-            <div class="adjust-ratio-cell">
-              <template v-if="readonly || submitted">
-                <div
-                  class="adjusted-val"
-                  :class="getRatioValueClass(scope.row.period)"
-                >
-                  {{ getDisplayRatio(scope.row.period) }}
-                </div>
-              </template>
-              <template v-else-if="editingPeriod !== scope.row.period">
-                <div
-                  class="edit-btn"
-                  @click.stop="enterEditMode(scope.row.period, scope.row)"
-                >
-                  <el-icon><Edit /></el-icon>
-                </div>
-                <div
-                  class="adjusted-val"
-                  :class="getRatioValueClass(scope.row.period)"
-                >
-                  {{ getDisplayRatio(scope.row.period) }}
-                </div>
-              </template>
-              <template v-else>
-                <el-input-number
-                  v-model="editValue"
-                  size="small"
-                  :precision="2"
-                  :min="0.01"
-                  :max="3.5"
-                  :step="0.01"
-                ></el-input-number>
-                <div
-                  class="confirm-btn"
-                  @click.stop="confirmEdit(scope.row.period, scope.row)"
-                >
-                  <el-icon><CircleCheck></CircleCheck></el-icon>
-                </div>
-              </template>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="actual_load" fixed="right" min-width="90">
-          <template #header>
-            <div class="copy-header">
-              <div>实际申报<br />电量(MWh)</div>
-              <div
-                class="copy-header-btn"
-                @click.stop="copyColumnValues('actual_load')"
-              >
-                <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
-              </div>
-            </div>
-          </template>
-          <template #default="scope">
-            <span :class="getActualLoadClass(scope.row)">{{
-              calculateActualLoad(scope.row)
-            }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
+      </el-table-column>
 
+      <!-- 调整申报比例 -->
+      <el-table-column v-if="!isManualInputMode" fixed="right" width="130">
+        <template #header>
+          <div class="copy-header">
+            <div>调整申报<br />比例</div>
+            <div
+              class="copy-header-btn"
+              @click.stop="copyColumnValues('adjusted_ratio')"
+            >
+              <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
+            </div>
+          </div>
+        </template>
+        <template #default="scope">
+          <div class="adjust-ratio-cell">
+            <template v-if="readonly || submitted">
+              <div
+                class="adjusted-val"
+                :class="getRatioValueClass(scope.row.period)"
+              >
+                {{ getDisplayRatio(scope.row.period) }}
+              </div>
+            </template>
+            <template v-else-if="editingPeriod !== scope.row.period">
+              <div
+                class="edit-btn"
+                @click.stop="enterEditMode(scope.row.period, scope.row)"
+              >
+                <el-icon><Edit /></el-icon>
+              </div>
+              <div
+                class="adjusted-val"
+                :class="getRatioValueClass(scope.row.period)"
+              >
+                {{ getDisplayRatio(scope.row.period) }}
+              </div>
+            </template>
+            <template v-else>
+              <el-input-number
+                v-model="editValue"
+                size="small"
+                :precision="2"
+                :min="0.01"
+                :max="3.5"
+                :step="0.01"
+              ></el-input-number>
+              <div
+                class="confirm-btn"
+                @click.stop="confirmEdit(scope.row.period, scope.row)"
+              >
+                <el-icon><CircleCheck></CircleCheck></el-icon>
+              </div>
+            </template>
+          </div>
+        </template>
+      </el-table-column>
+
+      <!-- 实际申报电量 -->
+      <el-table-column prop="actual_load" fixed="right" min-width="90">
+        <template #header>
+          <div class="copy-header">
+            <div>实际申报<br />电量(MWh)</div>
+            <div
+              class="copy-header-btn"
+              @click.stop="copyColumnValues('actual_load')"
+            >
+              <el-icon :size="12"><CopyDocument /></el-icon><span>复制</span>
+            </div>
+          </div>
+        </template>
+        <template #default="scope">
+          <span :class="getActualLoadClass(scope.row)">{{
+            calculateActualLoad(scope.row)
+          }}</span>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+
+  <div
+    v-if="props.summary"
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px 0;
+      flex-wrap: wrap;
+      gap: 8px;
+    "
+  >
+    <div style="display: flex; gap: 12px; font-size: 12px">
+      <span
+        style="
+          background: #f5f7fa;
+          padding: 4px 12px;
+          border-radius: 4px;
+          color: #8c8c8c;
+        "
+      >
+        总时段数: {{ props.summary?.total_periods }}
+      </span>
+      <span
+        style="
+          background: #f6ffed;
+          padding: 4px 12px;
+          border-radius: 4px;
+          color: #52c41a;
+        "
+      >
+        已调整: {{ adjustedCount }}
+      </span>
+      <span
+        style="
+          background: #fff7e6;
+          padding: 4px 12px;
+          border-radius: 4px;
+          color: #fa8c16;
+        "
+      >
+        默认比例: {{ defaultCount }}
+      </span>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+      <!-- 导出申报结果 -->
+      <span
+        style="
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 16px;
+          background: #1890ff;
+          color: #fff;
+          border-radius: 6px;
+          font-size: 12px;
+          cursor: pointer;
+        "
+        @click="exportExcel"
+      >
+        📥 导出申报结果 (电力交易中心版)
+      </span>
+      <el-button
+        v-if="!readonly && !submitted"
+        size="small"
+        plain
+        @click="resetAllRatios"
+      >
+        🔄 恢复默认调整申报比例
+      </el-button>
+    </div>
+  </div>
+
+  <div style="padding: 12px 20px 0">
     <div
-      v-if="props.summary"
+      class="annotation"
       style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 20px 0;
-        flex-wrap: wrap;
-        gap: 8px;
+        background: #f0f5ff;
+        border-color: #adc6ff;
+        color: #1d39c4;
+        margin-bottom: 6px;
       "
     >
-      <div style="display: flex; gap: 12px; font-size: 12px">
+      <span>🧮</span>
+      <span>
+        <strong>计算逻辑：</strong> 方案一 = max(中长期电量, 用户评估电量)
+        &nbsp;|&nbsp; 建议调整比例 R 查表(日前低概率 P) &nbsp;|&nbsp; 方案二 =
+        方案一 × (1+R) &nbsp;|&nbsp; 日前申报电量 = 限幅(方案二, B×0.80~B×1.20)
+        &nbsp;|&nbsp; 申报比例 = 日前申报电量 ÷ 用户评估电量
+      </span>
+    </div>
+    <div
+      style="
+        display: flex;
+        gap: 16px;
+        font-size: 12px;
+        color: #8c8c8c;
+        flex-wrap: wrap;
+        margin-top: 6px;
+      "
+    >
+      <span><strong>固定列：</strong> 时间（首列，左固定）</span>
+      <span>
+        <strong>配色说明：</strong>
         <span
           style="
-            background: #f5f7fa;
-            padding: 4px 12px;
-            border-radius: 4px;
-            color: #8c8c8c;
+            background: #f0f5ff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
           "
+          >🔵 蓝色背景</span
         >
-          总时段数: {{ props.summary?.total_periods }}
-        </span>
-        <span
-          style="
-            background: #f6ffed;
-            padding: 4px 12px;
-            border-radius: 4px;
-            color: #52c41a;
-          "
-        >
-          已调整: {{ adjustedCount }}
-        </span>
+        = 合约电量子表头 &nbsp;|&nbsp;
         <span
           style="
             background: #fff7e6;
-            padding: 4px 12px;
-            border-radius: 4px;
-            color: #fa8c16;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
           "
+          >🟠 黄色背景</span
         >
-          默认比例: {{ defaultCount }}
-        </span>
-      </div>
-      <div
-        style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"
-      >
-        <!-- 导出申报结果 -->
-        <span
-          style="
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 6px 16px;
-            background: #1890ff;
-            color: #fff;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-          "
-          @click="exportExcel"
+        = 可编辑列
+      </span>
+      <span>
+        <strong>数据来源：</strong> 合约电量 ×4 &nbsp;|&nbsp;
+        <template v-if="userEstimatedMode === 'api'"
+          >用户评估电量来自第三方 API</template
         >
-          📥 导出申报结果 (电力交易中心版)
-        </span>
-        <el-button
-          v-if="!readonly && !submitted"
-          size="small"
-          plain
-          @click="resetAllRatios"
-        >
-          🔄 恢复默认调整申报比例
-        </el-button>
-      </div>
-    </div>
-
-    <div style="padding: 12px 20px 0">
-      <div
-        class="annotation"
-        style="
-          background: #f0f5ff;
-          border-color: #adc6ff;
-          color: #1d39c4;
-          margin-bottom: 6px;
-        "
-      >
-        <span>🧮</span>
-        <span>
-          <strong>计算逻辑：</strong> 方案一 = max(中长期电量, 用户评估电量)
-          &nbsp;|&nbsp; 建议调整比例 R 查表(日前低概率 P) &nbsp;|&nbsp; 方案二 =
-          方案一 × (1+R) &nbsp;|&nbsp; 日前申报电量 = 限幅(方案二,
-          B×0.80~B×1.20) &nbsp;|&nbsp; 申报比例 = 日前申报电量 ÷ 用户评估电量
-        </span>
-      </div>
-      <div
-        style="
-          display: flex;
-          gap: 16px;
-          font-size: 12px;
-          color: #8c8c8c;
-          flex-wrap: wrap;
-          margin-top: 6px;
-        "
-      >
-        <span><strong>固定列：</strong> 时间（首列，左固定）</span>
-        <span>
-          <strong>配色说明：</strong>
-          <span
-            style="
-              background: #f0f5ff;
-              padding: 2px 6px;
-              border-radius: 3px;
-              font-size: 11px;
-            "
-            >🔵 蓝色背景</span
-          >
-          = 合约电量子表头 &nbsp;|&nbsp;
-          <span
-            style="
-              background: #fff7e6;
-              padding: 2px 6px;
-              border-radius: 3px;
-              font-size: 11px;
-            "
-            >🟠 黄色背景</span
-          >
-          = 可编辑列
-        </span>
-        <span>
-          <strong>数据来源：</strong> 合约电量 ×4 &nbsp;|&nbsp;
-          <template v-if="userEstimatedMode === 'api'"
-            >用户评估电量来自第三方 API</template
-          >
-          <template v-else>人工评估电量由用户粘贴输入</template>
-          &nbsp;|&nbsp; 低价方向/日前低概率从 Step 2 导入 &nbsp;|&nbsp;
-          其余为公式自动计算
-        </span>
-      </div>
+        <template v-else>人工评估电量由用户粘贴输入</template>
+        &nbsp;|&nbsp; 低价方向/日前低概率从 Step 2 导入 &nbsp;|&nbsp;
+        其余为公式自动计算
+      </span>
     </div>
   </div>
 </template>
@@ -584,6 +707,8 @@ const props = defineProps({
   priceForecast: { type: Object, default: null },
   loadForecast: { type: Object, default: null },
   userEstimatedConfirmed: { type: Boolean, default: false },
+  strategyProvider: { type: String, default: "pilot" },
+  hkdDeclaration: { type: Object, default: null },
 });
 
 const emit = defineEmits([
@@ -594,6 +719,7 @@ const emit = defineEmits([
   "switch-price-forecast-mode",
   "update-manual-estimated",
   "modify-manual-estimated",
+  "batch-set-ratios",
 ]);
 
 const editingPeriod = ref(null);
@@ -619,8 +745,33 @@ const isManualInputMode = computed(() => {
   return userEstimatedMode.value === "manual" && !props.userEstimatedConfirmed;
 });
 
+function mapHkdDataToRows() {
+  if (!props.hkdDeclaration || !props.hkdDeclaration.points) {
+    return {};
+  }
+  const points = props.hkdDeclaration.points;
+  const result = {};
+  Object.entries(points).forEach(([hourKey, pointData]) => {
+    // hourKey 格式为 "HH:mm"，与 p.period 格式 "HH:00" 一致
+    result[hourKey] = {
+      hkd_user_estimated: pointData.hkd_user_estimated,
+      hkd_spread_direction: pointData.hkd_spread_direction,
+      hkd_declared_quantity: pointData.hkd_declared_quantity,
+      hkd_declared_ratio: pointData.hkd_declared_ratio,
+    };
+  });
+  return result;
+}
+
 const tableData = computed(() => {
-  return props.periods || [];
+  const hkdMap = mapHkdDataToRows();
+  return (props.periods || []).map((p) => {
+    const hkdData = hkdMap[p.period];
+    if (hkdData) {
+      return { ...p, ...hkdData };
+    }
+    return p;
+  });
 });
 
 const adjustedCount = computed(() => {
@@ -643,8 +794,8 @@ const canConfirmManual = computed(() => {
 });
 
 function formatNum(val) {
-  if (val === null || val === undefined || val === 0) return "0.00";
-  return Number(val).toFixed(2);
+  if (val === null || val === undefined) return "0.00";
+  return new Decimal(val).toFixed(2);
 }
 
 function formatPct(val) {
@@ -656,15 +807,24 @@ function formatDeclaredRatio(val) {
   return formatPct(val);
 }
 
+function getHkdDeclaredRatio(period) {
+  return props.hkdDeclaration?.points?.[period]?.hkd_declared_ratio;
+}
+
 function getAdjustedRatioValue(period) {
   const idx = parseInt(period);
   const adjusted = props.adjustedRatios[idx];
   if (adjusted !== null && adjusted !== undefined) return adjusted;
   const periodData = props.periods.find((p) => p.period === period);
-  return periodData ? periodData.declared_ratio : 1;
+  if (!periodData) return 1;
+  if (props.strategyProvider === "hkd") {
+    return getHkdDeclaredRatio(period) ?? periodData.declared_ratio;
+  }
+  return periodData.declared_ratio;
 }
 
 function onPriceForecastingModeChange(mode) {
+  if (props.strategyProvider === "hkd") return;
   if (mode === priceForecastingMode.value) return; // 已经是该模式，不重复触发
   emit("switch-price-forecast-mode", mode);
   const label = mode === "api" ? "算法电价预测" : "人工电价预测";
@@ -712,6 +872,7 @@ function getEstimatedValue(row) {
 
 // 点击算法评估电量标题 — 切换到 API 模式并触发后端请求
 function handleAlgorithmHeaderClick() {
+  if (props.strategyProvider === "hkd") return;
   if (userEstimatedMode.value === "api") return;
   emit("switch-load-forecast-mode", "api");
   ElMessage.success("已成功切换到算法评估电量模式");
@@ -719,6 +880,7 @@ function handleAlgorithmHeaderClick() {
 
 // 点击人工评估电量标题（仅已确认时可点击）— 切换到人工模式并触发后端请求
 function handleManualHeaderClick() {
+  if (props.strategyProvider === "hkd") return;
   if (!props.userEstimatedConfirmed) return;
   emit("switch-load-forecast-mode", "manual");
   ElMessage.success("已成功切换到人工评估电量模式");
@@ -735,17 +897,38 @@ function handleModifyManualEstimated() {
 }
 
 function calculateActualLoad(row) {
-  const estimatedMwh = getEstimatedValue(row);
+  // 策略提供方为华科方：
+  if (props.strategyProvider === "hkd") {
+    const hkdRatio = row.hkd_declared_ratio;
+    const adjustedRatio = getAdjustedRatioValue(row.period);
+    if (adjustedRatio === hkdRatio) {
+      if (row.hkd_declared_quantity == null) return "—";
+      return formatNum(row.hkd_declared_quantity);
+    }
+    if (
+      row.hkd_user_estimated == null ||
+      adjustedRatio == null ||
+      adjustedRatio === 0
+    )
+      return "—";
+    return new Decimal(row.hkd_user_estimated).mul(adjustedRatio).toFixed(2);
+  }
+
+  // 策略提供方为派诺方：
+  const estimatedMwh = getEstimatedValue(row); //用户评估电量
   const declaredQty = row.declared_quantity;
-  const adjustedRatio = getAdjustedRatioValue(row.period);
+  const adjustedRatio = getAdjustedRatioValue(row.period); //调整比例
   const originalRatio = row.declared_ratio;
 
+  // 如果用户没调整申报比例，直接用后端返回的declared_quantity四舍五入显示
   if (adjustedRatio === originalRatio) {
-    if (declaredQty == null || isNaN(Number(declaredQty))) return "—";
+    if (declaredQty == null || isNaN(declaredQty)) return "—";
     return formatNum(declaredQty);
   }
+  // 如果用户评估电量或调整比例为空或为0，返回“—”
   if (estimatedMwh == null || adjustedRatio == null || adjustedRatio === 0)
     return "—";
+  // 如果用户调整了申报比例，返回用户评估电量✖️调整申报比例，结果四舍五入显示2位小数
   const result = new Decimal(estimatedMwh).mul(adjustedRatio).toFixed(2);
   return result;
 }
@@ -753,7 +936,11 @@ function calculateActualLoad(row) {
 function isAdjusted(period) {
   const periodData = props.periods.find((p) => p.period === period);
   if (!periodData) return false;
-  return getAdjustedRatioValue(period) !== periodData.declared_ratio;
+  const original =
+    props.strategyProvider === "hkd"
+      ? getHkdDeclaredRatio(period)
+      : periodData.declared_ratio;
+  return getAdjustedRatioValue(period) !== original;
 }
 
 function enterEditMode(period, row) {
@@ -783,7 +970,10 @@ function getDisplayRatio(period) {
 function getRatioValueClass(period) {
   const periodData = props.periods.find((p) => p.period === period);
   if (!periodData) return "ratio-not-adjusted";
-  const original = periodData.declared_ratio;
+  const original =
+    props.strategyProvider === "hkd"
+      ? getHkdDeclaredRatio(period)
+      : periodData.declared_ratio;
   const current = getDisplayRatio(period);
   if (!isAdjusted(period) || current === original) return "ratio-not-adjusted";
   if (current < 0.8) return "ratio-low";
@@ -810,7 +1000,10 @@ function getActualLoadClass(row) {
     return "actual-load-default";
   }
   const current = getAdjustedRatioValue(row.period);
-  const original = row.declared_ratio;
+  const original =
+    props.strategyProvider === "hkd"
+      ? row.hkd_declared_ratio
+      : row.declared_ratio;
   if (current > original) {
     return "actual-load-up";
   }
@@ -978,6 +1171,36 @@ function summaryMethod({ columns, data }) {
       sums[index] = styledCell(formatNum(total), "#52c41a");
       return;
     }
+    // hkd_user_estimated (AI 预估用电量)
+    if (prop === "hkd_user_estimated") {
+      let total = 0;
+      data.forEach((row) => {
+        const val = parseFloat(row[prop]);
+        if (!isNaN(val)) total += val;
+      });
+      sums[index] = styledCell(formatNum(total), "#722ed1");
+      return;
+    }
+    // hkd_declared_quantity (AI 申报电量)
+    if (prop === "hkd_declared_quantity") {
+      let total = 0;
+      data.forEach((row) => {
+        const val = parseFloat(row[prop]);
+        if (!isNaN(val)) total += val;
+      });
+      sums[index] = styledCell(formatNum(total), "#722ed1");
+      return;
+    }
+    // hkd_declared_ratio (AI 申报比例)
+    if (prop === "hkd_declared_ratio") {
+      let total = 0;
+      data.forEach((row) => {
+        const val = parseFloat(row[prop]);
+        if (!isNaN(val)) total += val;
+      });
+      sums[index] = styledCell(formatNum(total), "#722ed1");
+      return;
+    }
     // actual_load
     if (prop === "actual_load") {
       let total = 0;
@@ -995,24 +1218,36 @@ function summaryMethod({ columns, data }) {
 
 function cellStyle({ row, column, rowIndex, columnIndex }) {
   const style = {};
-  // 根据当前评估电量模式高亮对应列
-  if (
+  const hkdProps = [
+    "hkd_user_estimated",
+    "hkd_spread_direction",
+    "hkd_declared_quantity",
+    "hkd_declared_ratio",
+  ];
+  // 华科方选中时高亮AI申报建议列
+  if (props.strategyProvider === "hkd" && hkdProps.includes(column.property)) {
+    style.background = "#fff7e6";
+  } else if (
+    props.strategyProvider !== "hkd" &&
     userEstimatedMode.value === "api" &&
     column.property === "user_estimated"
   ) {
     style.background = "#fff7e6";
   } else if (
+    props.strategyProvider !== "hkd" &&
     userEstimatedMode.value === "manual" &&
     column.property === "manual_estimated"
   ) {
     style.background = "#fff7e6";
   } else if (
+    props.strategyProvider !== "hkd" &&
     priceForecastingMode.value === "manual" &&
     (column.property === "spread_direction" ||
       column.property === "spread_probability")
   ) {
     style.background = "#fff7e6";
   } else if (
+    props.strategyProvider !== "hkd" &&
     priceForecastingMode.value === "api" &&
     (column.property === "api_spread_direction" ||
       column.property === "api_spread_probability")
@@ -1024,16 +1259,17 @@ function cellStyle({ row, column, rowIndex, columnIndex }) {
   return style;
 }
 
+function batchSetRatios(ratiosByPeriod) {
+  emit("batch-set-ratios", ratiosByPeriod);
+}
+
 defineExpose({
   hasUnconfirmedEdit: computed(() => editingPeriod.value !== null),
+  batchSetRatios,
 });
 </script>
 
 <style scoped lang="scss">
-.card-body {
-  padding: 8px 0 20px;
-}
-
 .strategy-table-wrapper {
   overflow-x: auto;
   border: 1px solid #ebeef5;

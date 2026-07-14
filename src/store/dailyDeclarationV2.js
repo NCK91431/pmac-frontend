@@ -46,6 +46,9 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     manual_price_data: {},
     api_price_data: {} //由 fetchStrategyData 接口返回
   })
+
+  const hkd_declaration = ref(null)
+  const strategy_provider = ref('pilot')
  
   function setLoadForecast(key, value){
     load_forecast.value[key] = value
@@ -205,6 +208,8 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
       adjustedRatios: adjustedRatios.value,
       price_forecast: price_forecast.value,
       load_forecast: load_forecast.value,
+      hkd_declaration: hkd_declaration.value,
+      strategy_provider: strategy_provider.value,
     }
     const res = await submitApi(payload)
     return res.data
@@ -302,6 +307,8 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     if (Array.isArray(record.adjustedRatios)) adjustedRatios.value = record.adjustedRatios
     if (record.price_forecast) price_forecast.value = record.price_forecast
     if (record.load_forecast) load_forecast.value = record.load_forecast
+    if (record.hkd_declaration) hkd_declaration.value = record.hkd_declaration
+    if (record.strategy_provider) strategy_provider.value = record.strategy_provider
   }
 
   function isStepCompleted(step) {
@@ -344,6 +351,8 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     resetLoadForecast()
     resetPriceForecast()
     setPriceForecast('manual_price_data', {})
+    hkd_declaration.value = null
+    strategy_provider.value = 'pilot'
   }
 
   return {
@@ -352,6 +361,7 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     aiQueryText, queryResults, selectedDates, manualDates, allSelectedDates,
     priceComparisonData, strategyPeriods, strategySummary, adjustedRatios, actualQuantities,
     price_forecast, load_forecast,
+    hkd_declaration, strategy_provider,
     userEstimatedConfirmed,
     setUserEstimatedConfirmed, 
     setPriceForecast, setLoadForecast, resetLoadForecast, resetPriceForecast,
