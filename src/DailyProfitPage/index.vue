@@ -450,6 +450,7 @@
                           :periods="scenario.strategy_periods"
                           :load-method="scenario.load_method"
                           :price-method="scenario.price_method"
+                          :scenario-name="scenario.name"
                         />
                       </el-collapse-item>
                     </el-collapse>

@@ -15,70 +15,164 @@
         </template>
       </el-table-column>
 
-      <el-table-column prop="contract_long_term" min-width="90" label="中长期合约电量(MWh)">
-        <template #default="scope">
-          <span style="font-weight: 600; color: #1d39c4">
-            {{ formatNum(scope.row.contract_long_term) }}
-          </span>
-        </template>
-      </el-table-column>
+      <!-- AI策略：仅显示4个AI字段 -->
+      <template v-if="isAI">
+        <el-table-column
+          prop="hkd_user_estimated"
+          min-width="100"
+          label="AI预估用电量(MWh)"
+        >
+          <template #default="scope">
+            {{ formatNum(scope.row.hkd_user_estimated) }}
+          </template>
+        </el-table-column>
 
-      <!-- 评估电量（根据加载方法决定显示哪种） -->
-      <el-table-column :prop="loadProp" min-width="110" :label="loadLabel">
-        <template #default="scope">
-          <span :style="{ color: loadMethod === 'manual' ? '#d46b08' : '#52c41a' }">
-            {{ formatNum(scope.row[loadProp]) }}
-          </span>
-        </template>
-      </el-table-column>
+        <el-table-column
+          prop="hkd_spread_direction"
+          min-width="80"
+          label="AI低价方向"
+        >
+          <template #default="scope">
+            <span
+              v-if="scope.row.hkd_spread_direction === true"
+              class="spread-low"
+              >日前</span
+            >
+            <span
+              v-else-if="scope.row.hkd_spread_direction === false"
+              class="spread-high"
+              >实时</span
+            >
+            <span v-else class="no-data">—</span>
+          </template>
+        </el-table-column>
 
-      <!-- 低价方向（根据电价方法决定显示哪种） -->
-      <el-table-column :prop="spreadDirProp" min-width="80" :label="priceLabel + '低价方向'">
-        <template #default="scope">
-          <span v-if="getSpreadDirection(scope.row) === true" class="spread-low">日前</span>
-          <span v-else-if="getSpreadDirection(scope.row) === false" class="spread-high">实时</span>
-          <span v-else class="no-data">—</span>
-        </template>
-      </el-table-column>
+        <el-table-column
+          prop="hkd_declared_quantity"
+          min-width="100"
+          label="AI申报电量(MWh)"
+        >
+          <template #default="scope">
+            <span style="font-weight: 600; color: #52c41a">
+              {{ formatNum(scope.row.hkd_declared_quantity) }}
+            </span>
+          </template>
+        </el-table-column>
 
-      <!-- 日前低概率 -->
-      <el-table-column :prop="spreadProbProp" min-width="80" :label="priceLabel + '日前低概率'">
-        <template #default="scope">
-          {{ formatPct(scope.row[spreadProbProp]) }}
-        </template>
-      </el-table-column>
+        <el-table-column
+          prop="hkd_declared_ratio"
+          min-width="70"
+          label="AI申报比例"
+        >
+          <template #default="scope">
+            <span class="pct-value">{{
+              formatDeclaredRatio(scope.row.hkd_declared_ratio)
+            }}</span>
+          </template>
+        </el-table-column>
+      </template>
 
-      <el-table-column prop="plan_a" min-width="70" label="方案一">
-        <template #default="scope">
-          {{ formatNum(scope.row.plan_a) }}
-        </template>
-      </el-table-column>
+      <!-- 非AI策略：原有字段 -->
+      <template v-else>
+        <el-table-column
+          prop="contract_long_term"
+          min-width="90"
+          label="中长期合约电量(MWh)"
+        >
+          <template #default="scope">
+            <span style="font-weight: 600; color: #1d39c4">
+              {{ formatNum(scope.row.contract_long_term) }}
+            </span>
+          </template>
+        </el-table-column>
 
-      <el-table-column prop="suggested_adjust_ratio" min-width="75" label="建议调整比例">
-        <template #default="scope">
-          {{ scope.row.suggested_adjust_ratio }}
-        </template>
-      </el-table-column>
+        <!-- 评估电量（根据加载方法决定显示哪种） -->
+        <el-table-column :prop="loadProp" min-width="110" :label="loadLabel">
+          <template #default="scope">
+            <span
+              :style="{
+                color: loadMethod === 'manual' ? '#d46b08' : '#52c41a',
+              }"
+            >
+              {{ formatNum(scope.row[loadProp]) }}
+            </span>
+          </template>
+        </el-table-column>
 
-      <el-table-column prop="plan_b" min-width="70" label="方案二">
-        <template #default="scope">
-          {{ formatNum(scope.row.plan_b) }}
-        </template>
-      </el-table-column>
+        <!-- 低价方向（根据电价方法决定显示哪种） -->
+        <el-table-column
+          :prop="spreadDirProp"
+          min-width="80"
+          :label="priceLabel + '低价方向'"
+        >
+          <template #default="scope">
+            <span
+              v-if="getSpreadDirection(scope.row) === true"
+              class="spread-low"
+              >日前</span
+            >
+            <span
+              v-else-if="getSpreadDirection(scope.row) === false"
+              class="spread-high"
+              >实时</span
+            >
+            <span v-else class="no-data">—</span>
+          </template>
+        </el-table-column>
 
-      <el-table-column prop="declared_quantity" min-width="80" label="日前申报电量(MWh)">
-        <template #default="scope">
-          <span style="font-weight: 600; color: #52c41a">
-            {{ formatNum(scope.row.declared_quantity) }}
-          </span>
-        </template>
-      </el-table-column>
+        <!-- 日前低概率 -->
+        <el-table-column
+          :prop="spreadProbProp"
+          min-width="80"
+          :label="priceLabel + '日前低概率'"
+        >
+          <template #default="scope">
+            {{ formatPct(scope.row[spreadProbProp]) }}
+          </template>
+        </el-table-column>
 
-      <el-table-column prop="declared_ratio" min-width="70" label="申报比例">
-        <template #default="scope">
-          <span class="pct-value">{{ formatDeclaredRatio(scope.row.declared_ratio) }}</span>
-        </template>
-      </el-table-column>
+        <el-table-column prop="plan_a" min-width="70" label="方案一">
+          <template #default="scope">
+            {{ formatNum(scope.row.plan_a) }}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          prop="suggested_adjust_ratio"
+          min-width="75"
+          label="建议调整比例"
+        >
+          <template #default="scope">
+            {{ scope.row.suggested_adjust_ratio }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="plan_b" min-width="70" label="方案二">
+          <template #default="scope">
+            {{ formatNum(scope.row.plan_b) }}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          prop="declared_quantity"
+          min-width="80"
+          label="日前申报电量(MWh)"
+        >
+          <template #default="scope">
+            <span style="font-weight: 600; color: #52c41a">
+              {{ formatNum(scope.row.declared_quantity) }}
+            </span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="declared_ratio" min-width="70" label="申报比例">
+          <template #default="scope">
+            <span class="pct-value">{{
+              formatDeclaredRatio(scope.row.declared_ratio)
+            }}</span>
+          </template>
+        </el-table-column>
+      </template>
     </el-table>
   </div>
 </template>
@@ -90,28 +184,33 @@ const props = defineProps({
   periods: { type: Array, default: () => [] },
   loadMethod: { type: String, default: "api" },
   priceMethod: { type: String, default: "api" },
+  scenarioName: { type: String, default: "" },
 });
+
+const isAI = computed(() => props.scenarioName === "AI策略");
 
 const tableData = computed(() => props.periods || []);
 
 const loadProp = computed(() =>
-  props.loadMethod === "manual" ? "manual_estimated" : "user_estimated"
+  props.loadMethod === "manual" ? "manual_estimated" : "user_estimated",
 );
 
 const loadLabel = computed(() =>
-  props.loadMethod === "manual" ? "人工评估电量(MWh)" : "算法评估电量(MWh)"
+  props.loadMethod === "manual" ? "人工评估电量(MWh)" : "算法评估电量(MWh)",
 );
 
 const priceLabel = computed(() =>
-  props.priceMethod === "manual" ? "人工" : "算法"
+  props.priceMethod === "manual" ? "人工" : "算法",
 );
 
 const spreadDirProp = computed(() =>
-  props.priceMethod === "manual" ? "spread_direction" : "api_spread_direction"
+  props.priceMethod === "manual" ? "spread_direction" : "api_spread_direction",
 );
 
 const spreadProbProp = computed(() =>
-  props.priceMethod === "manual" ? "spread_probability" : "api_spread_probability"
+  props.priceMethod === "manual"
+    ? "spread_probability"
+    : "api_spread_probability",
 );
 
 function getSpreadDirection(row) {
@@ -147,7 +246,7 @@ function summaryMethod({ columns, data }) {
       sums[index] = h(
         "span",
         { style: { color: "#999", fontWeight: "bold", fontStyle: "italic" } },
-        "合计"
+        "合计",
       );
       return;
     }
@@ -159,6 +258,8 @@ function summaryMethod({ columns, data }) {
         "plan_a",
         "plan_b",
         "declared_quantity",
+        "hkd_user_estimated",
+        "hkd_declared_quantity",
       ].includes(prop)
     ) {
       let total = 0;
@@ -167,7 +268,10 @@ function summaryMethod({ columns, data }) {
         if (!isNaN(val)) total += val;
       });
       const color =
-        prop === "declared_quantity" || prop === "user_estimated"
+        prop === "declared_quantity" ||
+        prop === "user_estimated" ||
+        prop === "hkd_declared_quantity" ||
+        prop === "hkd_user_estimated"
           ? "#52c41a"
           : "#000";
       sums[index] = styledCell(formatNum(total), color);
