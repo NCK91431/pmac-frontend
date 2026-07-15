@@ -435,12 +435,18 @@
                     :label="scenario.name"
                     :name="String(idx)"
                   >
-                    <!-- 回溯收益分析 -->
+                    <!-- 回溯收益表 -->
                     <DailyProfitMainTable
                       :hourly-results="scenario.hourly_results"
                       :daily-summary="scenario.daily_summary"
                     />
-                    <!-- 申报策略表 -->
+                    <!-- 回溯收益分析副表 -->
+                    <DailyProfitSubTable
+                      :hourly-results="scenario.subProfitTableData"
+                      :daily-summary="scenario.subProfitTableSummary"
+                      :scenario-name="scenario.name"
+                    />
+                    <!-- 回溯申报策略表 -->
                     <el-collapse v-model="store.activeStrategyPanels">
                       <el-collapse-item name="strategy">
                         <template #title>
@@ -519,6 +525,7 @@
 import { ref, watch, computed, inject } from "vue";
 import dayjs from "dayjs";
 import {
+  Aim,
   Coin,
   DataLine,
   List,
@@ -640,6 +647,18 @@ function formatNum(val) {
 /** 回溯对比指标定义 */
 const comparisonMetrics = computed(() => [
   {
+    key: "declaredSpreadCaptureRate",
+    label: "申报价差捕获率",
+    unit: "%",
+    icon: Aim,
+  },
+  {
+    key: "actualSpreadCaptureRate",
+    label: "实际价差捕获率",
+    unit: "%",
+    icon: Aim,
+  },
+  {
     key: "dayAheadDeclaredPower",
     label: "日前申报电量",
     unit: "MWh",
@@ -698,11 +717,20 @@ function getRawMetricValue(scenario, key) {
 /** 获取某场景指定指标的格式化值 */
 function getMetricValue(scenario, key) {
   if (!scenario?.daily_summary) return "—";
-  return formatNum(getRawMetricValue(scenario, key));
+  const val = getRawMetricValue(scenario, key);
+  if (
+    key === "declaredSpreadCaptureRate" ||
+    key === "actualSpreadCaptureRate"
+  ) {
+    return Math.round(val * 100) + "%";
+  }
+  return formatNum(val);
 }
 
 /** 收益类指标 key（数值越大越好，打胜出标签） */
 const higherBetterKeys = [
+  "declaredSpreadCaptureRate",
+  "actualSpreadCaptureRate",
   "transferredDeviationProfit",
   "totalDeviationProfit",
   "actualDeviationProfit",

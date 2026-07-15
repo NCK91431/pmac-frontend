@@ -249,6 +249,7 @@
           </template>
         </el-table-column>
         <el-table-column
+          v-if="scenarioName !== 'AI策略'"
           label="日前低概率"
           prop="spreadProbability"
           width="55"
@@ -426,6 +427,10 @@ const props = defineProps({
   dailySummary: {
     type: Object,
     default: () => ({}),
+  },
+  scenarioName: {
+    type: String,
+    default: "",
   },
 });
 
