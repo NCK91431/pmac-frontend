@@ -45,6 +45,19 @@ const breadcrumbs = computed(() => {
     currentName = bc.parentRouteName;
   }
 
+  // 从月度收益页跳转过来时，动态添加上级面包屑
+  if (route.query.fromMonthly) {
+    const parentRoute = router.getRoutes().find((r) => r.name === "MonthlyProfit");
+    if (parentRoute?.meta?.breadcrumb) {
+      const bc = parentRoute.meta.breadcrumb;
+      crumbs.unshift({
+        title: typeof bc.titleFormatter === "function" ? bc.titleFormatter(route) : bc.title,
+        to: parentRoute.path,
+        icon: bc.icon,
+      });
+    }
+  }
+
   if (crumbs.length && crumbs[0].title !== "首页") {
     const homeRoute = router.getRoutes().find((r) => r.name === "home");
     if (homeRoute?.meta?.breadcrumb) {
