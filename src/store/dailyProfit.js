@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { mainTableDataApi, dateInfoApi, confirmProfitDataApi, unconfirmProfitDataApi, confirmStatusApi, backtestProfitApi } from '@/DailyDemandReportV2/api'
+import { mainTableDataApi, dateInfoApi, confirmProfitDataApi, unconfirmProfitDataApi, batchConfirmProfitDataApi, batchUnconfirmProfitDataApi, confirmStatusApi, backtestProfitApi } from '@/DailyDemandReportV2/api'
 import dayjs from 'dayjs'
 
 export const useDailyProfitStore = defineStore('dailyProfit', () => {
@@ -107,6 +107,42 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     }
   }
 
+  /** 批量确认 */
+  async function batchConfirmData(startDate, endDate) {
+    confirmLoading.value = true
+    try {
+      const res = await batchConfirmProfitDataApi(startDate, endDate)
+      if (res.data?.success) {
+        await fetchCurrentMonthConfirmedDates()
+        return res.data
+      }
+      return false
+    } catch (error) {
+      console.error('批量确认数据失败:', error)
+      return false
+    } finally {
+      confirmLoading.value = false
+    }
+  }
+
+  /** 批量取消确认 */
+  async function batchUnconfirmData(startDate, endDate) {
+    confirmLoading.value = true
+    try {
+      const res = await batchUnconfirmProfitDataApi(startDate, endDate)
+      if (res.data?.success) {
+        await fetchCurrentMonthConfirmedDates()
+        return res.data
+      }
+      return false
+    } catch (error) {
+      console.error('批量取消确认失败:', error)
+      return false
+    } finally {
+      confirmLoading.value = false
+    }
+  }
+
   // ====== 原有方法 ======
   async function fetchProfitData(date) {
     currentDate.value = date
@@ -181,6 +217,8 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     fetchCurrentMonthConfirmedDates,
     confirmData,
     unconfirmData,
+    batchConfirmData,
+    batchUnconfirmData,
     // 原有方法
     fetchProfitData,
     fetchDateInfo,
