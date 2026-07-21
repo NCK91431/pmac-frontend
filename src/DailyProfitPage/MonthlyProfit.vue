@@ -33,25 +33,37 @@
       </div>
     </div>
 
-    <!-- ========== 月份选择器 ========== -->
+    <!-- ========== 年份/月份选择器 ========== -->
     <div class="month-selector-section">
-      <div class="field-group">
-        <label>
-          📅 选择月份
-          <span class="tooltip">必填</span>
-        </label>
-        <input
-          type="month"
-          :value="currentMonth"
-          @change="onMonthChange"
-          :max="maxMonth"
-          class="month-input"
-        />
-        <span class="days-info" v-if="totalDays"
-          >当月共 {{ totalDays }} 天</span
-        >
-        <button class="btn btn-primary" @click="fetchData">查询</button>
+      <div class="selector-inner">
+        <div class="year-picker">
+          <label class="selector-label">📅 选择年份</label>
+          <el-select v-model="currentYear" class="year-select" size="small">
+            <el-option
+              v-for="year in availableYears"
+              :key="year"
+              :label="year"
+              :value="year"
+            />
+          </el-select>
+        </div>
+        <div class="months-row">
+          <button
+            v-for="m in nowMonth"
+            :key="m"
+            class="month-btn"
+            :class="{
+              active: selectedMonth === m,
+              disabled: m > nowMonth && currentYear === nowYear,
+            }"
+            :disabled="m > nowMonth && currentYear === nowYear"
+            @click="selectMonth(m)"
+          >
+            {{ m }}月
+          </button>
+        </div>
       </div>
+      <span class="days-info">{{ infoText }}</span>
     </div>
 
     <!-- ========== 数据展示区 ========== -->
@@ -743,26 +755,6 @@
     <div v-if="loading" class="loading-overlay">
       <el-loading :fullscreen="false" />
     </div>
-
-    <!-- 数据不完整弹窗 -->
-    <el-dialog
-      v-model="missingDialogVisible"
-      title="数据不完整"
-      width="420px"
-      :close-on-click-modal="false"
-    >
-      <p class="missing-dialog-msg">
-        以下日期尚未确认数据，请前往日收益页面确认后再查看月度汇总
-      </p>
-      <ul class="missing-dialog-list">
-        <li v-for="date in missingDates" :key="date">{{ date }}</li>
-      </ul>
-      <template #footer>
-        <el-button type="primary" @click="missingDialogVisible = false"
-          >我知道了</el-button
-        >
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -774,20 +766,39 @@ import { Coin, DataLine, List } from "@element-plus/icons-vue";
 import { monthlySummaryApi } from "@/DailyDemandReportV2/api";
 
 const router = useRouter();
-const currentMonth = ref("");
-const maxMonth = dayjs().format("YYYY-MM");
+const currentYear = ref(2026);
+const selectedMonth = ref(dayjs().month() + 1);
+const availableYears = [2026];
+const nowYear = dayjs().format("YYYY");
+const nowMonth = dayjs().month() + 1;
+
+const currentMonth = computed(() => {
+  if (!currentYear.value || !selectedMonth.value) return "";
+  return `${currentYear.value}-${String(selectedMonth.value).padStart(2, "0")}`;
+});
+
 const dailySummaries = ref([]);
 const monthlySummary = ref(null);
 const totalDays = ref(0);
+const confirmedCount = ref(0);
 const loading = ref(false);
 const searched = ref(false);
 
-// 数据不完整弹窗
-const missingDialogVisible = ref(false);
-const missingDates = ref([]);
+const infoText = computed(() => {
+  const ym = currentMonth.value;
+  if (!ym || !totalDays.value) return "";
+  const [y, m] = ym.split("-");
+  const label = `${y}年${m}月`;
+  if (confirmedCount.value === totalDays.value) {
+    return `${label}：当月共${totalDays.value}天，已全部确认`;
+  }
+  return `${label}：当月共${totalDays.value}天，已确认数据${confirmedCount.value}天（当月）`;
+});
 
-function onMonthChange(e) {
-  currentMonth.value = e.target.value;
+function selectMonth(m) {
+  selectedMonth.value = m;
+  sessionStorage.setItem("monthlyProfit_selectedMonth", currentMonth.value);
+  fetchData();
 }
 
 const tableData = computed(() => {
@@ -803,22 +814,15 @@ async function fetchData() {
   }
   loading.value = true;
   searched.value = true;
-  // 重置弹窗状态
-  missingDialogVisible.value = false;
-  missingDates.value = [];
   dailySummaries.value = [];
   monthlySummary.value = null;
   try {
     const res = await monthlySummaryApi(currentMonth.value);
     if (res.data?.success && res.data.data) {
-      // 全部已确认，渲染数据
       dailySummaries.value = res.data.data.dailySummaries || [];
       monthlySummary.value = res.data.data.monthlySummary || null;
       totalDays.value = res.data.data.totalDays || 0;
-    } else if (res.data?.allConfirmed === false) {
-      // 有未确认的日期，弹出提示
-      missingDates.value = res.data.missingDates || [];
-      missingDialogVisible.value = true;
+      confirmedCount.value = dailySummaries.value.length;
     }
   } catch (error) {
     console.error("获取月度收益数据失败:", error);
@@ -828,7 +832,8 @@ async function fetchData() {
 }
 
 function viewDailyDetail(date) {
-  router.push(`/daily-profit?date=${date}`);
+  sessionStorage.setItem("monthlyProfit_selectedMonth", currentMonth.value);
+  router.push(`/daily-profit?date=${date}&fromMonthly=1`);
 }
 
 function formatMoney(val) {
@@ -888,7 +893,15 @@ function summaryMethod({ columns }) {
 }
 
 onMounted(() => {
-  // 不默认选择月份
+  const savedMonth = sessionStorage.getItem("monthlyProfit_selectedMonth");
+  if (savedMonth) {
+    const [year, month] = savedMonth.split("-").map(Number);
+    if (year && month && month >= 1 && month <= 12) {
+      currentYear.value = year;
+      selectedMonth.value = month;
+    }
+  }
+  fetchData();
 });
 </script>
 
@@ -992,74 +1005,129 @@ onMounted(() => {
 /* 月份选择器 */
 .month-selector-section {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   margin: 16px 24px;
-  padding: 24px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 20px 24px;
+  border: 1px solid #e8ecf1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 
-  .field-group {
+  .selector-inner {
     display: flex;
     align-items: center;
     gap: 16px;
-    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
   }
 
-  label {
-    font-size: 15px;
-    font-weight: 600;
-    color: #303133;
+  .year-picker {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
   }
 
-  .tooltip {
-    font-size: 11px;
-    color: #fff;
-    background: #ff4d4f;
-    padding: 1px 8px;
-    border-radius: 4px;
-    font-weight: 400;
+  .selector-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    letter-spacing: 0.3px;
   }
 
-  .month-input {
+  :deep(.year-select) {
+    width: 90px;
+
+    .el-select__wrapper {
+      border-radius: 8px;
+      box-shadow: none;
+      border: 1px solid #d9d9d9;
+      transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+
+      &:hover {
+        border-color: #1890ff;
+      }
+
+      &.is-focus {
+        border-color: #1890ff;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.15);
+      }
+    }
+
+    .el-select__selected-item {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+  }
+
+  .months-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .month-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    padding: 7px 0;
+    border-radius: 8px;
     font-size: 14px;
-    padding: 8px 12px;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #e8ecf1;
+    background: #fafbfc;
+    color: #34495e;
+    transition: all 0.25s ease;
     outline: none;
-    min-width: 180px;
-    transition: border-color 0.2s;
+    line-height: 1.3;
+    letter-spacing: 0.5px;
 
-    &:focus {
+    &:hover:not(.disabled):not(.active) {
       border-color: #1890ff;
-      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      color: #1890ff;
+      background: #f0f7ff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(24, 144, 255, 0.12);
+    }
+
+    &.active {
+      background: #1890ff;
+      color: #fff;
+      border-color: #1890ff;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(24, 144, 255, 0.25);
+
+      &:hover {
+        background: #40a9ff;
+        border-color: #40a9ff;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(24, 144, 255, 0.35);
+      }
+    }
+
+    &.disabled {
+      background: #f8f9fa;
+      color: #c0c4cc;
+      border-color: #ebeef5;
+      cursor: not-allowed;
+      font-weight: 400;
     }
   }
 
   .days-info {
     font-size: 13px;
-    color: #8c8c8c;
-  }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 24px;
+    color: #909399;
+    white-space: nowrap;
+    padding: 6px 12px;
+    background: #f5f7fa;
     border-radius: 6px;
-    font-size: 14px;
     font-weight: 500;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-    background: #1890ff;
-    color: #fff;
-
-    &:hover {
-      background: #40a9ff;
-    }
   }
 }
 
@@ -1252,33 +1320,5 @@ unit {
   justify-content: center;
   background: rgba(255, 255, 255, 0.6);
   z-index: 999;
-}
-
-/* 数据不完整弹窗样式 */
-.missing-dialog-msg {
-  font-size: 14px;
-  color: #555;
-  margin-bottom: 12px;
-  line-height: 1.6;
-}
-
-.missing-dialog-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  li {
-    display: inline-block;
-    padding: 4px 12px;
-    background: #fff7e6;
-    border: 1px solid #ffd591;
-    border-radius: 4px;
-    font-size: 13px;
-    color: #d46b08;
-    font-weight: 500;
-  }
 }
 </style>
