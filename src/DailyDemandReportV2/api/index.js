@@ -127,6 +127,14 @@ export function unconfirmProfitDataApi(declarationDate) {
   return request.delete('/api/daily-profit/confirm', { data: { declaration_date: declarationDate } })
 }
 
+export function batchConfirmProfitDataApi(startDate, endDate) {
+  return request.post('/api/daily-profit/batch-confirm', { start_date: startDate, end_date: endDate })
+}
+
+export function batchUnconfirmProfitDataApi(startDate, endDate) {
+  return request.delete('/api/daily-profit/batch-confirm', { data: { start_date: startDate, end_date: endDate } })
+}
+
 export function confirmStatusApi(month) {
   return request.get('/api/daily-profit/confirm-status', { params: { month } })
 }
