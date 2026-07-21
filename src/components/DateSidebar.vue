@@ -100,11 +100,15 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  defaultCollapsed: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'collapse', 'month-change'])
 
-const collapsed = ref(false)
+const collapsed = ref(props.defaultCollapsed)
 const calendarDate = ref(new Date())
 const expandedYear = ref(null)
 const expandedMonth = ref(null)
