@@ -33,26 +33,21 @@
         <!-- 功能按钮：确认/取消确认 -->
         <div class="page-header-actions">
           <template v-if="store.currentDate && !store.loading">
-            <template v-if="isConfirmed">
-              <span class="confirmed-label">已确认</span>
-              <el-button
-                size="small"
-                @click="handleUnconfirm"
-                :loading="store.confirmLoading"
-              >
-                取消确认
-              </el-button>
-            </template>
-            <template v-else>
-              <el-button
-                type="primary"
-                size="small"
-                @click="handleConfirm"
-                :loading="store.confirmLoading"
-              >
-                确认数据
-              </el-button>
-            </template>
+            <el-button
+              type="primary"
+              size="small"
+              @click="openBatchDialog('confirm')"
+              :loading="store.confirmLoading"
+            >
+              批量确认数据
+            </el-button>
+            <el-button
+              size="small"
+              @click="openBatchDialog('unconfirm')"
+              :loading="store.confirmLoading"
+            >
+              批量取消确认
+            </el-button>
           </template>
         </div>
       </div>
@@ -490,6 +485,7 @@
       v-model="store.currentDate"
       :max-month="maxMonth"
       :max-date="maxDate"
+      :default-collapsed="!!route.query.date"
       @collapse="panelCollapsed = $event"
       @month-change="store.fetchConfirmedDates"
     >
@@ -505,24 +501,45 @@
       </template>
     </DateSidebar>
 
-    <!-- 取消确认弹窗 -->
+    <!-- 批量确认/取消确认弹窗 -->
     <el-dialog
-      v-model="unconfirmDialogVisible"
-      title="取消确认"
-      width="400px"
+      v-model="batchDialogVisible"
+      :title="batchDialogTitle"
+      width="500px"
       :close-on-click-modal="false"
     >
-      <p>确定要取消确认 [{{ unconfirmDate }}] 的数据吗？</p>
+      <el-form label-width="80px">
+        <el-form-item :label="batchDialogLabel">
+          <el-date-picker
+            v-model="batchDateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            :disabled-date="disabledDate"
+            @change="onDateRangeChange"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
       <template #footer>
-        <el-button @click="unconfirmDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="doUnconfirm">确定</el-button>
+        <el-button @click="batchDialogVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          @click="doBatchAction"
+          :loading="store.confirmLoading"
+        >
+          {{ batchDialogConfirmText }}
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, computed, inject } from "vue";
+import { ref, watch, computed, inject, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import dayjs from "dayjs";
 import {
   Aim,
@@ -544,16 +561,18 @@ import DeclarerSelector from "@/components/DeclarerSelector.vue";
 import {
   mainTableDataApi,
   historyDeclarersApi,
+  confirmStatusApi,
 } from "@/DailyDemandReportV2/api";
 import BacktestStrategyTable from "./components/BacktestStrategyTable.vue";
 import { ElMessage } from "element-plus";
 
 const store = useDailyProfitStore();
+const route = useRoute();
 
 const today = dayjs();
 const maxMonth = today.format("YYYY-MM");
-const maxDate = today.subtract(5, "day").format("YYYY-MM-DD");
-const panelCollapsed = ref(false);
+const maxDate = today.subtract(6, "day").format("YYYY-MM-DD");
+const panelCollapsed = ref(!!route.query.date);
 
 const user = inject("user");
 
@@ -777,9 +796,10 @@ function onDeclarerChange(declarantId) {
   }
 }
 
-// 取消确认弹窗
-const unconfirmDialogVisible = ref(false);
-const unconfirmDate = ref("");
+// 批量确认/取消确认弹窗
+const batchDialogVisible = ref(false);
+const batchActionMode = ref("confirm"); // 'confirm' | 'unconfirm'
+const batchDateRange = ref([]);
 
 /** 当前日期是否已确认 */
 const isConfirmed = computed(() => {
@@ -787,31 +807,157 @@ const isConfirmed = computed(() => {
   return store.confirmedDatesSet.has(store.currentDate);
 });
 
-/** 确认数据 */
-async function handleConfirm() {
-  const ok = await store.confirmData(store.currentDate);
-  if (ok) {
-    ElMessage.success("数据确认成功");
-  } else {
-    ElMessage.error("确认数据失败");
+/** 获取上个月的日期范围 */
+function getLastMonthRange() {
+  const now = dayjs();
+  const lastMonth = now.subtract(1, "month");
+  const start = lastMonth.startOf("month").format("YYYY-MM-DD");
+  const end = lastMonth.endOf("month").format("YYYY-MM-DD");
+  return [start, end];
+}
+
+const batchDialogTitle = computed(() =>
+  batchActionMode.value === "confirm" ? "批量确认数据" : "批量取消确认",
+);
+
+const batchDialogLabel = computed(() =>
+  batchActionMode.value === "confirm" ? "确认日期范围" : "取消确认日期范围",
+);
+
+const batchDialogConfirmText = computed(() =>
+  batchActionMode.value === "confirm" ? "确认数据" : "取消确认",
+);
+
+/** 禁止选择未来日期和超过 maxDate 的日期 */
+function disabledDate(time) {
+  const maxDate = dayjs().subtract(6, "day").endOf("day").toDate();
+  const minDate = dayjs().startOf("year").toDate();
+  return (
+    time.getTime() > maxDate.getTime() || time.getTime() < minDate.getTime()
+  );
+}
+
+/** 日期范围变化时：非本月自动扩展为整月 */
+function onDateRangeChange(range) {
+  if (!range || range.length !== 2) return;
+  let [start, end] = range;
+  const currentMonth = dayjs().format("YYYY-MM");
+  const startMonth = dayjs(start).format("YYYY-MM");
+  const endMonth = dayjs(end).format("YYYY-MM");
+  let changed = false;
+
+  if (startMonth !== currentMonth) {
+    const firstDay = dayjs(start).startOf("month").format("YYYY-MM-DD");
+    if (firstDay !== start) {
+      start = firstDay;
+      changed = true;
+    }
+  }
+  if (endMonth !== currentMonth) {
+    const lastDay = dayjs(end).endOf("month").format("YYYY-MM-DD");
+    if (lastDay !== end) {
+      end = lastDay;
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    batchDateRange.value = [start, end];
+    ElMessage.info("非本月已自动扩展为整月选择");
   }
 }
 
-/** 弹出取消确认确认框 */
-function handleUnconfirm() {
-  unconfirmDate.value = store.currentDate;
-  unconfirmDialogVisible.value = true;
+/** 打开批量操作弹窗 */
+function openBatchDialog(mode) {
+  batchActionMode.value = mode;
+  batchDateRange.value = getLastMonthRange();
+  batchDialogVisible.value = true;
 }
 
-/** 执行取消确认 */
-async function doUnconfirm() {
-  const ok = await store.unconfirmData(unconfirmDate.value);
-  unconfirmDialogVisible.value = false;
-  if (ok) {
-    ElMessage.success("已取消确认");
-  } else {
-    ElMessage.error("取消确认失败");
+/** 执行批量操作 */
+async function doBatchAction() {
+  if (!batchDateRange.value || batchDateRange.value.length !== 2) {
+    ElMessage.warning("请选择日期范围");
+    return;
   }
+  const [startDate, endDate] = batchDateRange.value;
+
+  if (batchActionMode.value === "confirm") {
+    // 检查已确认的月份
+    const months = getMonthsInRange(startDate, endDate);
+    const confirmedMonths = [];
+
+    for (const month of months) {
+      try {
+        const res = await confirmStatusApi(month);
+        const confirmedDates = res.data?.data || [];
+        // 计算该月在当前范围内的所有日期
+        const monthDates = getDatesInMonth(startDate, endDate, month);
+        const allConfirmed = monthDates.every((d) =>
+          confirmedDates.includes(d),
+        );
+        if (allConfirmed && monthDates.length > 0) {
+          confirmedMonths.push(month);
+        }
+      } catch {
+        // 查询失败则跳过检查，继续执行
+      }
+    }
+
+    if (confirmedMonths.length > 0) {
+      const msg = confirmedMonths
+        .map((m) => `${dayjs(m).format("M")}月数据已确认过`)
+        .join("，");
+      ElMessage.warning(msg);
+      batchDialogVisible.value = false;
+      return;
+    }
+
+    const res = await store.batchConfirmData(startDate, endDate);
+    if (res) {
+      ElMessage.success(res.message || "批量确认完成");
+    } else {
+      ElMessage.error("批量确认数据失败");
+    }
+  } else {
+    const res = await store.batchUnconfirmData(startDate, endDate);
+    if (res) {
+      ElMessage.success(res.message || "批量取消确认完成");
+    } else {
+      ElMessage.error("批量取消确认失败");
+    }
+  }
+  batchDialogVisible.value = false;
+}
+
+/** 获取日期范围内涉及的所有月份 YYYY-MM */
+function getMonthsInRange(start, end) {
+  const months = [];
+  let current = dayjs(start).startOf("month");
+  const endMonth = dayjs(end).endOf("month");
+  while (current.isBefore(endMonth) || current.isSame(endMonth, "month")) {
+    months.push(current.format("YYYY-MM"));
+    current = current.add(1, "month");
+  }
+  return months;
+}
+
+/** 获取指定月份在日期范围内的所有日期 */
+function getDatesInMonth(start, end, month) {
+  const dates = [];
+  const monthStart = dayjs(month).startOf("month");
+  const monthEnd = dayjs(month).endOf("month");
+  const rangeStart = monthStart.isAfter(dayjs(start))
+    ? monthStart
+    : dayjs(start);
+  const rangeEnd = monthEnd.isBefore(dayjs(end)) ? monthEnd : dayjs(end);
+  let current = dayjs(rangeStart);
+  const last = dayjs(rangeEnd);
+  while (current.isBefore(last) || current.isSame(last, "day")) {
+    dates.push(current.format("YYYY-MM-DD"));
+    current = current.add(1, "day");
+  }
+  return dates;
 }
 
 watch(
@@ -839,6 +985,31 @@ watch(
         store.loading = false;
       }
       // 月份切换的确认状态刷新已由 DateSidebar 的 @month-change 事件处理
+    }
+  },
+);
+
+/** 从 URL 查询参数 ?date= 初始化当前日期；无参数时默认选择允许查看范围最后一天 */
+onMounted(() => {
+  const dateParam = route.query.date;
+  if (dateParam && typeof dateParam === "string") {
+    store.currentDate = dateParam;
+  } else {
+    // 侧边导航栏直接进入时，默认选择允许查看范围中的最后一天
+    store.currentDate = maxDate;
+  }
+});
+
+/** 监听路由参数变化（同一页面内 URL 变化时） */
+watch(
+  () => route.query.date,
+  (newDate) => {
+    if (
+      newDate &&
+      typeof newDate === "string" &&
+      newDate !== store.currentDate
+    ) {
+      store.currentDate = newDate;
     }
   },
 );
