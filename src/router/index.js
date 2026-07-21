@@ -296,7 +296,14 @@ const router = createRouter({
                 module: "trading",
                 permission: "internal",
                 temporaryAccess: true,
-                breadcrumb: { title: "每日收益", icon: "bi bi-graph-up" },
+                breadcrumb: {
+                    title: "每日收益",
+                    icon: "bi bi-graph-up",
+                    titleFormatter: (route) => {
+                        const date = route.query.date;
+                        return date ? `每日收益（${date}日）` : "每日收益";
+                    },
+                },
             },
         },
         {
@@ -307,7 +314,18 @@ const router = createRouter({
                 module: "trading",
                 permission: "internal",
                 temporaryAccess: true,
-                breadcrumb: { title: "月度收益", icon: "bi bi-graph-up" },
+                breadcrumb: {
+                    title: "月度收益",
+                    icon: "bi bi-graph-up",
+                    titleFormatter: () => {
+                        const saved = sessionStorage.getItem("monthlyProfit_selectedMonth");
+                        if (saved) {
+                            const month = saved.split("-")[1];
+                            return month ? `月度收益（${parseInt(month)}月）` : "月度收益";
+                        }
+                        return "月度收益";
+                    },
+                },
             },
         },
         // {
