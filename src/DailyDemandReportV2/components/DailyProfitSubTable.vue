@@ -459,7 +459,6 @@ function headerCellStyle({ columnIndex, rowIndex }) {
 /** 数据单元格样式 */
 function cellStyle({ column, row }) {
   return {
-    padding: "5px 6px",
     fontSize: "14px",
     fontFamily: '"JetBrains Mono", "Fira Code", "Consolas", monospace',
     borderColor: "#e8e8e8",

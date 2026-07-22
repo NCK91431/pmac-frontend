@@ -31,3 +31,5 @@ coverage
 *.tsbuildinfo
 .public/
 新需求文档
+.env
+public/version.json
