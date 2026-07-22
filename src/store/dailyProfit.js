@@ -14,6 +14,9 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
   const hourlyResults = ref([]) //收益查询表格数据
   const dailySummary = ref({}) //收益查询表格摘要数据
 
+  // ====== 历史申报策略数据 ======
+  const historyRecord = ref(null)
+
   // ====== 收益分析 ======
   const subProfitTableData = ref([]) //收益分析表格数据
   const subProfitTableSummary = ref({}) //收益分析表格摘要数据
@@ -155,6 +158,7 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
       if (mainResponse.data?.success && mainResponse.data.data) {
         hourlyResults.value = mainResponse.data.data.hourlyResults || []
         dailySummary.value = mainResponse.data.data.dailySummary || {}
+        historyRecord.value = mainResponse.data.data.historyRecord || null
       }
     } catch (error) {
       console.error('获取每日收益数据失败:', error)
@@ -179,6 +183,7 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     dateInfo.value = null
     hourlyResults.value = []
     dailySummary.value = {}
+    historyRecord.value = null
     loading.value = false
     activeTab.value = 'profitQuery'
     confirmedDates.value = []
@@ -196,6 +201,7 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
     dateInfo,
     hourlyResults,
     dailySummary,
+    historyRecord,
     loading,
     activeTab,
     subProfitTableData,
