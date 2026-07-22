@@ -1,5 +1,22 @@
 <template>
-  <div class="strategy-table-wrapper">
+  <div
+    class="strategy-table-wrapper"
+    :class="{ 'with-source-header': strategySource }"
+  >
+    <!-- 策略来源标题栏（仅在 strategySource 为 true 时显示） -->
+    <div v-if="strategySource" class="strategy-source-header">
+      <div class="source-header-title">📋 日前用电侧申报策略表</div>
+      <div
+        v-if="strategyProvider"
+        class="strategy-provider-badge"
+        :class="providerBadgeClass"
+      >
+        <el-icon :size="13" class="badge-icon"><Lightning /></el-icon>
+        <span class="badge-label">策略来源</span>
+        <span class="badge-value">{{ strategyProviderLabel }}</span>
+      </div>
+    </div>
+    <!-- 策略表格 -->
     <el-table
       :data="tableData"
       border
@@ -544,7 +561,7 @@
       </el-table-column>
     </el-table>
   </div>
-
+  <!-- 策略表格底部摘要 -->
   <div
     v-if="props.summary"
     style="
@@ -588,7 +605,11 @@
         默认比例: {{ defaultCount }}
       </span>
     </div>
-    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+    <!-- 策略表格底部操作按钮 -->
+    <div
+      v-if="!hideFooter"
+      style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"
+    >
       <!-- 导出申报结果 -->
       <span
         style="
@@ -616,8 +637,8 @@
       </el-button>
     </div>
   </div>
-
-  <div style="padding: 12px 20px 0">
+  <!-- 策略表格底部注释 -->
+  <div v-if="!hideFooter" class="footnote">
     <div
       class="annotation"
       style="
@@ -692,6 +713,7 @@ import {
   CopyDocument,
   View,
   Hide,
+  Lightning,
 } from "@element-plus/icons-vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import Decimal from "decimal.js";
@@ -709,6 +731,8 @@ const props = defineProps({
   userEstimatedConfirmed: { type: Boolean, default: false },
   strategyProvider: { type: String, default: "pilot" },
   hkdDeclaration: { type: Object, default: null },
+  strategySource: { type: Boolean, default: false },
+  hideFooter: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -721,6 +745,14 @@ const emit = defineEmits([
   "modify-manual-estimated",
   "batch-set-ratios",
 ]);
+
+const strategyProviderLabel = computed(() => {
+  return props.strategyProvider === "hkd" ? "华科方" : "派诺方";
+});
+
+const providerBadgeClass = computed(() => {
+  return props.strategyProvider === "hkd" ? "is-hkd" : "is-pilot";
+});
 
 const editingPeriod = ref(null);
 const editValue = ref(1);
@@ -824,6 +856,7 @@ function getAdjustedRatioValue(period) {
 }
 
 function onPriceForecastingModeChange(mode) {
+  if (props.readonly) return;
   if (props.strategyProvider === "hkd") return;
   if (mode === priceForecastingMode.value) return; // 已经是该模式，不重复触发
   emit("switch-price-forecast-mode", mode);
@@ -872,6 +905,7 @@ function getEstimatedValue(row) {
 
 // 点击算法评估电量标题 — 切换到 API 模式并触发后端请求
 function handleAlgorithmHeaderClick() {
+  if (props.readonly) return;
   if (props.strategyProvider === "hkd") return;
   if (userEstimatedMode.value === "api") return;
   emit("switch-load-forecast-mode", "api");
@@ -880,6 +914,7 @@ function handleAlgorithmHeaderClick() {
 
 // 点击人工评估电量标题（仅已确认时可点击）— 切换到人工模式并触发后端请求
 function handleManualHeaderClick() {
+  if (props.readonly) return;
   if (props.strategyProvider === "hkd") return;
   if (!props.userEstimatedConfirmed) return;
   emit("switch-load-forecast-mode", "manual");
@@ -899,19 +934,24 @@ function handleModifyManualEstimated() {
 function calculateActualLoad(row) {
   // 策略提供方为华科方：
   if (props.strategyProvider === "hkd") {
-    const hkdRatio = row.hkd_declared_ratio;
+    // 直接从 hkdDeclaration 获取数据，不依赖行数据中合并的 hkd_* 字段
+    const pointData = props.hkdDeclaration?.points?.[row.period];
+    const hkdRatio = pointData?.hkd_declared_ratio;
     const adjustedRatio = getAdjustedRatioValue(row.period);
     if (adjustedRatio === hkdRatio) {
-      if (row.hkd_declared_quantity == null) return "—";
-      return formatNum(row.hkd_declared_quantity);
+      if (pointData?.hkd_declared_quantity == null) return "—";
+      return formatNum(pointData.hkd_declared_quantity);
     }
     if (
-      row.hkd_user_estimated == null ||
+      pointData?.hkd_user_estimated == null ||
       adjustedRatio == null ||
       adjustedRatio === 0
-    )
+    ) {
       return "—";
-    return new Decimal(row.hkd_user_estimated).mul(adjustedRatio).toFixed(2);
+    }
+    return new Decimal(pointData.hkd_user_estimated)
+      .mul(adjustedRatio)
+      .toFixed(2);
   }
 
   // 策略提供方为派诺方：
@@ -1273,7 +1313,6 @@ defineExpose({
 .strategy-table-wrapper {
   overflow-x: auto;
   border: 1px solid #ebeef5;
-  border-radius: 6px;
 
   :deep(.el-table) {
     font-size: 16px;
@@ -1726,5 +1765,84 @@ defineExpose({
   gap: 4px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+/* 策略来源标题栏 */
+.strategy-table-wrapper.with-source-header {
+  border: none;
+  overflow: visible;
+}
+
+.strategy-source-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: none;
+}
+
+.source-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 策略提供方徽标 */
+.strategy-provider-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 18px 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+
+  .badge-icon {
+    flex-shrink: 0;
+  }
+
+  .badge-label {
+    opacity: 0.7;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-value {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  &.is-pilot {
+    background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
+    border: 1px solid #91d5ff;
+    color: #0050b3;
+    box-shadow: 0 1px 4px rgba(24, 144, 255, 0.15);
+
+    .badge-icon {
+      color: #1890ff;
+    }
+  }
+
+  &.is-hkd {
+    background: linear-gradient(135deg, #f9f0ff 0%, #efdbff 100%);
+    border: 1px solid #d3adf7;
+    color: #391085;
+    box-shadow: 0 1px 4px rgba(114, 46, 209, 0.15);
+
+    .badge-icon {
+      color: #722ed1;
+    }
+  }
+}
+
+.footnote {
+  padding: 0 20px;
+  margin: 10px 0;
 }
 </style>

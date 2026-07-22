@@ -333,6 +333,35 @@
             :daily-summary="store.dailySummary"
           />
           <el-empty v-else description="该日期未出收益结果" />
+
+          <!-- 当日的历史申报策略表 -->
+          <div class="history-strategy-table-wrapper">
+            <template v-if="store.historyRecord?.strategyPeriods?.length > 0">
+              <StrategyTableV2
+                :strategy-source="true"
+                :hide-footer="true"
+                :periods="store.historyRecord.strategyPeriods"
+                :summary="{
+                  total_periods: store.historyRecord.strategyPeriods.length,
+                }"
+                :declaration-date="store.currentDate"
+                :adjusted-ratios="store.historyRecord.adjustedRatios"
+                :price-forecast="store.historyRecord.price_forecast"
+                :load-forecast="store.historyRecord.load_forecast"
+                :user-estimated-confirmed="
+                  store.historyRecord.load_forecast?.load_forecasting_method ===
+                  'manual'
+                "
+                :hkd-declaration="store.historyRecord.hkd_declaration"
+                :strategy-provider="
+                  store.historyRecord.strategy_provider || 'pilot'
+                "
+                :readonly="true"
+                :submitted="true"
+              />
+            </template>
+            <el-empty v-else description="暂无历史申报策略数据" />
+          </div>
         </div>
 
         <!-- 收益分分析 -->
@@ -564,6 +593,7 @@ import {
   confirmStatusApi,
 } from "@/DailyDemandReportV2/api";
 import BacktestStrategyTable from "./components/BacktestStrategyTable.vue";
+import StrategyTableV2 from "@/DailyDemandReportV2/components/StrategyTableV2.vue";
 import { ElMessage } from "element-plus";
 
 const store = useDailyProfitStore();
@@ -630,6 +660,8 @@ async function fetchProfitAnalysis(date, declarantId) {
       // 更新副表数据（store）
       store.subProfitTableData = data.subProfitTableData || [];
       store.subProfitTableSummary = data.subProfitTableSummary || {};
+      // 更新历史申报数据（整个 historyRecord）
+      store.historyRecord = data.historyRecord || null;
       // 将主表的交易收益合并到副表数据中（按时段匹配）
       mergeTradingProfit();
     }
@@ -1686,5 +1718,9 @@ watch(
       }
     }
   }
+}
+
+.history-strategy-table-wrapper {
+  margin-top: 10px;
 }
 </style>

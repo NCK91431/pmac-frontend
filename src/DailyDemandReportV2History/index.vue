@@ -93,20 +93,8 @@
         </div>
 
         <div class="v2-card" style="border-color: #1d39c4">
-          <div class="strategy-title">
-            <div class="card-title">📋 日前用电侧申报策略表</div>
-            <!-- 策略来源 派诺方 或 华科方 -->
-            <div
-              v-if="store.record?.strategy_provider"
-              class="strategy-provider-badge"
-              :class="providerBadgeClass"
-            >
-              <el-icon :size="13" class="badge-icon"><Lightning /></el-icon>
-              <span class="badge-label">策略来源</span>
-              <span class="badge-value">{{ strategyProviderLabel }}</span>
-            </div>
-          </div>
           <StrategyTableV2
+            :strategy-source="true"
             :periods="store.strategyPeriods"
             :summary="store.strategySummary"
             :declaration-date="store.currentDate"
@@ -142,7 +130,7 @@
 
 <script setup>
 import { ref, computed, onMounted, inject } from "vue";
-import { Loading, Clock, Lightning } from "@element-plus/icons-vue";
+import { Loading, Clock } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 import { useRouter } from "vue-router";
@@ -182,14 +170,6 @@ const submitTime = computed(() => {
   const h = String(d.getHours()).padStart(2, "0");
   const mi = String(d.getMinutes()).padStart(2, "0");
   return `${y}-${mo}-${day} ${h}:${mi}`;
-});
-
-const strategyProviderLabel = computed(() => {
-  return store.record?.strategy_provider === "hkd" ? "华科方" : "派诺方";
-});
-
-const providerBadgeClass = computed(() => {
-  return store.record?.strategy_provider === "hkd" ? "is-hkd" : "is-pilot";
 });
 
 function handleModify() {
@@ -443,59 +423,4 @@ onMounted(async () => {
   gap: 8px;
 }
 
-/* 策略提供方徽标 */
-.strategy-title {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 16px;
-}
-.strategy-provider-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 18px 6px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-
-  .badge-icon {
-    flex-shrink: 0;
-  }
-
-  .badge-label {
-    opacity: 0.7;
-    letter-spacing: 0.3px;
-  }
-
-  .badge-value {
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-
-  &.is-pilot {
-    background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
-    border: 1px solid #91d5ff;
-    color: #0050b3;
-    box-shadow: 0 1px 4px rgba(24, 144, 255, 0.15);
-
-    .badge-icon {
-      color: #1890ff;
-    }
-  }
-
-  &.is-hkd {
-    background: linear-gradient(135deg, #f9f0ff 0%, #efdbff 100%);
-    border: 1px solid #d3adf7;
-    color: #391085;
-    box-shadow: 0 1px 4px rgba(114, 46, 209, 0.15);
-
-    .badge-icon {
-      color: #722ed1;
-    }
-  }
-}
 </style>
