@@ -149,6 +149,58 @@
             <span>当前选择: {{ currentRangeHintText }}</span>
           </div>
         </div>
+
+        <div class="divider"></div>
+
+        <!-- 公共日期类型覆盖规则 -->
+        <div class="field-group public-date-override-section">
+          <div class="section-header">
+            <label>📅 日期类型公共覆盖规则</label>
+            <button
+              type="button"
+              class="btn btn-secondary small"
+              @click="addPublicDateTypeOverride"
+            >
+              + 添加
+            </button>
+          </div>
+          <div
+            v-if="publicDateTypeOverrides.length > 0"
+            class="date-override-list"
+          >
+            <div
+              v-for="(override, oidx) in publicDateTypeOverrides"
+              :key="oidx"
+              class="override-rule"
+            >
+              <div class="rule-row">
+                <input type="date" v-model="override.date" />
+                <select v-model="override.modified_type">
+                  <option value="工作日">工作日</option>
+                  <option value="周六">周六</option>
+                  <option value="周日">周日</option>
+                  <option value="法定节假日">法定节假日</option>
+                  <option value="调休节假日">调休节假日</option>
+                </select>
+                <input
+                  type="text"
+                  v-model="override.remark"
+                  placeholder="备注 (可选)"
+                />
+                <button
+                  type="button"
+                  class="remove-rule-btn"
+                  @click="removePublicDateTypeOverride(oidx)"
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+          <div v-else class="empty-override-rules" style="margin-top: 8px">
+            暂无日期类型公共覆盖规则，点击「+ 添加」设置
+          </div>
+        </div>
       </div>
 
       <!-- 右侧：公司自定义规则 -->
@@ -199,7 +251,9 @@
               class="company-rule-module"
             >
               <div class="module-header">
-                <span class="company-name">{{ rule.company }}</span>
+                <span class="company-name">{{
+                  rule.company_list.join("、")
+                }}</span>
                 <button
                   type="button"
                   class="remove-module-btn"
@@ -345,12 +399,26 @@
             </button>
           </div>
           <div class="dialog-body">
-            <select v-model="dialogSelectedCompany">
-              <option value="">请选择公司</option>
-              <option v-for="c in availableCompanies" :key="c" :value="c">
+            <div class="dialog-checkbox-group">
+              <label
+                v-for="c in availableCompanies"
+                :key="c"
+                class="dialog-checkbox-item"
+              >
+                <input
+                  type="checkbox"
+                  :value="c"
+                  v-model="dialogSelectedCompanies"
+                />
                 {{ c }}
-              </option>
-            </select>
+              </label>
+            </div>
+            <div
+              v-if="dialogSelectedCompanies.length === 0"
+              class="dialog-hint"
+            >
+              请选择至少一家公司
+            </div>
           </div>
           <div class="dialog-footer">
             <button
@@ -398,7 +466,7 @@
       <div v-else class="rules-list">
         <div v-for="(rule, idx) in customRules" :key="idx" class="rule-card">
           <div class="rule-header">
-            <span class="company-name">{{ rule.company }}</span>
+            <span class="company-name">{{ rule.company_list.join("、") }}</span>
             <button
               type="button"
               class="remove-rule-btn"
@@ -544,10 +612,13 @@ const rules = ref([]);
 
 // 新增：公司自定义规则相关变量
 const showCompanySelectDialog = ref(false);
-const dialogSelectedCompany = ref("");
+const dialogSelectedCompanies = ref([]);
 const editingHistoryRangeIndex = ref(-1);
 const editHistoryRange = ref({ start: "", days: 31 });
 const customRules = ref([]);
+
+// 公共日期类型覆盖规则
+const publicDateTypeOverrides = ref([]);
 
 const loading = ref(false);
 const result = ref(null);
@@ -581,7 +652,9 @@ const defaultRangeHintText = computed(() => {
 
 // 计算可用的公司列表（排除已添加的公司）
 const availableCompanies = computed(() => {
-  const addedCompanies = customRules.value.map((rule) => rule.company);
+  const addedCompanies = customRules.value.flatMap(
+    (rule) => rule.company_list || [],
+  );
   return COMPANY_LIST.filter((company) => !addedCompanies.includes(company));
 });
 
@@ -700,27 +773,30 @@ function loadExampleRules() {
 
 // 新增：公司自定义规则操作函数
 function confirmCompanySelection() {
-  if (!dialogSelectedCompany.value) {
-    alert("请选择公司");
+  if (dialogSelectedCompanies.value.length === 0) {
+    alert("请选择至少一家公司");
     return;
   }
 
-  // 检查是否已存在该公司的规则
-  const existingRuleIndex = customRules.value.findIndex(
-    (rule) => rule.company === dialogSelectedCompany.value,
+  // 检查是否已存在这些公司中的部分规则
+  const existingCompanies = customRules.value.flatMap(
+    (rule) => rule.company_list || [],
+  );
+  const newCompanies = dialogSelectedCompanies.value.filter(
+    (c) => !existingCompanies.includes(c),
   );
 
-  if (existingRuleIndex < 0) {
-    // 创建新规则
+  if (newCompanies.length > 0) {
+    // 创建新规则，包含所有新选的公司
     customRules.value.push({
-      company: dialogSelectedCompany.value,
+      company_list: [...newCompanies],
       date_type_override: [],
     });
   }
 
   // 关闭弹窗并重置
   showCompanySelectDialog.value = false;
-  dialogSelectedCompany.value = "";
+  dialogSelectedCompanies.value = [];
 }
 
 function toggleHistoryRangeEdit(index) {
@@ -778,6 +854,19 @@ function removeDateTypeOverride(ruleIndex, overrideIndex) {
   customRules.value[ruleIndex].date_type_override.splice(overrideIndex, 1);
 }
 
+// 公共日期类型覆盖规则操作
+function addPublicDateTypeOverride() {
+  publicDateTypeOverrides.value.push({
+    date: "",
+    modified_type: "工作日",
+    remark: "",
+  });
+}
+
+function removePublicDateTypeOverride(index) {
+  publicDateTypeOverrides.value.splice(index, 1);
+}
+
 function removeCustomRule(index) {
   customRules.value.splice(index, 1);
 }
@@ -824,13 +913,17 @@ function buildRequestPayload() {
       start: rangeStart.value,
       days: rangeDays.value,
     };
+    if (publicDateTypeOverrides.value.length > 0) {
+      payload.public_history_date_range.date_type_override =
+        publicDateTypeOverrides.value;
+    }
   } else {
     throw new Error("自定义范围: 开始日期格式必须为YYYY-MM-DD");
   }
 
   if (customRules.value.length > 0) {
     payload.custom_rules = customRules.value.map((rule) => {
-      const customRule = { company: rule.company };
+      const customRule = { company_list: rule.company_list };
       if (rule.history_date_range) {
         customRule.history_date_range = rule.history_date_range;
       }
@@ -856,10 +949,11 @@ function resetAll() {
   lastPayload.value = null;
   // 重置新增的变量
   showCompanySelectDialog.value = false;
-  dialogSelectedCompany.value = "";
+  dialogSelectedCompanies.value = [];
   editingHistoryRangeIndex.value = -1;
   editHistoryRange.value = { start: "", days: 31 };
   customRules.value = [];
+  publicDateTypeOverrides.value = [];
 }
 
 // 复制链接
@@ -1735,6 +1829,36 @@ footer {
     .dialog-body {
       padding: 16px;
 
+      .dialog-checkbox-group {
+        max-height: 300px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .dialog-checkbox-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.8rem;
+          cursor: pointer;
+
+          input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: #2563eb;
+          }
+        }
+      }
+
+      .dialog-hint {
+        text-align: center;
+        color: #94a3b8;
+        padding: 12px;
+        font-size: 0.75rem;
+      }
+
       select {
         width: 100%;
         padding: 8px 12px;
@@ -1873,16 +1997,56 @@ footer {
   }
 }
 
+/* 公共日期类型覆盖规则 - 水平排列 */
+.public-date-override-section .date-override-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+
+  .override-rule {
+    flex: 1 1 100%;
+    margin-bottom: 0;
+    min-width: 0;
+
+    .rule-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      align-items: center;
+
+      input,
+      select {
+        min-width: 0;
+      }
+
+      input[type="date"] {
+        flex: 0 0 150px;
+      }
+
+      select {
+        flex: 0 0 110px;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        min-width: 100px;
+      }
+
+      .remove-rule-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
 @media (max-width: 700px) {
   body {
     padding: 16px 12px;
   }
   .card-body {
     padding: 14px;
-  }
-  .rule-row {
-    flex-direction: column;
-    align-items: stretch;
   }
 }
 </style>
