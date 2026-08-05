@@ -226,6 +226,15 @@ const router = createRouter({
             },
         },
         {
+            path: "/membership/invoices",
+            name: "Invoices",
+            component: () => import("@/pages/Membership/Invoices.vue"),
+            meta: {
+                permission: "internal",
+                breadcrumb: { title: "记录与发票", icon: "bi bi-receipt" },
+            },
+        },
+        {
             path: "/price-analysis",
             name: "price_analysis",
             component: () => import("@/pages/PriceAnalysis/Page.vue"),
@@ -249,6 +258,15 @@ const router = createRouter({
             meta: {
                 permission: "admin",
                 breadcrumb: { title: "系统管理", icon: "bi bi-gear" },
+            },
+        },
+        {
+            path: "/admin/invoices",
+            name: "AdminInvoices",
+            component: () => import("@/pages/Admin/Invoices.vue"),
+            meta: {
+                permission: "admin",
+                breadcrumb: { title: "发票管理", icon: "bi bi-receipt" },
             },
         },
         {
@@ -387,6 +405,16 @@ const sidebarMenuConfig = {
             { title: "新建模型", route: "/elec" },
         ]
     },
+    membership: {
+        title: "会员中心",
+        icon: "bi-star",
+        route: "/membership",
+        permission: "internal",
+        children: [
+            { title: "会员中心", route: "/membership" },
+            { title: "记录与发票", route: "/membership/invoices" },
+        ]
+    },
     price_analysis: {
         title: "电价分析",
         icon: "bi-node-plus",
@@ -417,6 +445,15 @@ const sidebarMenuConfig = {
             // { title: "收益分析", route: "/daily-demand-report/history/daily-revenue-analysis" },
             { title: "用户均价配置", route: "/user-price-config" },
             { title: "月度需求申报", route: "/monthly-demand-report", temporaryAccess: true },
+        ]
+    },
+    admin: {
+        title: "系统管理",
+        icon: "bi-gear",
+        permission: "admin",
+        children: [
+            { title: "访问统计", route: "/admin/access-stats" },
+            { title: "发票管理", route: "/admin/invoices" },
         ]
     }
 };

@@ -170,6 +170,17 @@ const routeToBreadcrumb = {
     icon: "bi bi-gear",
     hasBackBtn: true,
   },
+  Invoices: {
+    title: "记录与发票",
+    to: "/membership/invoices",
+    icon: "bi bi-receipt",
+  },
+  AdminInvoices: {
+    title: "发票管理",
+    to: "/admin/invoices",
+    icon: "bi bi-receipt",
+    hasBackBtn: true,
+  },
   MonthlyDemandReport: {
     title: "月度需求申报",
     to: "/monthly-demand-report",
