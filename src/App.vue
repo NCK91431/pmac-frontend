@@ -6,6 +6,7 @@
     <!-- <Breadcrumb @update:breadcrumbHeight="handleBreadcrumbHeight" /> -->
     <RouterView />
   </div>
+  <MembershipGateModal />
   <HomeFooter v-if="showFooter" @update:footerHeight="handleFooterHeight" />
 
   <div v-if="showUpdateModal" class="update-modal-overlay">
@@ -34,7 +35,9 @@ import UniversalHeader from "./components/UniversalHeader.vue";
 import GlobalSidebar from "./components/GlobalSidebar.vue";
 import Breadcrumb from "./components/Breadcrumb.vue";
 import HomeFooter from "./components/HomeFooter.vue";
+import MembershipGateModal from "./components/MembershipGateModal.vue";
 import { checkForUpdate, refreshPage } from "./utils/versionCheck";
+import request from "@/utils/request";
 
 const router = useRouter();
 const user = ref(null);
@@ -72,6 +75,8 @@ onMounted(() => {
   if (storedUser) {
     try {
       user.value = JSON.parse(storedUser);
+      // 已登录用户同步获取会员状态
+      fetchMembershipStatus();
     } catch (e) {
       localStorage.removeItem("userInfo");
       localStorage.removeItem("authToken");
@@ -92,6 +97,20 @@ const checkVersionUpdate = async () => {
   }
 };
 
+// 获取会员状态并缓存到 localStorage
+const fetchMembershipStatus = async () => {
+  try {
+    const res = await request.get("/api/membership/status");
+    const data = res.data;
+    if (data.success) {
+      localStorage.setItem("membershipStatus", JSON.stringify(data.membership));
+    }
+  } catch (err) {
+    // 未登录或接口异常，清除缓存
+    localStorage.removeItem("membershipStatus");
+  }
+};
+
 const handleRefresh = () => {
   showUpdateModal.value = false;
   refreshPage();
@@ -104,6 +123,9 @@ function updateUser(userInfo, authToken) {
   localStorage.setItem("authToken", authToken);
   localStorage.setItem("userInfo", JSON.stringify(userInfo)); // 将对象转换为 JSON 字符串存储
   user.value = userInfo; // 更新响应式状态
+
+  // 登录后同步获取会员状态
+  fetchMembershipStatus();
 }
 
 // 清除用户状态（登出）
@@ -111,6 +133,7 @@ function clearUser() {
   user.value = null;
   localStorage.removeItem("userInfo");
   localStorage.removeItem("authToken");
+  localStorage.removeItem("membershipStatus");
 }
 
 // 向所有子组件提供用户状态和方法
