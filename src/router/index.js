@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import request from "@/utils/request";
+import { useMembershipStore } from "@/store/membership";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -523,9 +524,10 @@ router.beforeEach(async (to, from, next) => {
                 next();
                 return;
             }
-            // 非会员：清理缓存，跳转会员购买页
+            // 非会员：清理缓存，放行进入页面并触发会员引导弹窗
             localStorage.removeItem("membershipStatus");
-            next({ name: "membership" });
+            useMembershipStore().openGate();
+            next();
             return;
         } catch (e) {
             // 接口失败（网络/后端异常）：放行，靠后端 403 兜底
