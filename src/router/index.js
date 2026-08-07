@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import request from "@/utils/request";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -226,11 +227,18 @@ const router = createRouter({
             },
         },
         {
+            path: "/membership",
+            name: "membership",
+            component: () => import("@/pages/Membership/index.vue"),
+            meta: {
+                breadcrumb: { title: "会员中心", icon: "bi bi-star" },
+            },
+        },
+        {
             path: "/membership/invoices",
             name: "Invoices",
             component: () => import("@/pages/Membership/Invoices.vue"),
             meta: {
-                permission: "internal",
                 breadcrumb: { title: "记录与发票", icon: "bi bi-receipt" },
             },
         },
@@ -240,7 +248,19 @@ const router = createRouter({
             component: () => import("@/pages/PriceAnalysis/Page.vue"),
             meta: {
                 module: "price_analysis",
+                requiresAuth: true,
+                requiresMembership: true,
                 breadcrumb: { title: "节点电价查询", icon: "bi bi-sun" },
+            },
+        },
+        {
+            path: "/price-analysis/settlement",
+            name: "PriceAnalysisSettlement",
+            component: () => import("@/pages/PriceAnalysis/SettlementPrice/index.vue"),
+            meta: {
+                module: "trading",
+                requiresMembership: true,
+                breadcrumb: { title: "结算电价预测与查看", icon: "bi bi-cash-coin", parentRouteName: "price_analysis" },
             },
         },
         {
@@ -265,7 +285,7 @@ const router = createRouter({
             name: "AdminInvoices",
             component: () => import("@/pages/Admin/Invoices.vue"),
             meta: {
-                permission: "admin",
+                permission: "internal",
                 breadcrumb: { title: "发票管理", icon: "bi bi-receipt" },
             },
         },
@@ -276,7 +296,6 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
-                temporaryAccess: true,
                 breadcrumb: { title: "月度需求申报", icon: "bi bi-sun" },
             },
         },
@@ -287,7 +306,6 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
-                temporaryAccess: true,
                 breadcrumb: { title: "日前用电侧申报V2", icon: "bi bi-clock-history" },
             },
         },
@@ -298,7 +316,6 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
-                temporaryAccess: true,
                 breadcrumb: {
                     title: "历史日前申报查询",
                     icon: "bi bi-clock-history",
@@ -313,7 +330,6 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
-                temporaryAccess: true,
                 breadcrumb: {
                     title: "每日收益",
                     icon: "bi bi-graph-up",
@@ -331,7 +347,6 @@ const router = createRouter({
             meta: {
                 module: "trading",
                 permission: "internal",
-                temporaryAccess: true,
                 breadcrumb: {
                     title: "月度收益",
                     icon: "bi bi-graph-up",
@@ -405,22 +420,14 @@ const sidebarMenuConfig = {
             { title: "新建模型", route: "/elec" },
         ]
     },
-    membership: {
-        title: "会员中心",
-        icon: "bi-star",
-        route: "/membership",
-        permission: "internal",
-        children: [
-            { title: "会员中心", route: "/membership" },
-            { title: "记录与发票", route: "/membership/invoices" },
-        ]
-    },
+
     price_analysis: {
         title: "电价分析",
         icon: "bi-node-plus",
         route: "/price-analysis",
         children: [
             { title: "节点电价查询", route: "/price-analysis" },
+            { title: "结算电价预测与查看", route: "/price-analysis/settlement" },
         ]
     },
     light: {
@@ -437,14 +444,24 @@ const sidebarMenuConfig = {
         permission: "internal",
         children: [
             // { title: "日前交易申报", route: "/daily-demand-report" },
-            { title: "日前用电侧申报V2", route: "/daily-demand-report-v2", temporaryAccess: true },
-            { title: "历史日前申报查询", route: "/daily-demand-report-v2/history", temporaryAccess: true },
-            { title: "每日收益", route: "/daily-profit", temporaryAccess: true },
-            { title: "月度收益", route: "/daily-profit/monthly", temporaryAccess: true },
+            { title: "日前用电侧申报V2", route: "/daily-demand-report-v2" },
+            { title: "历史日前申报查询", route: "/daily-demand-report-v2/history" },
+            { title: "每日收益", route: "/daily-profit" },
+            { title: "月度收益", route: "/daily-profit/monthly" },
             // { title: "历史申报", route: "/daily-demand-report/history" },
             // { title: "收益分析", route: "/daily-demand-report/history/daily-revenue-analysis" },
             { title: "用户均价配置", route: "/user-price-config" },
-            { title: "月度需求申报", route: "/monthly-demand-report", temporaryAccess: true },
+            { title: "月度需求申报", route: "/monthly-demand-report" },
+        ]
+    },
+        membership: {
+        title: "会员中心",
+        icon: "bi-star",
+        route: "/membership",
+        children: [
+            { title: "会员中心", route: "/membership" },
+            { title: "记录与发票", route: "/membership/invoices" },
+            { title: "发票管理", route: "/admin/invoices" },
         ]
     },
     admin: {
@@ -453,14 +470,13 @@ const sidebarMenuConfig = {
         permission: "admin",
         children: [
             { title: "访问统计", route: "/admin/access-stats" },
-            { title: "发票管理", route: "/admin/invoices" },
         ]
     }
 };
 
 router.$sidebarMenuConfig = sidebarMenuConfig;
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const token = localStorage.getItem("authToken");
     const user = localStorage.getItem("userInfo");
     const userInfo = user ? JSON.parse(user) : null;
@@ -472,16 +488,48 @@ router.beforeEach((to, from, next) => {
         }
 
         if (to.meta.permission === "internal" && userInfo.role !== "internal") {
-            if (userInfo.role === "temporary" && to.meta.temporaryAccess) {
-                // temporary 角色仅可访问特定内部页面
-            } else {
-                next({ name: "home" });
-                return;
-            }
+            // 仅 internal 角色可访问内部页面
+            next({ name: "home" });
+            return;
         }
 
         if (to.meta.permission === "admin" && userInfo.role !== "admin") {
             next({ name: "home" });
+            return;
+        }
+    }
+
+    // 需登录路由守卫（如会员中心）
+    if (to.meta.requiresAuth) {
+        if (!token || !userInfo) {
+            next({ name: "login" });
+            return;
+        }
+    }
+
+    // 会员权益路由守卫（实时校验，接口失败时放行，靠后端鉴权兜底）
+    if (to.meta.requiresMembership) {
+        if (!token || !userInfo) {
+            next({ name: "login" });
+            return;
+        }
+
+        try {
+            const res = await request.get("/api/membership/status");
+            const ms = res.data?.membership;
+            if (ms?.isMember) {
+                // 会员：放行并同步刷新本地缓存
+                localStorage.setItem("membershipStatus", JSON.stringify(ms));
+                next();
+                return;
+            }
+            // 非会员：清理缓存，跳转会员购买页
+            localStorage.removeItem("membershipStatus");
+            next({ name: "membership" });
+            return;
+        } catch (e) {
+            // 接口失败（网络/后端异常）：放行，靠后端 403 兜底
+            next();
             return;
         }
     }
