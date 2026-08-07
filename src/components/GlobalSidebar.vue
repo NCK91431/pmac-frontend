@@ -81,19 +81,14 @@ const canAccessModule = (config) => {
     return true;
   }
   const userRole = user.value?.role;
-  // internal 和 temporary 角色均可访问标记为 internal 的模块
+  // 仅 internal 角色可访问标记为 internal 的模块
   if (config.permission === "internal") {
-    return userRole === "internal" || userRole === "temporary";
+    return userRole === "internal";
   }
   return userRole === config.permission;
 };
 
 const getVisibleChildren = (config) => {
-  const userRole = user.value?.role;
-  if (userRole === "temporary") {
-    // temporary 角色只显示有 temporaryAccess 标记的子菜单
-    return config.children.filter((child) => child.temporaryAccess);
-  }
   return config.children;
 };
 
@@ -146,6 +141,7 @@ const toggleCollapse = (module) => {
 const handleNavigate = (child) => {
   if (!child.route) return;
 
+  // 电价分析等会员页面由路由守卫（requiresMembership）软拦截并弹出会员引导弹窗，此处直接进入
   router.push(child.route).then(() => {
     if (child.anchor) {
       setTimeout(() => {
