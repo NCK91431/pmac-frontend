@@ -321,7 +321,9 @@ const handleLogin = async () => {
     if (response.data.success) {
       updateUser(response.data.user, response.data.token);
       ElMessage.success("登录成功");
-      router.back();
+      // 登录后跳回原页面（redirect 参数），无则回首页
+      // 不能用 router.back()：用户直接打开 /login 时无站内历史，back() 会跳出本站甚至关闭页面
+      router.replace(route.query.redirect || "/");
     } else {
       errorMessage.value = response.data.error || "登录失败，请重试";
     }
