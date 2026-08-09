@@ -842,7 +842,11 @@ async function fetchAllNodeData() {
     loadingInstance.close(); //关闭加载状态
   } catch (error) {
     console.error("加载节点数据失败:", error);
-    ElMessage.error("节点数据加载失败");
+    // 会员门禁拦截（403 MEMBERSHIP_REQUIRED）已由请求拦截器弹出引导弹窗，
+    // 属正常引导流程而非系统错误，此处静默处理，避免红色错误提示与弹窗同屏
+    if (!error.__membershipGate) {
+      ElMessage.error("节点数据加载失败");
+    }
 
     loadingInstance.close(); //关闭加载状态
   }

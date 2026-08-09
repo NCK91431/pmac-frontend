@@ -426,6 +426,7 @@ const sidebarMenuConfig = {
         title: "电价分析",
         icon: "bi-node-plus",
         route: "/price-analysis",
+        vip: true, // 会员专享功能，侧边栏显示 VIP 徽章
         children: [
             { title: "节点电价查询", route: "/price-analysis" },
             { title: "结算电价预测与查看", route: "/price-analysis/settlement" },
@@ -462,7 +463,7 @@ const sidebarMenuConfig = {
         children: [
             { title: "会员中心", route: "/membership" },
             { title: "记录与发票", route: "/membership/invoices" },
-            { title: "发票管理", route: "/admin/invoices" },
+            { title: "发票管理", route: "/admin/invoices", permission: "internal" },
         ]
     },
     admin: {
@@ -484,7 +485,7 @@ router.beforeEach(async (to, from, next) => {
 
     if (to.meta.permission) {
         if (!token || !userInfo) {
-            next({ name: "login" });
+            next({ name: "login", query: { redirect: to.fullPath } });
             return;
         }
 
@@ -503,7 +504,7 @@ router.beforeEach(async (to, from, next) => {
     // 需登录路由守卫（如会员中心）
     if (to.meta.requiresAuth) {
         if (!token || !userInfo) {
-            next({ name: "login" });
+            next({ name: "login", query: { redirect: to.fullPath } });
             return;
         }
     }
@@ -511,7 +512,7 @@ router.beforeEach(async (to, from, next) => {
     // 会员权益路由守卫（实时校验，接口失败时放行，靠后端鉴权兜底）
     if (to.meta.requiresMembership) {
         if (!token || !userInfo) {
-            next({ name: "login" });
+            next({ name: "login", query: { redirect: to.fullPath } });
             return;
         }
 

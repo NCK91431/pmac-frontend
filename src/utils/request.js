@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useMembershipStore } from "@/store/membership";
 
 const baseURLMap = {
     pilot: "https://energyun.com.cn",
@@ -51,6 +52,19 @@ service.interceptors.response.use(
             // 跳转到登录页，并携带当前页面路径用于登录后跳回
             const currentPath = window.location.pathname;
             window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}&expired=1`;
+        }
+
+        // 处理会员权限不足（后端 requireMembership 返回）：
+        // 软拦截——清理缓存并弹出会员引导弹窗，不强制跳转（跳转由用户点击弹窗按钮触发）
+        if (
+            error.response?.status === 403 &&
+            error.response?.data?.code === "MEMBERSHIP_REQUIRED"
+        ) {
+            localStorage.removeItem("membershipStatus");
+            useMembershipStore().openGate();
+            // 标记为会员门禁拦截：页面 catch 应静默处理（不弹红色错误提示），
+            // 避免"数据加载失败"与会员引导弹窗同时出现，让用户误以为系统报错
+            error.__membershipGate = true;
         }
 
         return Promise.reject(error);
