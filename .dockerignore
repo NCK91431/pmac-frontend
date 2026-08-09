@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+*.local
+.DS_Store
+*.log
+docs
+.trae
+.public
+新需求文档
+# 部署文件（Dockerfile/nginx.conf/baota.sh）不进入镜像
+deploy
