@@ -869,23 +869,24 @@ function disabledDate(time) {
   );
 }
 
-/** 日期范围变化时：非本月自动扩展为整月 */
+/** 日期范围变化时：非本月、上月自动扩展为整月（本月和上月不限制） */
 function onDateRangeChange(range) {
   if (!range || range.length !== 2) return;
   let [start, end] = range;
   const currentMonth = dayjs().format("YYYY-MM");
+  const lastMonth = dayjs().subtract(1, "month").format("YYYY-MM");
   const startMonth = dayjs(start).format("YYYY-MM");
   const endMonth = dayjs(end).format("YYYY-MM");
   let changed = false;
 
-  if (startMonth !== currentMonth) {
+  if (startMonth !== currentMonth && startMonth !== lastMonth) {
     const firstDay = dayjs(start).startOf("month").format("YYYY-MM-DD");
     if (firstDay !== start) {
       start = firstDay;
       changed = true;
     }
   }
-  if (endMonth !== currentMonth) {
+  if (endMonth !== currentMonth && endMonth !== lastMonth) {
     const lastDay = dayjs(end).endOf("month").format("YYYY-MM-DD");
     if (lastDay !== end) {
       end = lastDay;
@@ -895,7 +896,7 @@ function onDateRangeChange(range) {
 
   if (changed) {
     batchDateRange.value = [start, end];
-    ElMessage.info("非本月已自动扩展为整月选择");
+    ElMessage.info("非本月或上月已自动扩展为整月选择");
   }
 }
 
@@ -945,7 +946,11 @@ async function doBatchAction() {
       return;
     }
 
-    const res = await store.batchConfirmData(startDate, endDate);
+    const res = await store.batchConfirmData(
+      startDate,
+      endDate,
+      store.selectedDeclarerId,
+    );
     if (res) {
       ElMessage.success(res.message || "批量确认完成");
     } else {

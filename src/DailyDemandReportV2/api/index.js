@@ -119,16 +119,20 @@ export function dateInfoApi(date) {
 }
 
 // ====== 日收益数据确认功能 ======
-export function confirmProfitDataApi(declarationDate) {
-  return request.post('/api/daily-profit/confirm', { declaration_date: declarationDate })
+export function confirmProfitDataApi(declarationDate, declarantId) {
+  const body = { declaration_date: declarationDate };
+  if (declarantId != null) body.declarant_id = declarantId;
+  return request.post('/api/daily-profit/confirm', body)
 }
 
 export function unconfirmProfitDataApi(declarationDate) {
   return request.delete('/api/daily-profit/confirm', { data: { declaration_date: declarationDate } })
 }
 
-export function batchConfirmProfitDataApi(startDate, endDate) {
-  return request.post('/api/daily-profit/batch-confirm', { start_date: startDate, end_date: endDate })
+export function batchConfirmProfitDataApi(startDate, endDate, declarantId) {
+  const body = { start_date: startDate, end_date: endDate };
+  if (declarantId != null) body.declarant_id = declarantId;
+  return request.post('/api/daily-profit/batch-confirm', body)
 }
 
 export function batchUnconfirmProfitDataApi(startDate, endDate) {

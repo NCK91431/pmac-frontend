@@ -111,10 +111,10 @@ export const useDailyProfitStore = defineStore('dailyProfit', () => {
   }
 
   /** 批量确认 */
-  async function batchConfirmData(startDate, endDate) {
+  async function batchConfirmData(startDate, endDate, declarantId) {
     confirmLoading.value = true
     try {
-      const res = await batchConfirmProfitDataApi(startDate, endDate)
+      const res = await batchConfirmProfitDataApi(startDate, endDate, declarantId)
       if (res.data?.success) {
         await fetchCurrentMonthConfirmedDates()
         return res.data
