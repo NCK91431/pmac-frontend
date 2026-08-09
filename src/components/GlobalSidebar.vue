@@ -32,6 +32,15 @@
               <div class="nav-section-title" @click="toggleCollapse(module)">
                 <i :class="'bi ' + config.icon" />
                 <span>{{ config.title }}</span>
+                <span v-if="config.vip" class="vip-badge">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                    <path
+                      d="M2 6.5l3 3 3-5 3 5 3-3-1.5 7h-9L2 6.5z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  VIP
+                </span>
                 <span v-if="config.permission" class="internal-badge"
                   >仅内部</span
                 >
@@ -50,7 +59,10 @@
                   }"
                   @click="handleNavigate(child)"
                 >
-                  {{ child.title }}
+                  <span>{{ child.title }}</span>
+                  <span v-if="child.permission" class="internal-badge"
+                    >仅内部</span
+                  >
                 </div>
               </div>
             </template>
@@ -89,7 +101,8 @@ const canAccessModule = (config) => {
 };
 
 const getVisibleChildren = (config) => {
-  return config.children;
+  // 子项同样按 permission 过滤（如发票管理仅 internal 可见）
+  return (config.children || []).filter((child) => canAccessModule(child));
 };
 
 const initCollapsed = () => {
@@ -287,6 +300,36 @@ const handleNavigate = (child) => {
   padding: 1px 6px;
   border-radius: 4px;
   margin-left: 4px;
+}
+
+.vip-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 1px 7px 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  color: #4a3204;
+  background: linear-gradient(135deg, #fbe08f, #f2c14e 45%, #dca337);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  box-shadow: 0 2px 8px rgba(220, 163, 55, 0.4);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.vip-badge::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, #fff6d8, transparent);
 }
 
 .collapse-arrow {

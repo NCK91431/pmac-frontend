@@ -1,8 +1,45 @@
 <template>
   <div class="invoices-page">
-    <el-tabs v-model="activeTab" type="border-card">
+    <div class="page-container">
+      <!-- 页面标题区域 -->
+      <div class="page-header">
+        <div class="header-icon">
+          <i class="bi bi-receipt"></i>
+        </div>
+        <div class="header-text">
+          <h1 class="page-title">记录与发票</h1>
+          <p class="page-subtitle">查看购买记录，随时申请与下载电子发票</p>
+        </div>
+      </div>
+
+      <!-- 分段式标签（替代 el-tabs） -->
+      <div class="tab-switcher" role="tablist">
+        <button
+          class="tab-btn"
+          :class="{ active: activeTab === 'purchase' }"
+          role="tab"
+          @click="activeTab = 'purchase'"
+        >
+          <i class="bi bi-clock-history"></i>
+          购买记录
+        </button>
+        <button
+          class="tab-btn"
+          :class="{ active: activeTab === 'invoice' }"
+          role="tab"
+          @click="activeTab = 'invoice'"
+        >
+          <i class="bi bi-receipt-cutoff"></i>
+          发票管理
+        </button>
+      </div>
+
       <!-- Tab 1：购买记录 -->
-      <el-tab-pane label="购买记录" name="purchase">
+      <div v-if="activeTab === 'purchase'" class="tab-pane">
+        <div class="section-head">
+          <h2 class="section-title">购买记录</h2>
+          <span class="section-desc">共 {{ history.length }} 笔订单</span>
+        </div>
         <div class="history-section">
           <div v-if="history.length === 0" class="empty-tip">暂无购买记录</div>
           <div v-else class="history-table">
@@ -10,16 +47,26 @@
               <span>订单号</span>
               <span>类型</span>
               <span>金额</span>
-              <span>状态</span>
               <span>时间</span>
+              <span>状态</span>
+              <span>发票状态</span>
               <span>操作</span>
             </div>
-            <div v-for="item in history" :key="item.id" class="history-row purchase-row">
-              <span class="order-id">#{{ item.id }}</span>
+            <div
+              v-for="item in history"
+              :key="item.id"
+              class="history-row purchase-row"
+            >
+              <span class="order-id">{{ item.orderNo }}</span>
               <span>{{ typeLabel(item.type) }}</span>
               <span>¥{{ item.price }}</span>
-              <span :class="'status-' + item.status">{{ statusLabel(item.status) }}</span>
               <span>{{ formatDateTime(item.createdAt) }}</span>
+              <span :class="'status-' + item.status">{{
+                statusLabel(item.status)
+              }}</span>
+              <span :class="invoiceStatusClass(item)">{{
+                invoiceStatusLabel(item)
+              }}</span>
               <span>
                 <el-button
                   v-if="canApply(item)"
@@ -27,16 +74,20 @@
                   size="small"
                   link
                   @click="openApplyDialog(item)"
-                >申请发票</el-button>
-                <span v-else class="applied-text">已申请</span>
+                  >申请发票</el-button
+                >
               </span>
             </div>
           </div>
         </div>
-      </el-tab-pane>
+      </div>
 
       <!-- Tab 2：发票管理 -->
-      <el-tab-pane label="发票管理" name="invoice">
+      <div v-else class="tab-pane">
+        <div class="section-head">
+          <h2 class="section-title">发票管理</h2>
+          <span class="section-desc">共 {{ invoices.length }} 条开票记录</span>
+        </div>
         <div class="invoice-rules">
           <p class="rules-title">开票规则</p>
           <ol class="rules-list">
@@ -50,7 +101,7 @@
           <div v-if="invoices.length === 0" class="empty-tip">暂无开票记录</div>
           <div v-else class="history-table">
             <div class="history-header invoice-header">
-              <span>申请订单id</span>
+              <span>订单号</span>
               <span>发票号</span>
               <span>申请时间</span>
               <span>金额</span>
@@ -59,14 +110,22 @@
               <span>开票状态</span>
               <span>操作</span>
             </div>
-            <div v-for="item in invoices" :key="item.id" class="history-row invoice-row">
-              <span class="order-id">#{{ item.membershipId }}</span>
+            <div
+              v-for="item in invoices"
+              :key="item.id"
+              class="history-row invoice-row"
+            >
+              <span class="order-id">{{ item.orderNo }}</span>
               <span>{{ item.invoiceNumber || "—" }}</span>
               <span>{{ formatDateTime(item.appliedAt) }}</span>
               <span>¥{{ item.price }}</span>
               <span>{{ invoiceTypeLabel(item.invoiceType) }}</span>
               <span :title="item.title">{{ item.title }}</span>
-              <span :class="item.status === 'issued' ? 'status-issued' : 'status-pending'">
+              <span
+                :class="
+                  item.status === 'issued' ? 'status-issued' : 'status-pending'
+                "
+              >
                 {{ item.status === "issued" ? "已开票" : "待开票" }}
               </span>
               <span>
@@ -76,14 +135,15 @@
                   size="small"
                   link
                   @click="handleDownload(item)"
-                >下载PDF</el-button>
+                  >下载PDF</el-button
+                >
                 <span v-else class="applied-text">—</span>
               </span>
             </div>
           </div>
         </div>
-      </el-tab-pane>
-    </el-tabs>
+      </div>
+    </div>
 
     <!-- 申请发票弹窗 -->
     <el-dialog
@@ -93,7 +153,7 @@
       :close-on-click-modal="false"
     >
       <div v-if="applyOrder" class="apply-order-info">
-        <span>订单号 #{{ applyOrder.id }}</span>
+        <span>订单号 {{ applyOrder.orderNo }}</span>
         <span>金额 ¥{{ applyOrder.price }}</span>
         <span>购买时间 {{ formatDateTime(applyOrder.createdAt) }}</span>
       </div>
@@ -119,21 +179,35 @@
         </el-form-item>
 
         <el-form-item label="发票抬头" prop="title">
-          <el-input v-model="applyForm.title" placeholder="请填写发票抬头" maxlength="255" />
+          <el-input
+            v-model="applyForm.title"
+            placeholder="请填写发票抬头"
+            maxlength="255"
+          />
         </el-form-item>
 
         <el-form-item label="纳税人识别号" prop="taxId">
-          <el-input v-model="applyForm.taxId" placeholder="企业抬头必填，个人选填" maxlength="50" />
+          <el-input
+            v-model="applyForm.taxId"
+            placeholder="请填写纳税人识别号"
+            maxlength="50"
+          />
         </el-form-item>
 
         <el-form-item label="备注信息">
-          <el-input v-model="applyForm.remark" placeholder="选填" maxlength="255" />
+          <el-input
+            v-model="applyForm.remark"
+            placeholder="选填"
+            maxlength="255"
+          />
         </el-form-item>
       </el-form>
 
       <template #footer>
         <el-button @click="showApplyDialog = false">取消</el-button>
-        <el-button type="primary" :loading="submitting" @click="submitApply">提交</el-button>
+        <el-button type="primary" :loading="submitting" @click="submitApply"
+          >提交</el-button
+        >
       </template>
     </el-dialog>
   </div>
@@ -189,25 +263,45 @@ const invoiceTypeLabel = (type) => {
 
 // ===== 发票列表与已申请集合 =====
 const invoices = ref([]);
-const appliedMembershipIds = ref(new Set());
+const appliedOrderNos = ref(new Set());
 
 const loadInvoices = async () => {
   try {
     const res = await request.get("/api/invoice/list");
     invoices.value = res.data?.list || [];
-    appliedMembershipIds.value = new Set(
-      invoices.value.map((i) => i.membershipId),
-    );
+    appliedOrderNos.value = new Set(invoices.value.map((i) => i.orderNo));
   } catch (err) {
     console.error("加载发票列表失败:", err);
   }
+};
+
+// 发票记录按 orderNo 索引（用于购买记录表显示发票状态）
+const invoiceMap = computed(() => {
+  const map = {};
+  invoices.value.forEach((i) => {
+    map[i.orderNo] = i;
+  });
+  return map;
+});
+
+// 发票状态：未申请 / 申请中（待开票） / 已申请（已开票）
+const invoiceStatusLabel = (item) => {
+  const inv = invoiceMap.value[item.orderNo];
+  if (!inv) return "未申请";
+  return inv.status === "issued" ? "已申请" : "申请中";
+};
+
+const invoiceStatusClass = (item) => {
+  const inv = invoiceMap.value[item.orderNo];
+  if (!inv) return "status-not-applied";
+  return inv.status === "issued" ? "status-applied" : "status-applying";
 };
 
 // 该订单是否可申请开票（active/expired 且非免费试用且未申请）
 const canApply = (item) =>
   ["active", "expired"].includes(item.status) &&
   item.type !== "free_trial" &&
-  !appliedMembershipIds.value.has(item.id);
+  !appliedOrderNos.value.has(item.orderNo);
 
 // ===== 申请开票弹窗 =====
 const showApplyDialog = ref(false);
@@ -224,18 +318,7 @@ const applyForm = ref({
 
 const applyRules = {
   title: [{ required: true, message: "请填写发票抬头", trigger: "blur" }],
-  taxId: [
-    {
-      validator: (rule, value, callback) => {
-        if (applyForm.value.titleType === "company" && !value?.trim()) {
-          callback(new Error("企业发票必须填写纳税人识别号"));
-        } else {
-          callback();
-        }
-      },
-      trigger: "blur",
-    },
-  ],
+  taxId: [{ required: true, message: "请填写纳税人识别号", trigger: "blur" }],
 };
 
 const openApplyDialog = (item) => {
@@ -255,11 +338,11 @@ const submitApply = async () => {
   submitting.value = true;
   try {
     const payload = {
-      membershipId: applyOrder.value.id,
+      orderNo: applyOrder.value.orderNo,
       titleType: applyForm.value.titleType,
       invoiceType: applyForm.value.invoiceType,
       title: applyForm.value.title.trim(),
-      taxId: applyForm.value.taxId.trim() || null,
+      taxId: applyForm.value.taxId.trim(),
       remark: applyForm.value.remark.trim() || null,
     };
     await request.post("/api/invoice/apply", payload);
@@ -306,8 +389,149 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+/* ===== 页面整体布局：浅灰底 + 居中限宽容器 ===== */
 .invoices-page {
-  padding: 8px;
+  min-height: calc(100vh - 64px);
+  padding: 36px 20px 60px;
+  background: #f4f6fb;
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ===== 页面标题区域 ===== */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header-icon {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #fff;
+  background: linear-gradient(135deg, #2c6fbb 0%, #4f8edb 100%);
+  box-shadow: 0 6px 16px rgba(44, 111, 187, 0.28);
+}
+
+.header-text {
+  .page-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #1e293b;
+  }
+
+  .page-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #64748b;
+  }
+}
+
+/* ===== 分段式标签（替代 el-tabs） ===== */
+.tab-switcher {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: #e9eef5;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 8px 22px;
+  border-radius: 9px;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  i {
+    font-size: 14px;
+  }
+
+  &:hover {
+    color: #2c6fbb;
+  }
+
+  &.active {
+    background: #fff;
+    color: #2c6fbb;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(44, 111, 187, 0.15);
+  }
+}
+
+.tab-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(44, 111, 187, 0.12);
+  color: #2c6fbb;
+}
+
+/* ===== 内容区切换动画 ===== */
+.tab-pane {
+  animation: cardIn 0.25s ease-out;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-pane {
+    animation: none;
+  }
+}
+
+/* 区块标题行 */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.section-desc {
+  font-size: 12px;
+  color: #94a3b8;
 }
 
 /* 空状态提示 */
@@ -320,8 +544,8 @@ onMounted(() => {
 
 /* 开票规则 */
 .invoice-rules {
-  background: #fff8f0;
-  border: 1px solid #fde3c1;
+  background: #f8fbff;
+  border: 1px solid #dbe7f7;
   border-radius: 12px;
   padding: 14px 18px;
   margin-bottom: 16px;
@@ -330,7 +554,7 @@ onMounted(() => {
     margin: 0 0 8px;
     font-size: 14px;
     font-weight: 600;
-    color: #b45309;
+    color: #2c6fbb;
   }
 
   .rules-list {
@@ -338,7 +562,7 @@ onMounted(() => {
     padding-left: 18px;
     font-size: 12px;
     line-height: 1.8;
-    color: #92610e;
+    color: #5b7490;
 
     li {
       margin-bottom: 2px;
@@ -346,7 +570,7 @@ onMounted(() => {
   }
 }
 
-/* ===== history-table（沿用会员中心样式） ===== */
+/* ===== history-table（沿用原有表格样式，未改动） ===== */
 .history-section {
   margin-top: 8px;
 }
@@ -367,16 +591,16 @@ onMounted(() => {
   align-items: center;
 }
 
-/* 购买记录 6 列 */
+/* 购买记录 7 列 */
 .purchase-header,
 .purchase-row {
-  grid-template-columns: 100px 1fr 70px 80px 1.2fr 90px;
+  grid-template-columns: 150px 110px 80px 130px 90px 90px 100px;
 }
 
 /* 发票管理 8 列 */
 .invoice-header,
 .invoice-row {
-  grid-template-columns: 110px 1.1fr 1.3fr 70px 1fr 1.2fr 70px 90px;
+  grid-template-columns: 150px 1.2fr 130px 80px 120px 1.3fr 90px 100px;
 }
 
 .history-header {
@@ -402,6 +626,19 @@ onMounted(() => {
 .applied-text {
   color: #94a3b8;
   font-size: 12px;
+}
+
+.status-not-applied {
+  color: #94a3b8;
+}
+
+.status-applying {
+  color: #d97706;
+}
+
+.status-applied {
+  color: #059669;
+  font-weight: 500;
 }
 
 .status-active {
@@ -439,6 +676,21 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .invoices-page {
+    padding: 20px 12px 40px;
+  }
+
+  .tab-switcher {
+    width: 100%;
+    display: flex;
+
+    .tab-btn {
+      flex: 1;
+      justify-content: center;
+      padding: 8px 12px;
+    }
+  }
+
   .purchase-header,
   .purchase-row,
   .invoice-header,

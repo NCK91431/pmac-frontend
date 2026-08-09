@@ -21,7 +21,7 @@
             <div class="cell-sub">{{ row.userPhone }}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="membershipId" label="申请订单id" width="110" />
+        <el-table-column prop="orderNo" label="订单号" width="170" />
         <el-table-column label="金额" width="90">
           <template #default="{ row }">¥{{ row.price }}</template>
         </el-table-column>
@@ -61,7 +61,7 @@
       :close-on-click-modal="false"
     >
       <div v-if="issueRow" class="issue-order-info">
-        订单 #{{ issueRow.membershipId }} · ¥{{ issueRow.price }} · {{ issueRow.title }}
+        订单 {{ issueRow.orderNo }} · ¥{{ issueRow.price }} · {{ issueRow.title }}
       </div>
       <el-form label-width="90px">
         <el-form-item label="发票号" required>
