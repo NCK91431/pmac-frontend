@@ -101,18 +101,10 @@ const features = [
     desc: "基于负荷预测和电价，动态生成最优充放策略，最大化IRR",
     tag: "none",
   },
-  {
-    icon: "bi-cpu",
-    title: "电力交易辅助",
-    desc: "基于市场数据的电力交易辅助决策工具",
-    tag: "none",
-  },
 ];
 
 onMounted(() => {
   const el = root.value;
-  if (!el) return;
-
   // 1. 标题入场：透明度与轻微上浮
   gsap.from(el.querySelector(".main-title"), {
     y: 30,
@@ -329,7 +321,7 @@ onMounted(() => {
   // 网格布局：六个并排
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 32px;
     margin-top: 20px;
   }
