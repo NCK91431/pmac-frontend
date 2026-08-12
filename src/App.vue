@@ -134,6 +134,7 @@ function clearUser() {
   localStorage.removeItem("userInfo");
   localStorage.removeItem("authToken");
   localStorage.removeItem("membershipStatus");
+  localStorage.removeItem("signKey"); // 动态签名密钥随登出一并清理
 }
 
 // 向所有子组件提供用户状态和方法
