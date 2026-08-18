@@ -120,8 +120,9 @@ const priceType = ref("realtime"); // 'dayAhead' | 'realtime'
 const loading = ref(false);
 const trendData = ref(null); // { dates, dayAhead, realTime }
 
-const todayStr = (() => {
-  const t = new Date();
+// 实际结算电价滞后 6 天才公布，最新可用结算数据为 D-6（如 8/18 只出到 8/12）
+const dataLatestStr = (() => {
+  const t = new Date(Date.now() - 6 * 86400000);
   return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
 })();
 
@@ -144,16 +145,17 @@ function fmtDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-// 禁止选择今天之后的日期
+// 禁止选择最新可用结算数据（D-6）之后的日期
 function disableFutureDate(date) {
-  return date.getTime() > new Date(todayStr + "T00:00:00").getTime();
+  return date.getTime() > new Date(dataLatestStr + "T00:00:00").getTime();
 }
 
 function getDateRange() {
   if (dateRange.value && dateRange.value.length === 2) {
     return { startDate: dateRange.value[0], endDate: dateRange.value[1] };
   }
-  const endStr = todayStr;
+  // 快捷范围以 D-6 为结束日往前推 N 天
+  const endStr = dataLatestStr;
   const startStr = fmtDate(new Date(new Date(endStr + "T00:00:00").getTime() - (quickDays.value - 1) * 86400000));
   return { startDate: startStr, endDate: endStr };
 }
