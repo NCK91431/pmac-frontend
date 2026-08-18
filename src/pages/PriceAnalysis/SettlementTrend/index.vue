@@ -116,7 +116,7 @@ const now = new Date();
 const month = ref(now.getMonth() + 1);
 const quickDays = ref(15);
 const dateRange = ref(null); // [start, end]，格式 YYYY-MM-DD
-const priceType = ref("realtime"); // 'dayAhead' | 'realtime'
+const priceType = ref("dayAhead"); // 'dayAhead' | 'realtime'（默认日前结算）
 const loading = ref(false);
 const trendData = ref(null); // { dates, dayAhead, realTime }
 
