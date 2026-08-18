@@ -15,7 +15,7 @@ const baseURL = baseURLMap[currentEnv] || baseURLMap.pilot;
 // 前后端约定的硬编码盐（仅混淆层；必须与后端 middlewares/signature.js 的 SIGN_PEPPER 一致）
 const SIGN_PEPPER = "piano-star-sign-pepper-v1";
 // 需要动态签名的受保护路径（必须与后端挂载 requireSignature 的路由一致）
-const PROTECTED_PATHS = ["/api/node-price/price-chart", "/api/settlement-price/analysis"];
+const PROTECTED_PATHS = ["/api/node-price/price-chart", "/api/settlement-price/analysis", "/api/settlement-price/trend"];
 
 // 创建axios实例
 const service = axios.create({

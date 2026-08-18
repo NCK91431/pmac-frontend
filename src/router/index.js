@@ -265,6 +265,16 @@ const router = createRouter({
             },
         },
         {
+            path: "/price-analysis/settlement-trend",
+            name: "PriceAnalysisSettlementTrend",
+            component: () => import("@/pages/PriceAnalysis/SettlementTrend/index.vue"),
+            meta: {
+                module: "trading",
+                requiresMembership: true,
+                breadcrumb: { title: "结算电价走势", icon: "bi bi-graph-up-arrow", parentRouteName: "price_analysis" },
+            },
+        },
+        {
             path: "/VirtualPowerPlant",
             name: "VirtualPowerPlant",
             component: () => import("@/pages/VirtualPowerPlantPage/index.vue"),
@@ -390,6 +400,16 @@ const router = createRouter({
                 },
             },
         },
+        {
+            path: "/multiday-trading",
+            name: "MultiDayTrading",
+            component: () => import("@/AuxiliaryTradingTools/MultiDayTrading.vue"),
+            meta: {
+                module: "trading",
+                permission: "internal",
+                breadcrumb: { title: "多日交易", icon: "bi bi-sun" },
+            },
+        },
     ]
 });
 
@@ -430,6 +450,7 @@ const sidebarMenuConfig = {
         children: [
             { title: "节点电价查询", route: "/price-analysis" },
             { title: "结算电价预测与查看", route: "/price-analysis/settlement" },
+            { title: "结算电价走势", route: "/price-analysis/settlement-trend" },
         ]
     },
     light: {
@@ -454,6 +475,7 @@ const sidebarMenuConfig = {
             // { title: "收益分析", route: "/daily-demand-report/history/daily-revenue-analysis" },
             { title: "用户均价配置", route: "/user-price-config" },
             { title: "月度需求申报", route: "/monthly-demand-report" },
+            { title: "多日交易", route: "/multiday-trading" },
         ]
     },
         membership: {
