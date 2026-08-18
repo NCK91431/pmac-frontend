@@ -13,14 +13,22 @@
         <div class="control-group">
           <label>时间范围：</label>
           <div class="quick-btns">
-            <button v-for="d in [7, 15, 30]" :key="d" :class="{ active: quickDays === d && !customStart && !customEnd }" @click="handleQuick(d)">近{{ d }}天</button>
+            <button v-for="d in [7, 15, 30]" :key="d" :class="{ active: quickDays === d && !dateRange }" @click="handleQuick(d)">近{{ d }}天</button>
           </div>
         </div>
         <div class="control-group">
           <label>自定义：</label>
-          <input type="date" v-model="customStart" :max="todayStr" @change="handleCustomChange" />
-          <span class="sep">~</span>
-          <input type="date" v-model="customEnd" :max="todayStr" @change="handleCustomChange" />
+          <el-date-picker
+            v-model="dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            :disabled-date="disableFutureDate"
+            style="width: 280px"
+            @change="handleDateRangeChange"
+          />
         </div>
         <div class="control-group">
           <label>电价类型：</label>
@@ -107,8 +115,7 @@ const TYPE_META = {
 const now = new Date();
 const month = ref(now.getMonth() + 1);
 const quickDays = ref(15);
-const customStart = ref("");
-const customEnd = ref("");
+const dateRange = ref(null); // [start, end]，格式 YYYY-MM-DD
 const priceType = ref("realtime"); // 'dayAhead' | 'realtime'
 const loading = ref(false);
 const trendData = ref(null); // { dates, dayAhead, realTime }
@@ -137,9 +144,17 @@ function fmtDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// 禁止选择今天之后的日期
+function disableFutureDate(date) {
+  return date.getTime() > new Date(todayStr + "T00:00:00").getTime();
+}
+
 function getDateRange() {
-  const endStr = customEnd.value || todayStr;
-  const startStr = customStart.value || fmtDate(new Date(new Date(endStr + "T00:00:00").getTime() - (quickDays.value - 1) * 86400000));
+  if (dateRange.value && dateRange.value.length === 2) {
+    return { startDate: dateRange.value[0], endDate: dateRange.value[1] };
+  }
+  const endStr = todayStr;
+  const startStr = fmtDate(new Date(new Date(endStr + "T00:00:00").getTime() - (quickDays.value - 1) * 86400000));
   return { startDate: startStr, endDate: endStr };
 }
 
@@ -463,13 +478,12 @@ function handleChange() {
 
 function handleQuick(days) {
   quickDays.value = days;
-  customStart.value = "";
-  customEnd.value = "";
+  dateRange.value = null;
   fetchData();
 }
 
-function handleCustomChange() {
-  if (!customStart.value || !customEnd.value) return;
+function handleDateRangeChange(val) {
+  if (!val || val.length !== 2) return;
   quickDays.value = 0;
   fetchData();
 }
@@ -537,8 +551,7 @@ onBeforeUnmount(() => {
   color: rgba(255, 255, 255, 0.75);
   white-space: nowrap;
 }
-.control-group select,
-.control-group input[type="date"] {
+.control-group select {
   padding: 6px 10px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
@@ -549,11 +562,31 @@ onBeforeUnmount(() => {
   cursor: pointer;
   transition: border-color 0.2s;
 }
-.control-group select:hover,
-.control-group input[type="date"]:hover { border-color: #53c1de; }
+.control-group select:hover { border-color: #53c1de; }
 .control-group select option { background: #1a1a2e; color: #fff; }
-.control-group input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-.control-group .sep { color: rgba(255, 255, 255, 0.5); }
+/* 自定义日期范围（el-date-picker）深色主题适配 */
+.control-group :deep(.el-date-editor) {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  transition: border-color 0.2s;
+}
+.control-group :deep(.el-date-editor:hover) { border-color: #53c1de; }
+.control-group :deep(.el-date-editor .el-input__wrapper) {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+.control-group :deep(.el-date-editor .el-range-input) {
+  background: transparent;
+  color: #fff;
+  font-size: 13px;
+  height: 26px;
+}
+.control-group :deep(.el-date-editor .el-range-input::placeholder) { color: rgba(255, 255, 255, 0.45); }
+.control-group :deep(.el-date-editor .el-range-separator) { color: rgba(255, 255, 255, 0.5); font-size: 13px; }
+.control-group :deep(.el-date-editor .el-range__icon),
+.control-group :deep(.el-date-editor .el-range__close-icon) { color: rgba(255, 255, 255, 0.6); }
 .quick-btns, .price-type-btns { display: flex; gap: 4px; }
 .quick-btns button, .price-type-btns button {
   padding: 5px 12px;
