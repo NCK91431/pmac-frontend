@@ -44,41 +44,54 @@
     </div>
 
     <!-- 主内容区 -->
-    <div class="main-content" v-loading="loading">
-      <!-- 汇总卡片 -->
-      <div class="summary-cards">
-        <div v-for="card in summaryCards" :key="card.key" class="summary-card" :class="`card-${card.key}`">
-          <div class="card-label">{{ card.label }}</div>
-          <div class="card-value">{{ card.value }}<span class="card-unit">元/MWh</span></div>
+    <div class="main-content" v-loading="loading" element-loading-text="数据加载中，请稍候..." element-loading-background="rgba(255,255,255,0.65)">
+      <!-- 首次加载骨架屏 -->
+      <div v-if="loading && !trendData" class="skeleton-block">
+        <div class="summary-cards">
+          <el-skeleton-item v-for="i in 5" :key="i" variant="rect" class="skeleton-card" />
+        </div>
+        <el-skeleton-item variant="rect" class="skeleton-main" />
+        <div class="charts-grid skeleton-grid">
+          <el-skeleton-item v-for="i in 6" :key="i" variant="rect" class="skeleton-cell" />
         </div>
       </div>
 
-      <!-- 日均结算电价趋势 -->
-      <div class="section-title main-section-title">
-        <span>日均结算电价趋势</span>
-        <span class="main-chart-avg">均值 {{ mainAvgText }} 元/MWh</span>
-      </div>
-      <div class="chart-container">
-        <div ref="mainChartEl" class="chart-main"></div>
-      </div>
-
-      <!-- 分时电价分组 -->
-      <div v-for="group in groupSections" :key="group.type" class="group-section">
-        <div class="section-title">
-          <span>{{ group.label }}时段电价</span>
-          <span class="badge" :class="`badge-${group.type}`">{{ group.slots.length }}个时刻</span>
-        </div>
-        <div class="charts-grid">
-          <div v-for="slot in group.slots" :key="slot" class="chart-cell" :ref="(el) => setCellRef(group.type, slot, el)">
-            <div class="chart-cell-title">
-              <span class="dot" :class="`dot-${group.type}`"></span>
-              <span>{{ slot }} ({{ group.label }})</span>
-              <span class="avg-val">均值 {{ getSlotAvg(group.type, slot) }}</span>
-            </div>
-            <div class="chart-mini"></div>
+      <template v-else>
+        <!-- 汇总卡片 -->
+        <div class="summary-cards">
+          <div v-for="card in summaryCards" :key="card.key" class="summary-card" :class="`card-${card.key}`">
+            <div class="card-label">{{ card.label }}</div>
+            <div class="card-value">{{ card.value }}<span class="card-unit">元/MWh</span></div>
           </div>
         </div>
-      </div>
+
+        <!-- 日均结算电价趋势 -->
+        <div class="section-title main-section-title">
+          <span>日均结算电价趋势</span>
+          <span class="main-chart-avg">均值 {{ mainAvgText }} 元/MWh</span>
+        </div>
+        <div class="chart-container">
+          <div ref="mainChartEl" class="chart-main"></div>
+        </div>
+
+        <!-- 分时电价分组 -->
+        <div v-for="group in groupSections" :key="group.type" class="group-section">
+          <div class="section-title">
+            <span>{{ group.label }}时段电价</span>
+            <span class="badge" :class="`badge-${group.type}`">{{ group.slots.length }}个时刻</span>
+          </div>
+          <div class="charts-grid">
+            <div v-for="slot in group.slots" :key="slot" class="chart-cell" :ref="(el) => setCellRef(group.type, slot, el)">
+              <div class="chart-cell-title">
+                <span class="dot" :class="`dot-${group.type}`"></span>
+                <span>{{ slot }} ({{ group.label }})</span>
+                <span class="avg-val">均值 {{ getSlotAvg(group.type, slot) }}</span>
+              </div>
+              <div class="chart-mini"></div>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -620,6 +633,21 @@ onBeforeUnmount(() => {
 .mode-tag.mode-normal { background: rgba(83, 193, 222, 0.15); color: #53c1de; }
 .mode-tag.mode-sharp { background: rgba(231, 76, 60, 0.15); color: #e74c3c; }
 .main-content { padding: 12px 8px; }
+/* 首次加载骨架屏 */
+.skeleton-block { padding: 4px 0; }
+.skeleton-card, .skeleton-main, .skeleton-cell {
+  background: linear-gradient(90deg, #f2f3f5 25%, #e4e7ec 50%, #f2f3f5 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s infinite;
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.skeleton-card { width: 100%; height: 110px; border-radius: 12px; }
+.skeleton-main { width: 100%; height: 360px; border-radius: 8px; margin-bottom: 16px; }
+.skeleton-grid { margin-bottom: 16px; }
+.skeleton-cell { width: 100%; height: 180px; border-radius: 6px; }
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
