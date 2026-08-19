@@ -101,6 +101,21 @@ import { ref, computed, nextTick, onMounted, onBeforeUnmount } from "vue";
 import * as echarts from "echarts";
 import { ElMessage } from "element-plus";
 import { getSettlementPriceTrend } from "./api.js";
+import Decimal from "decimal.js";
+
+// 精确舍入到 2 位小数，消除 JS 浮点精度误差（如 336.4558333333333333326 -> 336.46）；null 原样返回
+function round2(v) {
+  if (v == null) return null;
+  return new Decimal(v).toDecimalPlaces(2).toNumber();
+}
+// 一组非空值的平均值（Decimal 精确计算，结果舍入 2 位）
+function avgOf(values) {
+  const valid = (values || []).filter((v) => v != null);
+  if (!valid.length) return null;
+  let sum = new Decimal(0);
+  valid.forEach((v) => { sum = sum.plus(v); });
+  return round2(sum.div(valid.length).toNumber());
+}
 
 // ========== 时段配置（与原型图一致） ==========
 const TOU_CONFIG = {
@@ -215,21 +230,15 @@ const hourly = computed(() => {
   return result;
 });
 
-// daily: 每日 24 点非空值的平均；整日全空为 null
+// daily: 每日 24 点非空值的平均（Decimal 精确计算）；整日全空为 null
 const daily = computed(() =>
   matrix.value.map((row) => {
     if (!Array.isArray(row)) return null;
-    const valid = row.filter((v) => v != null);
-    if (!valid.length) return null;
-    return valid.reduce((a, b) => a + b, 0) / valid.length;
+    return avgOf(row);
   })
 );
 
-const avgAll = computed(() => {
-  const valid = daily.value.filter((v) => v != null);
-  if (!valid.length) return null;
-  return valid.reduce((a, b) => a + b, 0) / valid.length;
-});
+const avgAll = computed(() => avgOf(daily.value));
 
 const mainAvgText = computed(() => (avgAll.value == null ? "--" : avgAll.value.toFixed(2)));
 
@@ -239,13 +248,12 @@ const summaryCards = computed(() => {
   for (const type of groupOrder.value) {
     if (!config.value[type]) continue;
     const slots = config.value[type];
-    let sum = 0, count = 0;
+    const allValues = [];
     for (const slot of slots) {
-      const valid = (hourly.value[slot]?.prices || []).filter((v) => v != null);
-      sum += valid.reduce((a, b) => a + b, 0);
-      count += valid.length;
+      allValues.push(...(hourly.value[slot]?.prices || []));
     }
-    cards.push({ key: type, label: `${TYPE_META[type].label}时段均价`, value: count ? (sum / count).toFixed(2) : "--" });
+    const avg = avgOf(allValues);
+    cards.push({ key: type, label: `${TYPE_META[type].label}时段均价`, value: avg == null ? "--" : avg.toFixed(2) });
   }
   return cards;
 });
@@ -257,9 +265,8 @@ const groupSections = computed(() =>
 );
 
 function getSlotAvg(type, slot) {
-  const valid = (hourly.value[slot]?.prices || []).filter((v) => v != null);
-  if (!valid.length) return "--";
-  return (valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(2);
+  const avg = avgOf(hourly.value[slot]?.prices || []);
+  return avg == null ? "--" : avg.toFixed(2);
 }
 
 // ========== ECharts 实例管理 ==========
@@ -301,7 +308,7 @@ function renderMainChart() {
           s += `<div style="display:flex;align-items:center;gap:6px;margin:3px 0">
             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color}"></span>
             <span>${p.seriesName}</span>
-            <span style="font-weight:600;margin-left:auto">${p.value == null ? "--" : p.value} 元/MWh</span>
+            <span style="font-weight:600;margin-left:auto">${p.value == null ? "--" : round2(p.value)} 元/MWh</span>
           </div>`;
         });
         return s;
@@ -344,9 +351,9 @@ function renderMainChart() {
             silent: true,
             symbol: "none",
             data: (() => {
-              const maxVal = Math.max(...valid);
-              const minVal = Math.min(...valid);
-              const avgVal = valid.reduce((s, v) => s + v, 0) / valid.length;
+              const maxVal = round2(Math.max(...valid));
+              const minVal = round2(Math.min(...valid));
+              const avgVal = avgOf(valid);
               return [
                 {
                   yAxis: avgVal,
@@ -382,9 +389,11 @@ function renderMiniChart(type, slot, cellEl) {
   const labels = dateLabels.value;
   const prices = hourly.value[slot]?.prices || [];
   const valid = prices.filter((v) => v != null);
-  const maxVal = valid.length ? Math.max(...valid) : null;
-  const minVal = valid.length ? Math.min(...valid) : null;
-  const avg = valid.length ? valid.reduce((a, b) => a + b, 0) / valid.length : null;
+  const maxRaw = valid.length ? Math.max(...valid) : null; // 原始值用于竖线定位
+  const minRaw = valid.length ? Math.min(...valid) : null;
+  const maxVal = round2(maxRaw);
+  const minVal = round2(minRaw);
+  const avg = avgOf(prices);
 
   const yLower = valid.length ? Math.floor(minVal / 100) * 100 : 0;
   let yUpper = valid.length ? Math.ceil(maxVal / 100) * 100 : 1;
@@ -401,12 +410,12 @@ function renderMiniChart(type, slot, cellEl) {
         label: { formatter: "均值 " + avg.toFixed(2), color: meta.color, position: "insideEndBottom", fontSize: 14 }
       },
       {
-        xAxis: labels[prices.indexOf(maxVal)],
+        xAxis: labels[prices.indexOf(maxRaw)],
         lineStyle: { color: "#e74c3c", type: "dashed", width: 1.5 },
         label: { formatter: "最高 " + maxVal.toFixed(2), color: "#e74c3c", position: "end", fontSize: 14 }
       },
       {
-        xAxis: labels[prices.indexOf(minVal)],
+        xAxis: labels[prices.indexOf(minRaw)],
         lineStyle: { color: "#2ecc71", type: "dashed", width: 1.5 },
         label: { formatter: "最低 " + minVal.toFixed(2), color: "#2ecc71", position: "end", fontSize: 14 }
       }
@@ -420,7 +429,7 @@ function renderMiniChart(type, slot, cellEl) {
       borderColor: "transparent",
       textStyle: { color: "#fff", fontSize: 14 },
       formatter(params) {
-        return `<div style="font-weight:600">${params[0].axisValue}</div><div>${params[0].value == null ? "--" : params[0].value} 元/MWh</div>`;
+        return `<div style="font-weight:600">${params[0].axisValue}</div><div>${params[0].value == null ? "--" : round2(params[0].value)} 元/MWh</div>`;
       }
     },
     grid: { left: 55, right: 16, top: 50, bottom: 50 },
