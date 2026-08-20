@@ -193,6 +193,12 @@ const routeToBreadcrumb = {
     icon: "bi bi-clock-history",
     hasBackBtn: true,
   },
+  MultiDayTrading: {
+    title: "多日交易",
+    to: "/multiday-trading",
+    icon: "bi bi-sun",
+    hasBackBtn: true,
+  },
 };
 
 // 确保路径是绝对路径的辅助函数
