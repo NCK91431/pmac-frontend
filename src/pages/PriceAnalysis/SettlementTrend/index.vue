@@ -2,7 +2,7 @@
   <div class="settlement-trend-page">
     <!-- 页面头部 -->
     <div class="page-header">
-      <h1><span>⚡</span> 多日结算电价展示</h1>
+      <h1><span>⚡</span> 结算电价走势</h1>
       <div class="header-controls">
         <div class="control-group">
           <label>月份：</label>
