@@ -33,78 +33,7 @@
           />
         </div>
       </div>
-
-      <!-- Stats Bar -->
-      <div
-        class="stats-bar"
-        v-loading="loading"
-        element-loading-text="数据加载中..."
-        element-loading-background="rgba(245,247,250,0.6)"
-      >
-        <div class="stat-card animate-in">
-          <div class="stat-card-title">预测日均价</div>
-          <div class="stat-grid">
-            <div class="stat-cell">
-              <div class="stat-cell-label">实时</div>
-              <div class="stat-value">
-                {{ statText.avgRT }}<span class="stat-unit">元/MWh</span>
-              </div>
-              <div class="stat-change" :class="statText.avgRTChangeClass">
-                {{ statText.avgRTChange }}
-              </div>
-            </div>
-            <div class="stat-cell">
-              <div class="stat-cell-label">日前</div>
-              <div class="stat-value">
-                {{ statText.avgDA }}<span class="stat-unit">元/MWh</span>
-              </div>
-              <div class="stat-change" :class="statText.avgDAChangeClass">
-                {{ statText.avgDAChange }}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="stat-card animate-in">
-          <div class="stat-card-title">预测实时极值</div>
-          <div class="stat-grid">
-            <div class="stat-cell">
-              <div class="stat-cell-label">最高价</div>
-              <div class="stat-value">
-                {{ statText.peakRT }}<span class="stat-unit">元/MWh</span>
-              </div>
-              <div class="stat-change up">{{ statText.peakRTTime }}</div>
-            </div>
-            <div class="stat-cell">
-              <div class="stat-cell-label">最低价</div>
-              <div class="stat-value">
-                {{ statText.valleyRT }}<span class="stat-unit">元/MWh</span>
-              </div>
-              <div class="stat-change down">{{ statText.valleyRTTime }}</div>
-            </div>
-          </div>
-        </div>
-        <div class="stat-card animate-in">
-          <div class="stat-card-title">预测日前极值</div>
-          <div class="stat-grid">
-            <div class="stat-cell">
-              <div class="stat-cell-label">最高价</div>
-              <div class="stat-value">
-                {{ statText.peakDA }}<span class="stat-unit">元/MWh</span>
-              </div>
-              <div class="stat-change up">{{ statText.peakDATime }}</div>
-            </div>
-            <div class="stat-cell">
-              <div class="stat-cell-label">最低价</div>
-              <div class="stat-value">
-                {{ statText.valleyDA }}<span class="stat-unit">元/MWh</span>
-              </div>
-              <div class="stat-change down">{{ statText.valleyDATime }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Prediction Section -->
+      <!-- ===================== 预测结算电价 ===================== -->
       <div class="section">
         <div class="section-header">
           <span class="section-icon predict">&#9670;</span>
@@ -113,21 +42,94 @@
             {{ dateTag ? dateTag : selectedDateDisplay }}
           </span>
         </div>
+
+        <!-- Stats Bar -->
+        <div
+          class="stats-bar"
+          v-loading="loading"
+          element-loading-text="数据加载中..."
+          element-loading-background="rgba(245,247,250,0.6)"
+        >
+          <div class="stat-card animate-in">
+            <div class="stat-card-title">预测日均价</div>
+            <div class="stat-grid">
+              <div class="stat-cell">
+                <div class="stat-cell-label">实时</div>
+                <div class="stat-value">
+                  {{ statText.avgRT }}<span class="stat-unit">元/MWh</span>
+                </div>
+                <div class="stat-change" :class="statText.avgRTChangeClass">
+                  {{ statText.avgRTChange }}
+                </div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-cell-label">日前</div>
+                <div class="stat-value">
+                  {{ statText.avgDA }}<span class="stat-unit">元/MWh</span>
+                </div>
+                <div class="stat-change" :class="statText.avgDAChangeClass">
+                  {{ statText.avgDAChange }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card animate-in">
+            <div class="stat-card-title">预测实时极值</div>
+            <div class="stat-grid">
+              <div class="stat-cell">
+                <div class="stat-cell-label">最高价</div>
+                <div class="stat-value">
+                  {{ statText.peakRT }}<span class="stat-unit">元/MWh</span>
+                </div>
+                <div class="stat-change up">{{ statText.peakRTTime }}</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-cell-label">最低价</div>
+                <div class="stat-value">
+                  {{ statText.valleyRT }}<span class="stat-unit">元/MWh</span>
+                </div>
+                <div class="stat-change down">{{ statText.valleyRTTime }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card animate-in">
+            <div class="stat-card-title">预测日前极值</div>
+            <div class="stat-grid">
+              <div class="stat-cell">
+                <div class="stat-cell-label">最高价</div>
+                <div class="stat-value">
+                  {{ statText.peakDA }}<span class="stat-unit">元/MWh</span>
+                </div>
+                <div class="stat-change up">{{ statText.peakDATime }}</div>
+              </div>
+              <div class="stat-cell">
+                <div class="stat-cell-label">最低价</div>
+                <div class="stat-value">
+                  {{ statText.valleyDA }}<span class="stat-unit">元/MWh</span>
+                </div>
+                <div class="stat-change down">{{ statText.valleyDATime }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prediction Section -->
+
         <div class="chart-grid">
-          <SettlementChart
-            title="实时电价预测"
-            tag-text="REAL-TIME"
-            tag-type="realtime"
-            color-hex="#0891b2"
-            :data="predictRT"
-            :date-str="selectedDate"
-          />
           <SettlementChart
             title="日前电价预测"
             tag-text="DAY-AHEAD"
             tag-type="dayahead"
             color-hex="#d97706"
             :data="predictDA"
+            :date-str="selectedDate"
+          />
+          <SettlementChart
+            title="实时电价预测"
+            tag-text="REAL-TIME"
+            tag-type="realtime"
+            color-hex="#0891b2"
+            :data="predictRT"
             :date-str="selectedDate"
           />
         </div>
@@ -211,16 +213,6 @@
                 </tr>
               </thead>
               <tbody>
-                <tr class="row-rt">
-                  <td>实时电价预测</td>
-                  <td
-                    v-for="(v, i) in predictRT"
-                    :key="'rt' + i"
-                    :class="cellCls(v, predictRTStat)"
-                  >
-                    {{ fmtValue(v) }}
-                  </td>
-                </tr>
                 <tr class="row-da">
                   <td>日前电价预测</td>
                   <td
@@ -231,15 +223,24 @@
                     {{ fmtValue(v) }}
                   </td>
                 </tr>
+                <tr class="row-rt">
+                  <td>实时电价预测</td>
+                  <td
+                    v-for="(v, i) in predictRT"
+                    :key="'rt' + i"
+                    :class="cellCls(v, predictRTStat)"
+                  >
+                    {{ fmtValue(v) }}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
       <div class="section-divider"></div>
 
-      <!-- Actual Section -->
+      <!-- ===================== 实际结算电价 ===================== -->
       <div class="section">
         <div class="section-header">
           <span class="section-icon actual">&#9679;</span>
@@ -274,17 +275,96 @@
           </p>
         </div>
         <template v-else>
+          <!-- Actual Stats Bar -->
+          <div
+            class="stats-bar"
+            v-loading="loading"
+            element-loading-text="数据加载中..."
+            element-loading-background="rgba(245,247,250,0.6)"
+          >
+            <div class="stat-card animate-in">
+              <div class="stat-card-title">实际日均价</div>
+              <div class="stat-grid">
+                <div class="stat-cell">
+                  <div class="stat-cell-label">实时</div>
+                  <div class="stat-value">
+                    {{ actualStatText.avgRT
+                    }}<span class="stat-unit">元/MWh</span>
+                  </div>
+                  <div
+                    class="stat-change"
+                    :class="actualStatText.avgRTChangeClass"
+                  >
+                    {{ actualStatText.avgRTChange }}
+                  </div>
+                </div>
+                <div class="stat-cell">
+                  <div class="stat-cell-label">日前</div>
+                  <div class="stat-value">
+                    {{ actualStatText.avgDA
+                    }}<span class="stat-unit">元/MWh</span>
+                  </div>
+                  <div
+                    class="stat-change"
+                    :class="actualStatText.avgDAChangeClass"
+                  >
+                    {{ actualStatText.avgDAChange }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="stat-card animate-in">
+              <div class="stat-card-title">实际实时极值</div>
+              <div class="stat-grid">
+                <div class="stat-cell">
+                  <div class="stat-cell-label">最高价</div>
+                  <div class="stat-value">
+                    {{ actualStatText.peakRT
+                    }}<span class="stat-unit">元/MWh</span>
+                  </div>
+                  <div class="stat-change up">
+                    {{ actualStatText.peakRTTime }}
+                  </div>
+                </div>
+                <div class="stat-cell">
+                  <div class="stat-cell-label">最低价</div>
+                  <div class="stat-value">
+                    {{ actualStatText.valleyRT
+                    }}<span class="stat-unit">元/MWh</span>
+                  </div>
+                  <div class="stat-change down">
+                    {{ actualStatText.valleyRTTime }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="stat-card animate-in">
+              <div class="stat-card-title">实际日前极值</div>
+              <div class="stat-grid">
+                <div class="stat-cell">
+                  <div class="stat-cell-label">最高价</div>
+                  <div class="stat-value">
+                    {{ actualStatText.peakDA
+                    }}<span class="stat-unit">元/MWh</span>
+                  </div>
+                  <div class="stat-change up">
+                    {{ actualStatText.peakDATime }}
+                  </div>
+                </div>
+                <div class="stat-cell">
+                  <div class="stat-cell-label">最低价</div>
+                  <div class="stat-value">
+                    {{ actualStatText.valleyDA
+                    }}<span class="stat-unit">元/MWh</span>
+                  </div>
+                  <div class="stat-change down">
+                    {{ actualStatText.valleyDATime }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="chart-grid">
-            <SettlementChart
-              title="实际实时结算电价"
-              tag-text="REAL-TIME"
-              tag-type="realtime"
-              color-hex="#0891b2"
-              :data="actualRT"
-              :date-str="selectedDate"
-              :compare-data="predictRT"
-              compare-label="预测实时电价"
-            />
             <SettlementChart
               title="实际日前结算电价"
               tag-text="DAY-AHEAD"
@@ -294,6 +374,16 @@
               :date-str="selectedDate"
               :compare-data="predictDA"
               compare-label="预测日前电价"
+            />
+            <SettlementChart
+              title="实际实时结算电价"
+              tag-text="REAL-TIME"
+              tag-type="realtime"
+              color-hex="#0891b2"
+              :data="actualRT"
+              :date-str="selectedDate"
+              :compare-data="predictRT"
+              compare-label="预测实时电价"
             />
           </div>
           <!-- Actual Data Table -->
@@ -376,22 +466,22 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="row-rt">
-                    <td>实际实时结算</td>
-                    <td
-                      v-for="(v, i) in actualRT"
-                      :key="'art' + i"
-                      :class="cellCls(v, actualRTStat)"
-                    >
-                      {{ fmtValue(v) }}
-                    </td>
-                  </tr>
                   <tr class="row-da">
                     <td>实际日前结算</td>
                     <td
                       v-for="(v, i) in actualDA"
                       :key="'ada' + i"
                       :class="cellCls(v, actualDAStat)"
+                    >
+                      {{ fmtValue(v) }}
+                    </td>
+                  </tr>
+                  <tr class="row-rt">
+                    <td>实际实时结算</td>
+                    <td
+                      v-for="(v, i) in actualRT"
+                      :key="'art' + i"
+                      :class="cellCls(v, actualRTStat)"
                     >
                       {{ fmtValue(v) }}
                     </td>
@@ -593,6 +683,43 @@ const statText = computed(() => {
   };
 });
 
+// 实际结算电价统计（与预测统计同构）
+const actualStatText = computed(() => {
+  const rt = actualRT.value;
+  const da = actualDA.value;
+  const prevRT = data.value?.actual?.prevRealTime || [];
+  const prevDA = data.value?.actual?.prevDayAhead || [];
+
+  const avgRT = mean(rt);
+  const avgDA = mean(da);
+  const pctRT = changePct(avgRT, mean(prevRT));
+  const pctDA = changePct(avgDA, mean(prevDA));
+
+  const rtRange = range(rt);
+  const daRange = range(da);
+  const timeText = (idx) =>
+    idx >= 0 ? "出现在 " + String(idx).padStart(2, "0") + ":00" : "--";
+
+  return {
+    avgRT: avgRT == null ? "--" : avgRT.toFixed(2),
+    avgDA: avgDA == null ? "--" : avgDA.toFixed(2),
+    avgRTChange: changeText(pctRT),
+    avgDAChange: changeText(pctDA),
+    avgRTChangeClass: changeClass(pctRT),
+    avgDAChangeClass: changeClass(pctDA),
+    // 实时实际极值
+    peakRT: rtRange.max == null ? "--" : rtRange.max.toFixed(2),
+    valleyRT: rtRange.min == null ? "--" : rtRange.min.toFixed(2),
+    peakRTTime: timeText(rtRange.maxIdx),
+    valleyRTTime: timeText(rtRange.minIdx),
+    // 日前实际极值
+    peakDA: daRange.max == null ? "--" : daRange.max.toFixed(2),
+    valleyDA: daRange.min == null ? "--" : daRange.min.toFixed(2),
+    peakDATime: timeText(daRange.maxIdx),
+    valleyDATime: timeText(daRange.minIdx),
+  };
+});
+
 // ===== 表格 =====
 function fmtValue(v) {
   return v == null ? "—" : Number(v).toFixed(2);
@@ -626,21 +753,21 @@ function buildTableText(tableKey, mode) {
   const isPredict = tableKey === "predict";
   const rtData = isPredict ? predictRT.value : actualRT.value;
   const daData = isPredict ? predictDA.value : actualDA.value;
-  const rtLabel = isPredict ? "实时电价预测" : "实际实时结算";
   const daLabel = isPredict ? "日前电价预测" : "实际日前结算";
+  const rtLabel = isPredict ? "实时电价预测" : "实际实时结算";
 
   const lines = [];
   if (mode === "horizontal") {
-    // 表头行 + 每行整体（tab 分隔）
+    // 表头行 + 每行整体（tab 分隔），日前在前、实时在后
     lines.push(["时段", ...HOURS].join("\t"));
-    lines.push([rtLabel, ...rtData.map(fmtValue)].join("\t"));
     lines.push([daLabel, ...daData.map(fmtValue)].join("\t"));
+    lines.push([rtLabel, ...rtData.map(fmtValue)].join("\t"));
   } else {
-    // 每个时段一行（表头 + 时段 + 各价格）
-    lines.push(["时段", rtLabel, daLabel].join("\t"));
+    // 每个时段一行（表头 + 时段 + 各价格），日前在前、实时在后
+    lines.push(["时段", daLabel, rtLabel].join("\t"));
     for (let i = 0; i < HOURS.length; i++) {
       lines.push(
-        [HOURS[i], fmtValue(rtData[i]), fmtValue(daData[i])].join("\t"),
+        [HOURS[i], fmtValue(daData[i]), fmtValue(rtData[i])].join("\t"),
       );
     }
   }

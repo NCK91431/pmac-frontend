@@ -3,24 +3,56 @@
     <div class="chart-card-header">
       <span class="chart-card-title">{{ title }}</span>
       <span class="chart-card-tag" :class="tagType">{{ tagText }}</span>
-      <button
-        class="chart-card-download"
-        @click="downloadChart"
-        title="下载图表"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+      <div class="chart-card-actions">
+        <button
+          class="chart-card-copy"
+          :class="{ copied }"
+          @click="copySummary"
+          :title="copied ? '已复制' : '复制汇总'"
         >
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-      </button>
+          <svg
+            v-if="copied"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <svg
+            v-else
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+        </button>
+        <button
+          class="chart-card-download"
+          @click="downloadChart"
+          title="下载图表"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+        </button>
+      </div>
     </div>
     <div ref="chartEl" class="chart-wrapper"></div>
     <div class="summary-row">
@@ -88,6 +120,48 @@ const summaryText = computed(() => {
     avg: summary.value.avg.toFixed(2),
   };
 });
+
+// ===== 复制汇总一句话 =====
+const copied = ref(false);
+let copyTimer = null;
+
+function copySummary() {
+  if (!summary.value) return;
+  const text = `最高价${summary.value.max.toFixed(2)}元/MWh，最低价${summary.value.min.toFixed(2)}元/MWh，算术均价${summary.value.avg.toFixed(2)}元/MWh`;
+  const done = () => {
+    copied.value = true;
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copied.value = false;
+    }, 1500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(done)
+      .catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+
+function fallbackCopy(text, done) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  textarea.style.top = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    document.execCommand("copy");
+    done();
+  } catch (e) {
+    // 静默失败
+  }
+  document.body.removeChild(textarea);
+}
 
 // ===== echarts 配置（100% 还原原型 Chart.js 视觉） =====
 function buildOption() {
@@ -346,6 +420,13 @@ onBeforeUnmount(() => {
   background: rgba(217, 119, 6, 0.1);
   color: #d97706;
 }
+.chart-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.chart-card-copy,
 .chart-card-download {
   display: flex;
   align-items: center;
@@ -358,12 +439,16 @@ onBeforeUnmount(() => {
   cursor: pointer;
   color: #94a3b8;
   transition: all 0.2s ease;
-  margin-left: auto;
 }
+.chart-card-copy:hover,
 .chart-card-download:hover {
   background: #f5f7fa;
   color: #0891b2;
 }
+.chart-card-copy.copied {
+  color: #059669;
+}
+.chart-card-copy svg,
 .chart-card-download svg {
   width: 18px;
   height: 18px;
