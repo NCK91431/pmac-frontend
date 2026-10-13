@@ -306,7 +306,13 @@ export const useDailyDeclarationV2Store = defineStore('dailyDeclarationV2', () =
     if (Array.isArray(record.strategyPeriods)) strategyPeriods.value = record.strategyPeriods
     if (Array.isArray(record.adjustedRatios)) adjustedRatios.value = record.adjustedRatios
     if (record.price_forecast) price_forecast.value = record.price_forecast
-    if (record.load_forecast) load_forecast.value = record.load_forecast
+    if (record.load_forecast) {
+      load_forecast.value = record.load_forecast
+      // 人工评估电量模式只有在"确认"后才能被选中，能以此模式提交的记录必然已确认，故进入编辑态时恢复确认标记
+      if (record.load_forecast.load_forecasting_method === "manual") {
+        userEstimatedConfirmed.value = true
+      }
+    }
     if (record.hkd_declaration) hkd_declaration.value = record.hkd_declaration
     if (record.strategy_provider) strategy_provider.value = record.strategy_provider
   }
