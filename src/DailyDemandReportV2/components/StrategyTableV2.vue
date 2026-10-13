@@ -183,8 +183,8 @@
                 </div>
               </div>
             </template>
-            <!-- 未确认（编辑态）：确认 + 一键清空 -->
-            <template v-else>
+            <!-- 未确认（编辑态）：确认 + 一键清空（只读时不显示） -->
+            <template v-else-if="!props.readonly">
               <div class="header-actions">
                 <div
                   class="copy-header-btn"
@@ -205,7 +205,7 @@
           </div>
         </template>
         <template #default="scope">
-          <template v-if="!props.userEstimatedConfirmed">
+          <template v-if="!props.readonly && !props.userEstimatedConfirmed">
             <el-input
               :model-value="
                 props.loadForecast?.manual_load_data?.[scope.row.period]
