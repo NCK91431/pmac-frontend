@@ -385,7 +385,7 @@
           <div class="backtest-section">
             <!-- 2026-05-23 及之后的日期展示 -->
             <template
-              v-if="store.currentDate && store.currentDate >= '2026-05-23'"
+              v-if="store.currentDate && store.currentDate >= '2026-05-01'"
             >
               <!-- 有申报人时即展示 -->
               <template v-if="store.selectedDeclarerId">
